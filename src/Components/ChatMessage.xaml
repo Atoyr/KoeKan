@@ -1,0 +1,11 @@
+<UserControl x:Class="Medoz.TextTransporter.Components.ChatMessage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Orientation="Horizontal">
+        <Image Source="{Binding UserIcon}" Width="40" Height="40"/>
+        <StackPanel>
+            <TextBlock Text="{Binding UserName}" FontWeight="Bold"/>
+            <TextBlock Text="{Binding Message}" Foreground="{Binding MessageColor}"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>
