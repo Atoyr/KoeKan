@@ -1,4 +1,4 @@
-namespace Medoz.TextTransporter.Client;
+namespace Medoz.MessageTransporter.Client;
 
 public record TwitchOptions(string Token, string Username, string Channel)
 {

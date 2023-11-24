@@ -1,4 +1,4 @@
-namespace Medoz.TextTransporter.Client;
+namespace Medoz.MessageTransporter.Client;
 
 public interface IClient: IDisposable
 {

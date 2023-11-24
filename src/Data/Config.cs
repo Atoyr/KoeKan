@@ -1,13 +1,13 @@
 using System.IO;
 using System.Text.Json;
 
-namespace Medoz.TextTransporter.Data;
+namespace Medoz.MessageTransporter.Data;
 
 /// <summary>
 /// </summary>
 public class Config
 {
-    public const string APP_NAME = "TextTransporter";
+    public const string APP_NAME = "MessageTransporter";
 
     public Discord Discord { get; set; }
 

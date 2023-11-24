@@ -1,4 +1,4 @@
-<UserControl x:Class="Medoz.TextTransporter.Components.ChatMessage"
+<UserControl x:Class="Medoz.MessageTransporter.Components.ChatMessage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <StackPanel Orientation="Horizontal">

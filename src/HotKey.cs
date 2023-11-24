@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Input;
 
-namespace Medoz.TextTransporter;
+namespace Medoz.MessageTransporter;
 
 /// <summary>
 /// </summary>
@@ -82,4 +82,3 @@ public enum MOD_KEY :int {
     CONTROL = 0x0002,
     SHIFT = 0x0004,
 }
-

@@ -12,9 +12,9 @@ using System.Windows.Interop;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
-using Medoz.TextTransporter.Data;
+using Medoz.MessageTransporter.Data;
 
-namespace Medoz.TextTransporter;
+namespace Medoz.MessageTransporter;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml

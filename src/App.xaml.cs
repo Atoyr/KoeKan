@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace Medoz.TextTransporter;
+namespace Medoz.MessageTransporter;
 
 /// <summary>
 /// Interaction logic for App.xaml
@@ -10,4 +10,3 @@ namespace Medoz.TextTransporter;
 public partial class App : Application
 {
 }
-

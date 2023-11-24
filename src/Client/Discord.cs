@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Discord;
 using Discord.WebSocket;
 
-namespace Medoz.TextTransporter.Client;
+namespace Medoz.MessageTransporter.Client;
 
 public class Discord: IClient
 {
