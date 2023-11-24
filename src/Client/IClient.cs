@@ -4,5 +4,6 @@ public interface IClient: IDisposable
 {
     event Func<Message, Task>? OnReceiveMessage;
 
-    Task RunAsync(CancellationToken token);
+    Task RunAsync();
+    Task StopAsync();
 }

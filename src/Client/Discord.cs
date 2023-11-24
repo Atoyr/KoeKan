@@ -10,9 +10,11 @@ namespace Medoz.TextTransporter.Client;
 
 public class Discord: IClient
 {
-    private string _source = "Discord";
     private DiscordSocketClient _client;
     private DiscordOptions _options;
+    private readonly CancellationTokenSource _cancellationTokenSource = new ();
+
+    private string _channelId = string.Empty;
 
     protected ILogger? Logger { get; set; }
 
@@ -26,12 +28,27 @@ public class Discord: IClient
         _client.MessageReceived += MessageReceivedAsync;
     }
 
-    public async Task RunAsync(CancellationToken token)
+    public async Task RunAsync()
     {
         await _client.LoginAsync(TokenType.Bot, _options.Token);
         await _client.StartAsync();
-        await Task.Delay(-1, token);
+        await Task.Delay(-1, _cancellationTokenSource.Token);
+        await _client.StopAsync();
     }
+
+    public async Task StopAsync()
+    {
+        _cancellationTokenSource.Cancel();
+        await Task.CompletedTask;
+    }
+
+    public void ChangeChannel()
+    {
+
+    }
+
+    public Task<IEnumerable<DiscordGuild>> GetGuildsAsync()
+        => Task.FromResult(_client.Guilds.Select(x => new DiscordGuild(x.Id.ToString(), x.Name)));
 
     private async Task MessageReceivedAsync(SocketMessage message)
     {
@@ -40,18 +57,19 @@ public class Discord: IClient
 
         if (OnReceiveMessage is not null)
         {
-            await OnReceiveMessage.Invoke(new Message(_source, message.Channel.Name, message.Author.Username, message.Content));
+            await OnReceiveMessage.Invoke(new Message(ClientType.Discord, message.Channel.Name, message.Author.Username, message.Content));
         }
     }
 
     private Task LogAsync(LogMessage log)
     {
-        Console.WriteLine(log.ToString());
+        Logger?.LogInformation(log.ToString());
         return Task.CompletedTask;
     }
 
     public void Dispose()
     {
-
+        _cancellationTokenSource.Cancel();
+        _cancellationTokenSource.Dispose();
     }
 }
