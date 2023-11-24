@@ -12,6 +12,8 @@ using System.Windows.Interop;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
+using Medoz.TextTransporter.Data;
+
 namespace Medoz.TextTransporter;
 
 /// <summary>
