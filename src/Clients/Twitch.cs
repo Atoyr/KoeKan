@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Medoz.MessageTransporter.Client;
+namespace Medoz.MessageTransporter.Clients;
 
 public class Twitch
 {

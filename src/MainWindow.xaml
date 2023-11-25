@@ -29,12 +29,12 @@
       <TextBox 
         Grid.Row="1" 
         Grid.Column="0" 
-        Name="myTextBox" 
+        Name="MessageBox" 
         Height="Auto" 
         Margin="6" 
         Width="Auto" 
         HorizontalAlignment="Stretch" 
-        KeyDown="KeyDown">
+        KeyDown="MessageBox_KeyDown">
         <TextBox.Resources>
             <Style TargetType="{x:Type Border}">
                <Setter Property="CornerRadius" Value="3"/>

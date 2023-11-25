@@ -12,7 +12,11 @@ using System.Windows.Interop;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
+using Microsoft.Extensions.Logging;
+
+using Medoz.MessageTransporter.Clients;
 using Medoz.MessageTransporter.Data;
+
 
 namespace Medoz.MessageTransporter;
 
@@ -34,9 +38,17 @@ public partial class MainWindow : Window
 
     private HotKey? _hk;
     private Config _config;
+    private ILogger _logger;
+
+    private DiscordClient? _discordClient;
 
     public MainWindow()
     {
+        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+        ILogger logger = factory.CreateLogger("Program");
+        _config = Config.Load() ?? new Config();
+
+
         InitializeComponent();
         Loaded += MainWindow_Loaded;
     }
@@ -44,25 +56,9 @@ public partial class MainWindow : Window
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         this._hk = new HotKey(0x0004, 0x31, this);
-        _hk.OnHotKeyPush += Focus;
+        _hk.OnHotKeyPush += MessageBox_Focus;
         var helper = new WindowInteropHelper(this);
         SetWindowPos(helper.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-    }
-
-    public void Focus(object sender, EventArgs e)
-    {
-        myTextBox.Focus();
-        this.Activate();
-    }
-
-    public void KeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.Enter)
-        {
-            ChatListBox.Items.Add(myTextBox.Text);
-            myTextBox.Text = "";
-            ActivateOtherWindow();
-        }
     }
 
     public void ActivateOtherWindow()
@@ -75,6 +71,56 @@ public partial class MainWindow : Window
             var process = processes[0]; // 最初のプロセスを使用
             IntPtr windowHandle = process.MainWindowHandle;
             SetForegroundWindow(windowHandle);
+        }
+    }
+
+    private void SetDiscordClient()
+    {
+        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+        _discordClient = new DiscordClient(_config.Discord, factory.CreateLogger<MainWindow>());
+        _discordClient.OnReceiveMessage += ((message) => {
+            ChatListBox.Items.Add($"{message.Channel}: {message.Username}: {message.Content}");
+            return Task.CompletedTask;
+        });
+        _discordClient.OnReady += (() => {
+            ChatListBox.Items.Add($"Discord is ready.");
+            return Task.CompletedTask;
+        });
+        Task.Run(() =>_discordClient.RunAsync());
+    }
+
+    public void MessageBox_Focus(object? sender, EventArgs e)
+    {
+        MessageBox.Focus();
+        this.Activate();
+    }
+
+    public async void MessageBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            if (string.IsNullOrWhiteSpace(MessageBox.Text))
+            {
+            }
+            else if (MessageBox.Text[0] == ':') 
+            {
+                await ExecuteCommand(MessageBox.Text.Substring(1));
+            }
+            else 
+            {
+                if (_discordClient is not null)
+                {
+                    await _discordClient.SendMessageAsync(MessageBox.Text);
+                }
+                ChatListBox.Items.Add(MessageBox.Text);
+                MessageBox.Text = "";
+                ActivateOtherWindow();
+            }
+            MessageBox.Text = "";
+        }
+        else if (e.Key == Key.Escape)
+        {
+            ActivateOtherWindow();
         }
     }
 }

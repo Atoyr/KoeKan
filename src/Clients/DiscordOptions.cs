@@ -1,4 +1,4 @@
-namespace Medoz.MessageTransporter.Client;
+namespace Medoz.MessageTransporter.Clients;
 
 public record DiscordOptions(string Token, string Username, string Channel)
 {
