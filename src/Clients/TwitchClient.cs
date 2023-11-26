@@ -14,8 +14,7 @@ public class TwitchClient: IClient
     private CancellationTokenSource _cancellationTokenSource = new();
 
     public event Func<Message, Task>? OnReceiveMessage;
-
-
+    public event Func<Task>? OnReady;
 
     public TwitchClient(TwitchOptions options)
     {
@@ -29,8 +28,14 @@ public class TwitchClient: IClient
         await SendMessageAsync($"NICK {_options.Username}");
         await SendMessageAsync($"JOIN #{_options.Channel}");
 
+        if (OnReady is not null)
+        {
+            await OnReady.Invoke();
+        }
+
         await ReceiveMessagesAsync(_cancellationTokenSource.Token);
     }
+
 
     public Task StopAsync()
     {
