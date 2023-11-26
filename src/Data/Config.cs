@@ -3,7 +3,6 @@ using System.Text.Json;
 
 using Medoz.MessageTransporter.Clients;
 
-
 namespace Medoz.MessageTransporter.Data;
 
 /// <summary>
@@ -14,6 +13,8 @@ public class Config
 
     public DiscordOptions Discord { get; set; } = null!;
 
+    public IEnumerable<TwitchOptions> Twitch { get; set; }
+
     public IEnumerable<string> Applications { get; set; } = new List<string>();
 
     private static string _folderPath { get => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", APP_NAME); }
@@ -23,7 +24,8 @@ public class Config
 
     public Config()
     { 
-        Discord = new("", "", "");
+        Discord = new("");
+        Twitch = new List<TwitchOptions>();
     }
 
     public void Save()
