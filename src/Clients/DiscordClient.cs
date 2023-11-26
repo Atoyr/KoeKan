@@ -26,7 +26,7 @@ public class DiscordClient: IClient
     {
         _options = options;
 
-        _client = new DiscordSocketClient();
+        _client = new DiscordSocketClient(new DiscordSocketConfig(){ GatewayIntents = GatewayIntents.All});
         _client.Log += LogAsync;
         _client.MessageReceived += MessageReceivedAsync;
         _client.Ready += ReadyAsync;
@@ -34,6 +34,11 @@ public class DiscordClient: IClient
 
     public async Task RunAsync()
     {
+        if (_client.ConnectionState == ConnectionState.Connected)
+        {
+            Logger?.LogWarning("Discord client is Connected.");
+            return;
+        }
         await _client.LoginAsync(TokenType.Bot, _options.Token);
         await _client.StartAsync();
         await Task.Delay(-1, _cancellationTokenSource.Token);
