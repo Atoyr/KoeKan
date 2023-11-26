@@ -63,7 +63,7 @@ public class TwitchClient: IClient
             if (OnReceiveMessage is not null)
             {
                 // TODO
-                await OnReceiveMessage.Invoke(new Message(ClientType.Twitch, _options.Channel, _options.Username, message, DateTime.Now));
+                await OnReceiveMessage.Invoke(new Message(ClientType.Twitch, _options.Channel, _options.Username, message, DateTime.Now, null));
             }
         }
     }

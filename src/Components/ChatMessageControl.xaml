@@ -11,7 +11,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- <Image Grid.Column="0" Source="{Binding IconSource}" Width="40" Height="40" Margin="5"/> -->
+        <Image Grid.Column="0" Source="{Binding IconSource}" Width="40" Height="40" Margin="5"/>
 
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>

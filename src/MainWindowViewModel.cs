@@ -34,7 +34,7 @@ public partial class MainWindowViewModel
         using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
         _discordClient = new DiscordClient(_config.Discord.ToDiscordOptions(), factory.CreateLogger<MainWindow>());
         _discordClient.OnReceiveMessage += ((message) => {
-            Messages.Add(new ChatMessage(ChatMessageType.DiscordText, message.Channel, message.Username, message.Content, message.Timestamp));
+            Messages.Add(new ChatMessage(ChatMessageType.DiscordText, message.Channel, message.Username, message.Content, message.Timestamp, message.IconSource));
             return Task.CompletedTask;
         });
         _discordClient.OnReady += (() => {
@@ -50,7 +50,7 @@ public partial class MainWindowViewModel
         {
             await _discordClient.SendMessageAsync(message);
         }
-        Messages.Add(new ChatMessage(ChatMessageType.Text, "", "", message, DateTime.Now));
+        Messages.Add(new ChatMessage(ChatMessageType.Text, "", "", message, DateTime.Now, null));
     }
 
     public async Task ExecuteCommand(string str)
@@ -151,9 +151,9 @@ public partial class MainWindowViewModel
     }
 
     private void SetSystemMessage(string message)
-        => Messages.Add(new ChatMessage(ChatMessageType.System, "", "", message, DateTime.Now));
+        => Messages.Add(new ChatMessage(ChatMessageType.System, "", "", message, DateTime.Now, null));
     private void SetCommandMessage(string message)
-        => Messages.Add(new ChatMessage(ChatMessageType.Command, "", "", message, DateTime.Now));
+        => Messages.Add(new ChatMessage(ChatMessageType.Command, "", "", message, DateTime.Now, null));
 
 
 }
