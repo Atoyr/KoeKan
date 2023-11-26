@@ -11,21 +11,19 @@ public class Config
 {
     public const string APP_NAME = "MessageTransporter";
 
-    public DiscordOptions Discord { get; set; } = null!;
+    public DiscordConfig Discord { get; set; } = null!;
 
-    public IEnumerable<TwitchOptions> Twitch { get; set; }
+    public IEnumerable<TwitchConfig> Twitch { get; set; }
 
     public IEnumerable<string> Applications { get; set; } = new List<string>();
 
     private static string _folderPath { get => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", APP_NAME); }
     private static string _filePath { get => Path.Combine(_folderPath, "config.json"); }
 
-    public IEnumerable<string> Processes { get; init; } = new List<string>();
-
     public Config()
     { 
-        Discord = new("");
-        Twitch = new List<TwitchOptions>();
+        Discord = new("", null);
+        Twitch = new List<TwitchConfig>();
     }
 
     public void Save()

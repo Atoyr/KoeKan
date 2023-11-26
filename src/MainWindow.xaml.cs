@@ -38,16 +38,13 @@ public partial class MainWindow : Window
 
     private HotKey? _hk;
     private Config _config;
-    private ILogger _logger;
+    private ILogger? _logger;
 
     private DiscordClient? _discordClient;
 
     public MainWindow()
     {
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-        ILogger logger = factory.CreateLogger("Program");
         _config = Config.Load() ?? new Config();
-
 
         InitializeComponent();
         Loaded += MainWindow_Loaded;
@@ -77,7 +74,7 @@ public partial class MainWindow : Window
     private void SetDiscordClient()
     {
         using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-        _discordClient = new DiscordClient(_config.Discord, factory.CreateLogger<MainWindow>());
+        _discordClient = new DiscordClient(_config.Discord.ToDiscordOptions(), factory.CreateLogger<MainWindow>());
         _discordClient.OnReceiveMessage += ((message) => {
             ChatListBox.Items.Add($"{message.Channel}: {message.Username}: {message.Content}");
             return Task.CompletedTask;
