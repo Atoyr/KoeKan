@@ -90,7 +90,7 @@ public class DiscordClient: IClient
 
         if (OnReceiveMessage is not null)
         {
-            await OnReceiveMessage.Invoke(new Message(ClientType.Discord, message.Channel.Name, message.Author.Username, message.Content));
+            await OnReceiveMessage.Invoke(new Message(ClientType.Discord, message.Channel.Name, message.Author.Username, message.Content, message.Timestamp.DateTime));
         }
     }
 

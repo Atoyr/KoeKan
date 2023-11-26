@@ -12,12 +12,6 @@ using System.Windows.Interop;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
-using Microsoft.Extensions.Logging;
-
-using Medoz.MessageTransporter.Clients;
-using Medoz.MessageTransporter.Data;
-
-
 namespace Medoz.MessageTransporter;
 
 /// <summary>
@@ -37,16 +31,12 @@ public partial class MainWindow : Window
     const UInt32 SWP_NOMOVE = 0x0002;
 
     private HotKey? _hk;
-    private Config _config;
-    private ILogger? _logger;
-
-    private DiscordClient? _discordClient;
 
     public MainWindow()
     {
-        _config = Config.Load() ?? new Config();
-
         InitializeComponent();
+        DataContext = new MainWindowViewModel();
+        ((MainWindowViewModel)DataContext).Close = Close;
         Loaded += MainWindow_Loaded;
     }
 
@@ -54,8 +44,8 @@ public partial class MainWindow : Window
     {
         this._hk = new HotKey(0x0004, 0x31, this);
         _hk.OnHotKeyPush += MessageBox_Focus;
-        var helper = new WindowInteropHelper(this);
-        SetWindowPos(helper.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
+        ChatListBox.ItemsSource = ((MainWindowViewModel)DataContext).Messages;
     }
 
     public void ActivateOtherWindow()
@@ -69,21 +59,6 @@ public partial class MainWindow : Window
             IntPtr windowHandle = process.MainWindowHandle;
             SetForegroundWindow(windowHandle);
         }
-    }
-
-    private void SetDiscordClient()
-    {
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-        _discordClient = new DiscordClient(_config.Discord.ToDiscordOptions(), factory.CreateLogger<MainWindow>());
-        _discordClient.OnReceiveMessage += ((message) => {
-            ChatListBox.Items.Add($"{message.Channel}: {message.Username}: {message.Content}");
-            return Task.CompletedTask;
-        });
-        _discordClient.OnReady += (() => {
-            ChatListBox.Items.Add($"Discord is ready.");
-            return Task.CompletedTask;
-        });
-        Task.Run(() =>_discordClient.RunAsync());
     }
 
     public void MessageBox_Focus(object? sender, EventArgs e)
@@ -101,17 +76,11 @@ public partial class MainWindow : Window
             }
             else if (MessageBox.Text[0] == ':') 
             {
-                await ExecuteCommand(MessageBox.Text.Substring(1));
+                await ((MainWindowViewModel)DataContext).ExecuteCommand(MessageBox.Text.Substring(1));
             }
             else 
             {
-                if (_discordClient is not null)
-                {
-                    await _discordClient.SendMessageAsync(MessageBox.Text);
-                }
-                ChatListBox.Items.Add(MessageBox.Text);
-                MessageBox.Text = "";
-                ActivateOtherWindow();
+                await ((MainWindowViewModel)DataContext).SendMessage(MessageBox.Text);
             }
             MessageBox.Text = "";
         }
@@ -119,5 +88,11 @@ public partial class MainWindow : Window
         {
             ActivateOtherWindow();
         }
+    }
+
+    private void SetWindowIsTops()
+    {
+        var helper = new WindowInteropHelper(this);
+        SetWindowPos(helper.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
     }
 }

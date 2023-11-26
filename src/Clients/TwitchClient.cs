@@ -62,7 +62,8 @@ public class TwitchClient: IClient
             string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
             if (OnReceiveMessage is not null)
             {
-                await OnReceiveMessage.Invoke(new Message(ClientType.Twitch, _options.Channel, _options.Username, message));
+                // TODO
+                await OnReceiveMessage.Invoke(new Message(ClientType.Twitch, _options.Channel, _options.Username, message, DateTime.Now));
             }
         }
     }
