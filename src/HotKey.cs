@@ -22,7 +22,7 @@ public class HotKey :IDisposable
     private IntPtr _hWnd;
     private HwndSource? _hwndSource;
 
-    public event EventHandler OnHotKeyPush;
+    public event EventHandler? OnHotKeyPush;
 
     // https://learn.microsoft.com/ja-jp/windows/win32/api/winuser/nf-winuser-registerhotkey
     // https://learn.microsoft.com/ja-jp/windows/win32/inputdev/virtual-key-codes
@@ -70,15 +70,6 @@ public class HotKey :IDisposable
     public void Dispose() 
     {
         UnregisterHotKey(_hWnd, _id);
-        _hwndSource.RemoveHook(WndProc);
+        _hwndSource?.RemoveHook(WndProc);
     }
-}
-
-/// <summary>
-/// HotKeyクラスの初期化時に指定する修飾キー
-/// </summary>
-public enum MOD_KEY :int {
-    ALT = 0x0001,
-    CONTROL = 0x0002,
-    SHIFT = 0x0004,
 }

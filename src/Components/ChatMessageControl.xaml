@@ -5,31 +5,37 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="300">
-    <Grid Margin="5" HorizontalAlignment="Stretch">
+    <Grid Margin="2" HorizontalAlignment="Stretch">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="2"/>
+            <ColumnDefinition Width="29"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Image Grid.Column="0" Source="{Binding IconSource}" Width="40" Height="40" Margin="5"/>
+        <StackPanel x:Name="AccentLine" Grid.Column="0" Width="Auto" Height="Auto" />
 
-        <Grid Grid.Column="1">
+        <Ellipse x:Name="ProfileIcon" Grid.Column="1" Width="25" Height="25" Margin="2">
+            <Ellipse.Fill>
+                <ImageBrush ImageSource="{Binding IconSource}" />
+            </Ellipse.Fill>
+        </Ellipse>
+        <Grid Grid.Column="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Text="{Binding Channel}" FontStyle="Italic" Opacity="0.7"/>
-            <Grid Grid.Row="1">
+            <TextBlock x:Name="ChannelTextBlock" Grid.Row="0" Text="{Binding Channel}" FontStyle="Italic" Opacity="0.7" FontSize="9" Foreground="AliceBlue"/>
+            <Grid Grid.Row="1" x:Name="Profile">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="{Binding Username}" FontWeight="Bold"/>
-                <TextBlock Grid.Column="1" Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Column="0" Text="{Binding Username}" FontWeight="Bold" FontSize="9" Foreground="AliceBlue"/>
+                <TextBlock Grid.Column="1" Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}" HorizontalAlignment="Right" FontSize="9" Foreground="AliceBlue"/>
             </Grid>
-            <TextBlock Grid.Row="2" Text="{Binding Message}" TextWrapping="Wrap"/>
+            <TextBlock Grid.Row="2" Text="{Binding Message}" TextWrapping="Wrap" FontSize="18" Foreground="AliceBlue"/>
         </Grid>
     </Grid>
 </UserControl>

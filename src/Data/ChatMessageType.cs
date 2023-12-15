@@ -4,9 +4,11 @@ namespace Medoz.MessageTransporter.Data;
 /// </summary>
 public enum ChatMessageType
 {
-    System,
     Command, 
-    Log, 
+    LogSuccess, 
+    LogInfo, 
+    LogWarning, 
+    LogFatal, 
     Text,
     DiscordText, 
     DiscordVoice, 

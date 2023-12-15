@@ -4,6 +4,6 @@ namespace Medoz.MessageTransporter.Data;
 
 /// <summary>
 /// </summary>
-public record DiscordConfig(ulong? DefaultChannelId, bool UseSpeaker, uint? Speaker)
+public record VoicevoxConfig(uint SpeakerId, string? Url)
 {
 }

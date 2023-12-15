@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 
 using Medoz.MessageTransporter.Clients;
 using Medoz.MessageTransporter.Data;
+using System.Windows.Threading;
 
 namespace Medoz.MessageTransporter;
 
@@ -19,70 +20,92 @@ public partial class MainWindowViewModel
     private ILogger? _logger;
     private Config _config;
 
-    private DiscordClient? _discordClient;
+    private ITextClient? _activeClient;
 
     public Action? Close { get; set; }
+    public Action? ToggleMoveWindow { get; set; }
+    public Action<double, double>? WindowSize { get; set; }
+    public Dispatcher? Dispatcher { get; set; }
+
+    // HOT KEY
+    public uint ModKey { get => ModKeyExtension.GetModKey(_config.ModKey).ToUInt(); }
+    public uint Key { get => KeyExtension.GetKey(_config.Key).ToUInt(); }
+
+    public double Width { get; set; }
+    public double Height { get; set; }
+
+    public IEnumerable<string> Applications
+    {
+        get => _config.Applications;
+    }
 
     public MainWindowViewModel()
     {
         _config = Config.Load() ?? new Config();
+        Width = _config.Width;
+        Height = _config.Height;
         BindingOperations.EnableCollectionSynchronization(Messages, new object());
-    }
-
-    private void SetDiscordClient()
-    {
-        using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-        _discordClient = new DiscordClient(_config.Discord.ToDiscordOptions(), factory.CreateLogger<MainWindow>());
-        _discordClient.OnReceiveMessage += ((message) => {
-            Messages.Add(new ChatMessage(ChatMessageType.DiscordText, message.Channel, message.Username, message.Content, message.Timestamp, message.IconSource));
-            return Task.CompletedTask;
-        });
-        _discordClient.OnReady += (() => {
-            SetSystemMessage("Discord is ready.");
-            return Task.CompletedTask;
-        });
-        Task.Run(() =>_discordClient.RunAsync());
     }
 
     public async Task SendMessage(string message)
     {
-        if (_discordClient is not null)
+        if (_activeClient is not null)
         {
-            await _discordClient.SendMessageAsync(message);
+            _activeClient.SendMessageAsync(message);
         }
-        Messages.Add(new ChatMessage(ChatMessageType.Text, "", "", message, DateTime.Now, null));
+        if (_voicevoxClient is not null)
+        {
+            _voicevoxClient.SpeakMessageAsync(message);
+        }
+        AddUserMessage(message, DateTime.Now);
+        await Task.CompletedTask;
     }
 
     public async Task ExecuteCommand(string str)
     {
         var split = str.Split(' ', 2);
         var command = split[0];
-        string text = "";
+        string arg = "";
         if (split.Length > 1)
         {
-            text = split[1];
+            arg = split[1];
         }
 
         switch(command)
         {
             case "w":
-                WriteCommand(text);
+                WriteCommand(arg);
                 break;
             case "q":
-                QuitCommand(text);
+                QuitCommand(arg);
+                break;
+            case "set":
+                SetCommand(arg);
+                break;
+            case "window":
+                WindowCommand(arg);
                 break;
             case "discord":
-                await DiscordCommand(text);
+                await DiscordCommand(arg);
+                break;
+            case "twitch":
+                await TwitchCommand(arg);
+                break;
+            case "voicevox":
+                await VoicevoxCommand(arg);
+                break;
+            default:
+                HelpCommand(command);
                 break;
         }
     }
 
-    private void WriteCommand(string text)
+    private void WriteCommand(string arg)
     {
-        if (text == "config")
+        if (arg == "config")
         {
             _config.Save();
-            SetSystemMessage("Save config successed.");
+            AddLogMessage(ChatMessageType.LogSuccess, "Save config successed.");
         }
         else
         {
@@ -91,11 +114,49 @@ public partial class MainWindowViewModel
         }
     }
 
-    private void QuitCommand(string text)
+    private void WindowCommand(string arg)
     {
-        if(string.IsNullOrEmpty(text))
+        var strs = arg.Split(' ', 2);
+        var args = strs.Length == 2 ? strs[1] : "";
+        switch (strs[0])
         {
-            Close();
+            case "move":
+                ToggleMoveWindow?.Invoke();
+                AddLogMessage(ChatMessageType.LogInfo, "Toggle Move Window.");
+                break;
+            case "size":
+                var wh = args.Split(' ');
+                if (wh.Length == 2)
+                {
+                    try
+                    {
+                        var w = Convert.ToDouble(wh[0]);
+                        var h = Convert.ToDouble(wh[1]);
+                        WindowSize?.Invoke(w, h);
+                        _config.Width = w;
+                        _config.Height = h;
+                        AddLogMessage(ChatMessageType.LogSuccess, $"Change Window Size. Widht:{w} Height:{h}");
+                    }
+                    catch
+                    {
+                        AddLogMessage(ChatMessageType.LogWarning, "Width or Height is not double value.");
+                    }
+                }
+                else
+                {
+                    AddLogMessage(ChatMessageType.LogWarning, "args is not validate.");
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void QuitCommand(string arg)
+    {
+        if(string.IsNullOrEmpty(arg))
+        {
+            Close?.Invoke();
         }
         else
         {
@@ -103,57 +164,102 @@ public partial class MainWindowViewModel
         }
     }
 
-    private async Task DiscordCommand(string text)
+    private void SetCommand(string text)
     {
-        var strs = text.Split(' ');
-        if (strs[0] == "start" && strs.Length == 1)
+        var strs = text.Split(' ', 2);
+        var arg = strs.Length == 2 ? strs[1] : "";
+        switch(strs[0])
         {
-            SetDiscordClient();
-            SetSystemMessage("Start Discord Connections");
-            return;
-        }
-
-        if (_discordClient is null)
-        {
-            SetSystemMessage("Discord is not started");
-            return;
-        }
-        if (strs[0] == "channels" && strs.Length == 1)
-        {
-            StringBuilder sb = new();
-            foreach(var c in _discordClient.GetChannels())
-            {
-                sb.AppendLine($"{c.GuildName} | {c.Id} : {c.Name}");
-            }
-            SetCommandMessage(sb.ToString());
-        }
-        else if (strs[0] == "channel" && strs.Length == 2)
-        {
-            if (ulong.TryParse(strs[1], out ulong id))
-            {
-                _discordClient.SetChannel(id);
-            }
-            else
-            {
-                SetCommandMessage("Id is not validated");
-            }
-        }
-        else if (strs[0] == "guilds" && strs.Length == 1)
-        {
-            var guilds = await _discordClient.GetGuildsAsync();
-            StringBuilder sb = new();
-            foreach(var g in guilds)
-            {
-                sb.AppendLine($"{g.Id} : {g.Name}");
-            }
-            SetCommandMessage(sb.ToString());
+            case "username":
+                _config.Username = arg;
+                break;
+            case "icon":
+                _config.Icon = arg;
+                break;
+            case "discord.token":
+                var secret = Secret.Load();
+                secret.EncryptDiscord(arg);
+                secret.Save();
+                break;
+            case "discord.defaultChannel":
+                ulong? id = null;
+                try
+                {
+                    id = Convert.ToUInt64(arg);
+                }
+                catch
+                {
+                    AddLogMessage(ChatMessageType.LogWarning, "defaultChannel is ulong value.");
+                    return;
+                }
+                _config.Discord = _config.Discord with { DefaultChannelId = id};
+                break;
+            case "application":
+                _config.Applications = _config.Applications.Concat(new string[] { arg });
+                break;
+            default:
+                // TODO HELP MESSAGE
+                AddLogMessage(ChatMessageType.LogWarning, "command not found.");
+                break;
         }
     }
 
-    private void SetSystemMessage(string message)
-        => Messages.Add(new ChatMessage(ChatMessageType.System, "", "", message, DateTime.Now, null));
-    private void SetCommandMessage(string message)
-        => Messages.Add(new ChatMessage(ChatMessageType.Command, "", "", message, DateTime.Now, null));
+    private void HelpCommand(string arg)
+    {
+        if (!string.IsNullOrEmpty(arg))
+        {
+            AddLogMessage(ChatMessageType.LogWarning, $"⚠️COMMAND {arg} is not found.");
+        }
 
+        StringBuilder sb = new();
+        sb.AppendLine("COMMAND LIST");
+        sb.AppendLine("  w          : write");
+        sb.AppendLine("  q          : quit application");
+        sb.AppendLine("  set        : set config value");
+        sb.AppendLine("  window     : window command");
+        sb.AppendLine("  discord    : discord command");
+        sb.AppendLine("  twitch     : twitch command");
+        sb.AppendLine("  voicevox   : voicevox command");
+        AddLogMessage(ChatMessageType.LogInfo, sb.ToString());
+    }
 
+    private void AddLogMessage(ChatMessageType chatMessageType, string message)
+        => AddMessage(new ChatMessage(chatMessageType, "", null, "SYSTEM", message, DateTime.Now, IsMessageOnly(chatMessageType, "", "SYSTEM", DateTime.Now)));
+
+    private void AddCommandMessage(string message)
+        => AddMessage(new ChatMessage(ChatMessageType.Command, "", null, "COMMAND", message, DateTime.Now, IsMessageOnly(ChatMessageType.Command, "", "COMMAND", DateTime.Now)));
+    private void AddUserMessage(string message, DateTime timestamp)
+        => AddMessage(new ChatMessage(ChatMessageType.Text, "", _config.Icon, _config.Username, message, DateTime.Now, IsMessageOnly(ChatMessageType.Text, "", _config.Username, timestamp)));
+
+    private void AddMessage(Message message)
+        => AddMessage(new ChatMessage(
+                    ChatMessageType.DiscordText, 
+                    message.Channel, 
+                    message.IconSource, 
+                    message.Username, 
+                    message.Content, 
+                    message.Timestamp, 
+                    IsMessageOnly(ChatMessageType.DiscordText, message.Channel, message.Username, message.Timestamp)));
+
+    private void AddMessage(ChatMessage cm)
+    {
+        if (Dispatcher is null)
+        {
+            Messages.Add(cm);
+        }
+        else
+        {
+            Dispatcher.Invoke(() => Messages.Add(cm));
+        }
+    }
+
+    private bool IsMessageOnly(ChatMessageType chatMessageType, string channel, string username, DateTime timestamp)
+    {
+        if (Messages.Count == 0)
+        {
+            return false;
+        }
+        var last = Messages.Last();
+        return (last.MessageType == chatMessageType && last.Channel == channel && last.Username == username && (timestamp - last.Timestamp).TotalMinutes <= 1);
+    }
 }

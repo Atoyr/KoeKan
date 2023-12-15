@@ -1,23 +1,20 @@
-using System;
-using System.Threading.Tasks;
-
 using Microsoft.Extensions.Logging;
 
 using Discord;
+using Discord.Audio;
 using Discord.WebSocket;
 
 namespace Medoz.MessageTransporter.Clients;
 
-public class DiscordClient: IClient
+public class DiscordClient: ITextClient
 {
     private DiscordSocketClient _client;
     private DiscordOptions _options;
     private readonly CancellationTokenSource _cancellationTokenSource = new ();
 
-    private ulong _channelId = 0;
-    private IMessageChannel? _channel;
+    private IMessageChannel? _messageChannel;
 
-    protected ILogger? Logger { get; set; }
+    private ILogger? _logger { get; set; }
 
     public event Func<Message, Task>? OnReceiveMessage;
     public event Func<Task>? OnReady;
@@ -25,6 +22,7 @@ public class DiscordClient: IClient
     public DiscordClient(DiscordOptions options, ILogger? logger = null)
     {
         _options = options;
+        _logger = logger;
 
         _client = new DiscordSocketClient(new DiscordSocketConfig(){ GatewayIntents = GatewayIntents.All});
         _client.Log += LogAsync;
@@ -36,12 +34,17 @@ public class DiscordClient: IClient
     {
         if (_client.ConnectionState == ConnectionState.Connected)
         {
-            Logger?.LogWarning("Discord client is Connected.");
+            _logger?.LogWarning("Discord client is Connected.");
             return;
         }
         await _client.LoginAsync(TokenType.Bot, _options.Token);
         await _client.StartAsync();
         await Task.Delay(-1, _cancellationTokenSource.Token);
+    }
+
+    public async Task StartAsync()
+    {
+        await _client.StartAsync();
     }
 
     public async Task StopAsync()
@@ -52,18 +55,17 @@ public class DiscordClient: IClient
     public void SetChannel(ulong id)
     {
         var c = _client.GetChannel(id);
-        if (c is not null)
+        if (c is not null && c is IMessageChannel mc)
         {
-            _channelId = id;
-            _channel = c as IMessageChannel;
+            _messageChannel = mc;
         }
     }
 
     public async Task SendMessageAsync(string message)
     {
-        if (_channel is not null)
+        if (_messageChannel is not null)
         {
-            await _channel.SendMessageAsync(message);
+            await _messageChannel.SendMessageAsync(message);
         }
     }
 
@@ -83,6 +85,59 @@ public class DiscordClient: IClient
         return channels;
     }
 
+    public async Task ConnectToVoiceChannel(ulong channelId, Func<byte[], Task> voiceMessage)
+    {
+        var c = _client.GetChannel(channelId);
+        if (c is null)
+        {
+            throw new Exception("voice channel not found.");
+        }
+        if (c is not SocketVoiceChannel svc)
+        {
+            throw new Exception("channel is not Voice Channel.");
+        }
+        try
+        {
+            var audioClient = await svc.ConnectAsync();
+
+            // var audioStream = audioClient.CreateOpusStream();
+            var audioStream = audioClient.CreatePCMStream(AudioApplication.Mixed);
+
+            // データを受信するためのバッファ
+            int blockSize = 3840; // 480 * 2 * 2 * 1
+            byte[] audioBuffer = new byte[blockSize];
+            byte[]? ret = null;
+            int byteCount;
+            while ((byteCount = await audioStream.ReadAsync(audioBuffer, 0, blockSize)) > 0)
+
+            {
+                // int byteCount = await audioStream.ReadAsync(audioBuffer, 0, audioBuffer.Length);
+                if (byteCount == 0)
+                {
+                    if (ret is not null)
+                    {
+                        await voiceMessage(ret);
+                        ret = null;
+                    }
+
+                    continue; // データがない場合は続行
+                }
+                if (ret is null)
+                {
+                    ret = audioBuffer;
+                }
+                else
+                {
+                    ret = ret.Concat(audioBuffer).ToArray();
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+
     private async Task MessageReceivedAsync(SocketMessage message)
     {
         // ボット自身のメッセージは無視
@@ -90,7 +145,14 @@ public class DiscordClient: IClient
 
         if (OnReceiveMessage is not null)
         {
-            await OnReceiveMessage.Invoke(new Message(ClientType.Discord, message.Channel.Name, message.Author.GlobalName, message.Content, message.Timestamp.DateTime, message.Author.GetDisplayAvatarUrl()));
+            await OnReceiveMessage.Invoke(
+                    new Message(
+                        ClientType.Discord, 
+                        message.Channel.Name, 
+                        message.Author.GlobalName, 
+                        message.Content, 
+                        message.Timestamp.DateTime.ToLocalTime(), 
+                        message.Author.GetDisplayAvatarUrl()));
         }
     }
 
@@ -104,7 +166,7 @@ public class DiscordClient: IClient
 
     private Task LogAsync(LogMessage log)
     {
-        Logger?.LogInformation(log.ToString());
+        _logger?.LogInformation(log.ToString());
         return Task.CompletedTask;
     }
 

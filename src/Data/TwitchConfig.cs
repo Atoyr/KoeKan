@@ -4,8 +4,8 @@ namespace Medoz.MessageTransporter.Data;
 
 /// <summary>
 /// </summary>
-public record TwitchConfig(string Token, string Username, string Channel)
+public record TwitchConfig(string ClientId, string Secret, string Username, IEnumerable<string> Channels, bool UseSpeaker, uint? Speaker)
 {
     public TwitchOptions ToTwitchOptions()
-        => new TwitchOptions(Token, Username, Channel);
+        => new TwitchOptions(ClientId, Secret, Username, Channels);
 }

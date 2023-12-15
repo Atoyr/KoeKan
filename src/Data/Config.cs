@@ -1,38 +1,42 @@
 using System.IO;
 using System.Text.Json;
 
-using Medoz.MessageTransporter.Clients;
-
 namespace Medoz.MessageTransporter.Data;
 
 /// <summary>
 /// </summary>
-public class Config
+public class Config : ConfigBase
 {
-    public const string APP_NAME = "MessageTransporter";
+    public string Username { get; set; }
+
+    public string? Icon { get; set; }
+
+    public double Width { get; set; } = 400;
+
+    public double Height { get; set; } = 800;
+
+    public string ModKey { get; set; } = "CONTROL";
+    public string Key { get; set; } = "ENTER";
 
     public DiscordConfig Discord { get; set; } = null!;
 
-    public IEnumerable<TwitchConfig> Twitch { get; set; }
+    public TwitchConfig Twitch { get; set; }
+
+    public VoicevoxConfig Voicevox { get; set; }
 
     public IEnumerable<string> Applications { get; set; } = new List<string>();
 
-    private static string _folderPath { get => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", APP_NAME); }
-    private static string _filePath { get => Path.Combine(_folderPath, "config.json"); }
+    protected static string _filePath { get => Path.Combine(_folderPath, "config.json"); }
 
     public Config()
     { 
-        Discord = new("", null);
-        Twitch = new List<TwitchConfig>();
+        Username = "";
+        Discord = new(null, false, null);
+        Twitch = new("", "", "", Enumerable.Empty<string>(), false, null);
+        Voicevox = new(1, null);
     }
 
-    public void Save()
-    {
-        Directory.CreateDirectory(_folderPath); // フォルダが存在しない場合は作成
-
-        string json = JsonSerializer.Serialize(this);
-        File.WriteAllText(_filePath, json);
-    }
+    public void Save() => Save<Config>(_filePath);
 
     public static Config? Load()
     {
