@@ -6,7 +6,7 @@ namespace Medoz.MessageTransporter.Clients;
 
 public class VoicevoxClient: ISpeakerClient
 {
-    private string _url = "http://localhost:50021";
+    private string _url = "http://127.0.0.1:50021";
 
     private static string _versionPath = "/version";
 
