@@ -9,7 +9,7 @@ public abstract class ConfigBase
 {
     public const string APP_NAME = "MessageTransporter";
 
-    protected static string _folderPath { get => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", APP_NAME); }
+    protected static string _folderPath { get => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), APP_NAME, "config"); }
 
     public virtual void Save<T> (string filePath) where T: ConfigBase
     {
