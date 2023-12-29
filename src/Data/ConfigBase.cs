@@ -7,9 +7,7 @@ namespace Medoz.MessageTransporter.Data;
 /// </summary>
 public abstract class ConfigBase
 {
-    public const string APP_NAME = "MessageTransporter";
-
-    protected static string _folderPath { get => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), APP_NAME, "config"); }
+    protected static string _folderPath { get => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ApplicationName, "config"); }
 
     public virtual void Save<T> (string filePath) where T: ConfigBase
     {

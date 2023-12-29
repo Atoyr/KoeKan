@@ -1,12 +1,14 @@
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows.Data;
+using System.Windows.Threading;
+using System.IO;
 
 using Microsoft.Extensions.Logging;
 
 using Medoz.MessageTransporter.Clients;
 using Medoz.MessageTransporter.Data;
-using System.Windows.Threading;
+using Medoz.Logging;
 
 namespace Medoz.MessageTransporter;
 
@@ -17,7 +19,7 @@ public partial class MainWindowViewModel
 {
     public ObservableCollection<ChatMessage> Messages = new();
 
-    private ILogger? _logger;
+    private Microsoft.Extensions.Logging.ILogger? _logger;
     private Config _config;
 
     private ITextClient? _activeClient;
@@ -110,7 +112,7 @@ public partial class MainWindowViewModel
         else
         {
             // TODO ERROR
-
+            AddLogMessage(ChatMessageType.LogWarning, "Error Save Config is unsuccessed.");
         }
     }
 
@@ -197,6 +199,15 @@ public partial class MainWindowViewModel
             case "application":
                 _config.Applications = _config.Applications.Concat(new string[] { arg });
                 break;
+            case "log":
+                var folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ApplicationName, "config");
+                _logger = LoggerUtility.GetLoggerFactory(new FileLoggerSettings(folderPath){ FileName = "log.txt"}).CreateLogger("Medoz");
+                AddLogMessage(ChatMessageType.LogInfo, "Start Logging.");
+                break;
+            case "nolog":
+                AddLogMessage(ChatMessageType.LogInfo, "Stop Logging.");
+                _logger = null;
+                break;
             default:
                 // TODO HELP MESSAGE
                 AddLogMessage(ChatMessageType.LogWarning, "command not found.");
@@ -250,6 +261,27 @@ public partial class MainWindowViewModel
         else
         {
             Dispatcher.Invoke(() => Messages.Add(cm));
+        }
+
+        if (_logger is not null)
+        {
+            switch (cm.MessageType)
+            {
+                case ChatMessageType.LogInfo:
+                    _logger.LogInformation(cm.Message);
+                    break;
+                case ChatMessageType.LogSuccess:
+                    _logger.LogInformation(cm.Message);
+                    break;
+                case ChatMessageType.LogWarning:
+                    _logger.LogWarning(cm.Message);
+                    break;
+                case ChatMessageType.LogFatal:
+                    _logger.LogError(cm.Message);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
