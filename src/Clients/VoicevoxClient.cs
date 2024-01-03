@@ -71,7 +71,6 @@ public class VoicevoxClient: ISpeakerClient
         }
     }
 
-
     public Task StopAsync()
     {
         _version = null;
@@ -94,9 +93,17 @@ public class VoicevoxClient: ISpeakerClient
         await _messageChannel.Writer.WriteAsync(message);
     }
 
+    public void SetSpeakerId(uint speakerId)
+    {
+        // TODO speakerIdのチェック
+        _speakerId = speakerId;
+    }
+
     private async Task RunChannelReaderAsync()
     {
         if (_messageChannel is null) throw new NullReferenceException("Channel is null");
+
+        // 外部から変数を変更するとおかしな挙動になるかも？ロックしていないので、要注意
         await foreach(var message in _messageChannel.Reader.ReadAllAsync().WithCancellation(_messageCancelTokenSource.Token))
         {
             string encodedMessage = System.Net.WebUtility.UrlEncode(message);
