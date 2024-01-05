@@ -53,7 +53,7 @@ DiscordはAPIを提供していない代わりにBotを使用することでサ�
 - 個人間チャットは取得できません。
 
 1. Discordの開発者機能をONにします。
-[!images/discord_1.png]
+![Discordの開発機能をON](images/discord_1.png)
 
 
 
