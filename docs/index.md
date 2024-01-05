@@ -55,6 +55,14 @@ DiscordはAPIを提供していない代わりにBotを使用することでサ�
 1. Discordの開発者機能をONにします。
 ![Discordの開発機能をON](images/discord_1.png)
 
+> 必須ではないですが、設定時に利用する場合があるので事前にONにするのがよいです。
+
+2. Discordの開発者ポータルにアクセスします。
+[Discord 開発者ポータル](https://discord.com/developers/applications)
+
+3. applicationsの右側にある"New Application"ボタンをクリックする
+![New Application](images/discord_3.png)
+
 
 
 ### Twitch
