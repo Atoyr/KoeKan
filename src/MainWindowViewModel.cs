@@ -184,17 +184,31 @@ public partial class MainWindowViewModel
                 secret.Save();
                 break;
             case "discord.defaultChannel":
-                ulong? id = null;
+                ulong? discordDefaultChannelId = null;
                 try
                 {
-                    id = Convert.ToUInt64(arg);
+                    discordDefaultChannelId = Convert.ToUInt64(arg);
                 }
                 catch
                 {
                     AddLogMessage(ChatMessageType.LogWarning, "defaultChannel is ulong value.");
                     return;
                 }
-                _config.Discord = _config.Discord with { DefaultChannelId = id};
+                _config.Discord = _config.Discord with { DefaultChannelId = discordDefaultChannelId};
+                break;
+            case "voicevox.speaker":
+                uint? voicevoxSpeakerId = null;
+                try
+                {
+                    voicevoxSpeakerId = Convert.ToUInt32(arg);
+                }
+                catch
+                {
+                    AddLogMessage(ChatMessageType.LogWarning, "speaker is uint value.");
+                    return;
+                }
+                SetVoicevoxSpeakerId((uint)voicevoxSpeakerId);
+                _config.Voicevox = _config.Voicevox with { SpeakerId = (uint)voicevoxSpeakerId};
                 break;
             case "application":
                 _config.Applications = _config.Applications.Concat(new string[] { arg });

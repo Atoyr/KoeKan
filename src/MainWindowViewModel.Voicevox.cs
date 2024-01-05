@@ -27,6 +27,16 @@ public partial class MainWindowViewModel
             AddLogMessage(ChatMessageType.LogInfo, "Start Voicevox connections.");
             return;
         }
+        else if (strs[0] == "")
         await Task.CompletedTask;
+    }
+
+    private void SetVoicevoxSpeakerId(uint speakerId)
+    {
+        if(_voicevoxClient is not null)
+        {
+            _voicevoxClient.SetSpeakerId(speakerId);
+            AddLogMessage(ChatMessageType.LogInfo, $"Voicevox speaker changed to {speakerId}.");
+        }
     }
 }
