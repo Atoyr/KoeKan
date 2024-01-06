@@ -6,7 +6,6 @@ MessageTransporterは、ゲーム中にシームレスにDiscordのメッセー�
 - Discordなどのコミュニケーションツールのメッセージを送受信する
 - テキストを音声変換する
 
-
 MessageTransporterは外部ツールに依存しています。そのため、利用者にて外部ツールのセットアップが必要となります。
 簡易的なセットアップ方法は本ドキュメントに記載していますが、細かいセットアップ方法については各種ツールのドキュメントをご確認ください。
 また、外部ツールの利用については各ツールの規約を守って使用してください。
@@ -56,12 +55,34 @@ DiscordはAPIを提供していない代わりにBotを使用することでサ�
 ![Discordの開発機能をON](images/discord_1.png)
 > 必須ではないですが、設定時に利用する場合があるので事前にONにするのがよいです。
 
-2. Discordの開発者ポータルにアクセスします。
+1. Discordの開発者ポータルにアクセスします。
 [Discord 開発者ポータル](https://discord.com/developers/applications)
 
-3. applicationsの右側にある"New Application"ボタンをクリックする
+1. applicationsの右側にある"New Application"ボタンをクリックする
 ![New Application](images/discord_3.png)
 
+1. アプリケーション名を入力し、規約の同意チェックボックスをオンにし、アプリケーションを作成します。  アプリケーション名はBotの名前になるため、他の人が認識できる名前にするとよいです。
+![Bot名を入力します](images/discord_4.png)
+
+1. アプリケーションの設定ページから左側ペインのBotを選択し、ResetTokenをクリックします。  トークンが再発行されるので、メモしてください。
+> トークンが漏洩するとBotに不正アクセスできる状態となります。トークンの管理には細心の注意を払ってください。
+![トークンを取得します](images/discord_5.png)
+
+1. 左側ペインのOAuth2 - URL Generatorをクリックします。
+`SCOPE`で`Bot`を選択し、`BOT PERMISSION`で`SendMessage`と`Read Message History`を選択します。
+生成されたURLをメモしてください。
+![SCOPE](images/discord_6-1.png)
+![BOT PERMISSION](images/discord_6-2.png)
+![URL](images/discord_6-3.png)
+
+1. メモしたURLをDiscord サーバの管理者に連絡し、Botをサーバに追加するよう依頼してください。
+![Botの追加](images/discord_7.png)
+
+1. MessageTransporterにDiscordのトークンを設定します。
+MessageTransporterを起動し、`:w discord.token {Botのトークン}`と入力します。`{Botのトークン}`部分には先ほどメモしたトークンを入力してください。
+
+1. MessageTransporterで`:discord start`と入力します。
+`Discord Ready`と表示されたらセットアップは完了です。
 
 
 ### Twitch
