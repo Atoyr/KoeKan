@@ -196,6 +196,12 @@ public partial class MainWindowViewModel
                 }
                 _config.Discord = _config.Discord with { DefaultChannelId = discordDefaultChannelId};
                 break;
+            case "twitch.clientId":
+                _config.Twitch = _config.Twitch with { ClientId = arg};
+                break;
+            case "twitch.clientKey":
+                _config.Twitch = _config.Twitch with { Secret = arg};
+                break;
             case "voicevox.speaker":
                 uint? voicevoxSpeakerId = null;
                 try
