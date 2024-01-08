@@ -8,4 +8,6 @@ VOICEVOXを連携することで、メッセージを読み上げることがで
 - Discord
 - Twitch
 
-
+# セットアップ
+以下セットアップマニュアルを参照してください。
+[MessageTransporter](https://atoyr.github.io/MessageTransporter/)
