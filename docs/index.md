@@ -39,7 +39,7 @@ VOICEVOXとの連携はVOICEVOXのWEP APIを利用しています。 VOICEVOXを
 MessageTransporterはexeのみ配布の形式です。
 以下のURLからexeを取得して起動してください。
 
-> リリースしてから設定する
+[MessageTransporter](https://github.com/Atoyr/MessageTransporter/releases/download/v1.0/Medoz.MessageTransporter.zip)
 
 ## 基本操作
 MessageTransporterはゲーム中に操作することを想定しています。
