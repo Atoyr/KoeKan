@@ -96,6 +96,9 @@ public partial class MainWindowViewModel
             case "voicevox":
                 await VoicevoxCommand(arg);
                 break;
+            case "clear":
+                ClearCommand(arg);
+                break;
             default:
                 HelpCommand(command);
                 break;
@@ -241,12 +244,24 @@ public partial class MainWindowViewModel
         sb.AppendLine("  w          : write");
         sb.AppendLine("  q          : quit application");
         sb.AppendLine("  set        : set config value");
+        sb.AppendLine("  clear      : clear messages");
         sb.AppendLine("  window     : window command");
         sb.AppendLine("  discord    : discord command");
         sb.AppendLine("  twitch     : twitch command");
         sb.AppendLine("  voicevox   : voicevox command");
         AddLogMessage(ChatMessageType.LogInfo, sb.ToString());
     }
+
+    private void ClearCommand(string arg)
+    {
+        if (!string.IsNullOrEmpty(arg))
+        {
+            AddLogMessage(ChatMessageType.LogWarning, $"⚠️ clear command is not used argument: {arg}.");
+            return;
+        }
+        ClearMessage();
+    }
+        
 
     private void AddLogMessage(ChatMessageType chatMessageType, string message)
         => AddMessage(new ChatMessage(chatMessageType, "", null, "SYSTEM", message, DateTime.Now, IsMessageOnly(chatMessageType, "", "SYSTEM", DateTime.Now)));
@@ -296,6 +311,18 @@ public partial class MainWindowViewModel
                 default:
                     break;
             }
+        }
+    }
+
+    private void ClearMessage()
+    {
+        if (Dispatcher is null)
+        {
+            Messages.Clear();
+        }
+        else
+        {
+            Dispatcher.Invoke(() => Messages.Clear());
         }
     }
 
