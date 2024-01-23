@@ -45,21 +45,6 @@ internal class TwitchOAuth : IDisposable
         return await redirect;
     }
 
-    public async Task<TwitchOAuthResponse?> GetTokenAsync(string secret)
-    {
-        var request = new HttpRequestMessage(HttpMethod.Post, _oauthTokenUri);
-        request.Content = new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["client_id"] = _clientId,
-            ["client_secret"] = secret, 
-            ["grant_type"] = "client_credentials"
-        });
-
-        using var _httpClient = new HttpClient();
-        var response = await _httpClient.SendAsync(request);
-        return await response.Content.ReadFromJsonAsync<TwitchOAuthResponse>(new JsonSerializerOptions(){ PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower });
-    }
-
     public async Task<bool> ValidateTokenAsync(string accessToken)
     {
         using var client = new HttpClient();
