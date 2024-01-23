@@ -32,7 +32,7 @@ public class Config : ConfigBase
     { 
         Username = "";
         Discord = new(null, false, null);
-        Twitch = new("", "", "", Enumerable.Empty<string>(), false, null);
+        Twitch = new(Enumerable.Empty<string>(), false, null);
         Voicevox = new(1, null);
     }
 
