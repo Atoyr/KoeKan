@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Media;
 using System.Threading.Channels;
 
-namespace Medoz.MessageTransporter.Clients;
+namespace Medoz.KoeKan.Clients;
 
 public class VoicevoxClient: ISpeakerClient
 {

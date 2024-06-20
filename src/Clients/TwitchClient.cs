@@ -3,9 +3,9 @@ using System.Text;
 
 using Microsoft.Extensions.Logging;
 
-using Medoz.MessageTransporter.Data;
+using Medoz.KoeKan.Data;
 
-namespace Medoz.MessageTransporter.Clients;
+namespace Medoz.KoeKan.Clients;
 
 public class TwitchClient: ITextClient
 {

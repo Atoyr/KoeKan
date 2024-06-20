@@ -1,6 +1,6 @@
-using Medoz.MessageTransporter.Clients;
+using Medoz.KoeKan.Clients;
 
-namespace Medoz.MessageTransporter.Data;
+namespace Medoz.KoeKan.Data;
 
 /// <summary>
 /// </summary>

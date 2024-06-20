@@ -5,7 +5,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text;
 
-namespace Medoz.MessageTransporter.Clients;
+namespace Medoz.KoeKan.Clients;
 
 /// <summary>
 /// </summary>

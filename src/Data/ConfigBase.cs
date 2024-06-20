@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.Json;
 
-namespace Medoz.MessageTransporter.Data;
+namespace Medoz.KoeKan.Data;
 
 /// <summary>
 /// </summary>

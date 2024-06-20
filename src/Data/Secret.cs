@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 
-namespace Medoz.MessageTransporter.Data;
+namespace Medoz.KoeKan.Data;
 
 /// <summary>
 /// </summary>

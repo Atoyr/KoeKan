@@ -1,4 +1,4 @@
-namespace Medoz.MessageTransporter.Clients;
+namespace Medoz.KoeKan.Clients;
 
 public record TwitchOptions(IEnumerable<string> Channels)
 {
@@ -7,5 +7,5 @@ public record TwitchOptions(IEnumerable<string> Channels)
     // Client TypeがPublicなので、ClientSecretは不要
     public readonly string ClientId = "rgl0q1gsjromlw3ro7z8n4p2g9w34u";
 
-    public readonly string Username = "MessageTransporter";
+    public readonly string Username = "KoeKan";
 }

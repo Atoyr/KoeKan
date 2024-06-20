@@ -1,7 +1,7 @@
-using Medoz.MessageTransporter.Clients;
-using Medoz.MessageTransporter.Data;
+using Medoz.KoeKan.Clients;
+using Medoz.KoeKan.Data;
 
-namespace Medoz.MessageTransporter;
+namespace Medoz.KoeKan;
 
 public partial class MainWindowViewModel
 {

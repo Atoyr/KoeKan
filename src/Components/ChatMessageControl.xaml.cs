@@ -2,9 +2,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-using Medoz.MessageTransporter.Data;
+using Medoz.KoeKan.Data;
 
-namespace Medoz.MessageTransporter.Components;
+namespace Medoz.KoeKan.Components;
 
 public partial class ChatMessageControl : UserControl
 {
