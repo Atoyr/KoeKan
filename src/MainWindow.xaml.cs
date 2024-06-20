@@ -71,6 +71,7 @@ public partial class MainWindow : Window
         Height = mwvm.Height;
         mwvm.Close = Close;
         mwvm.Dispatcher = Dispatcher;
+        // Windowをマウスで触れる状態にする
         mwvm.ToggleMoveWindow = () => {
             var handle = new WindowInteropHelper(this).Handle;
             switch (MoveWindowBar.Visibility)
@@ -87,9 +88,23 @@ public partial class MainWindow : Window
                     break;
             }
         };
+        // メッセージの変更を通知する
         mwvm.Messages.CollectionChanged += (_, e) => {
             Dispatcher.BeginInvoke( new Action(() => { ChatListBox_ScrollToEnd(); }), System.Windows.Threading.DispatcherPriority.ContextIdle);
         };
+        // 設定画面を開く
+        mwvm.OpenSettingWindow = () => {
+            SettingsWindow settingsWindow = new SettingsWindow();
+            bool? result = settingsWindow.ShowDialog();
+            if (result == true)
+            {
+                // ユーザーがOKボタンをクリックした場合の処理
+                string setting1 = settingsWindow.Setting1;
+                // 設定値を保存または反映する処理を追加
+            }
+        };
+
+
         Loaded += MainWindow_Loaded;
     }
 

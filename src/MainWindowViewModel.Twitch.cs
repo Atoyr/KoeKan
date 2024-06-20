@@ -10,7 +10,8 @@ public partial class MainWindowViewModel
 
     private void SetTwitchClient()
     {
-        _twitchClient = new TwitchClient(_config.Twitch.ToTwitchOptions());
+        var config = Config.Load();
+        _twitchClient = new TwitchClient(config.Twitch.ToTwitchOptions());
         _twitchClient.OnReceiveMessage += ((message) => {
             AddMessage(message);
             return Task.CompletedTask;

@@ -13,6 +13,7 @@ public partial class MainWindowViewModel
 
     private void SetDiscordClient()
     {
+        var config = Config.Load();
         var token = Secret.Load().DectyptDiscord();
         if (token is null)
         {
@@ -28,15 +29,15 @@ public partial class MainWindowViewModel
         _discordClient.OnReady += (async () => {
             _activeClient = _discordClient;
 
-            if (_config.Discord.DefaultChannelId is ulong id)
+            if (config.Discord.DefaultChannelId is ulong id)
             {
                 _discordClient.SetChannel(id);
             }
 
             AddLogMessage(ChatMessageType.LogInfo, "Discord is ready.");
-            if (_config.Discord.UseSpeaker)
+            if (config.Discord.UseSpeaker)
             {
-                _discordVoicevoxClient = new VoicevoxClient(_config.Discord.Speaker ?? 1, _config.Voicevox.Url);
+                _discordVoicevoxClient = new VoicevoxClient(config.Discord.Speaker ?? 1, config.Voicevox.Url);
             AddLogMessage(ChatMessageType.LogInfo, "Discord is used Voicevox and Voicevox is ready.");
                 _discordVoicevoxClient.OnReady += (() => {
                     return Task.CompletedTask;

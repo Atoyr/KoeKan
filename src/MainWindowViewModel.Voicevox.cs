@@ -9,7 +9,8 @@ public partial class MainWindowViewModel
 
     private void SetVoicevoxClient()
     {
-        _voicevoxClient = new VoicevoxClient(_config.Voicevox.SpeakerId);
+        var config = Config.Load();
+        _voicevoxClient = new VoicevoxClient(config.Voicevox.SpeakerId);
         _voicevoxClient.OnReady += (() => {
             AddLogMessage(ChatMessageType.LogInfo, "Voicevox is ready.");
             return Task.CompletedTask;

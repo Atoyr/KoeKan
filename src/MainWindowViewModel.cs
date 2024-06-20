@@ -17,35 +17,56 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class MainWindowViewModel
 {
+    // Chat Messages
     public ObservableCollection<ChatMessage> Messages = new();
 
     private Microsoft.Extensions.Logging.ILogger? _logger;
-    private Config _config;
 
     private ITextClient? _activeClient;
 
+    // View Action
     public Action? Close { get; set; }
     public Action? ToggleMoveWindow { get; set; }
     public Action<double, double>? WindowSize { get; set; }
     public Dispatcher? Dispatcher { get; set; }
+    public Action? OpenSettingWindow { get; set; }
 
     // HOT KEY
-    public uint ModKey { get => ModKeyExtension.GetModKey(_config.ModKey).ToUInt(); }
-    public uint Key { get => KeyExtension.GetKey(_config.Key).ToUInt(); }
+    public uint ModKey 
+    { 
+        get 
+        {
+            var config = Config.Load();
+            return ModKeyExtension.GetModKey(config.ModKey).ToUInt();
+        }
+    }
+
+    public uint Key 
+    { 
+        get 
+        {
+            var config = Config.Load();
+            return KeyExtension.GetKey(config.Key).ToUInt(); 
+        }
+    }
 
     public double Width { get; set; }
     public double Height { get; set; }
 
     public IEnumerable<string> Applications
     {
-        get => _config.Applications;
+        get
+        {
+            var config = Config.Load();
+            return config.Applications;
+        }
     }
 
     public MainWindowViewModel()
     {
-        _config = Config.Load() ?? new Config();
-        Width = _config.Width;
-        Height = _config.Height;
+        var config = Config.Load();
+        Width = config.Width;
+        Height = config.Height;
         BindingOperations.EnableCollectionSynchronization(Messages, new object());
     }
 
@@ -109,7 +130,8 @@ public partial class MainWindowViewModel
     {
         if (arg == "config")
         {
-            _config.Save();
+            var config = Config.Load();
+            config.Save();
             AddLogMessage(ChatMessageType.LogSuccess, "Save config successed.");
         }
         else
@@ -135,11 +157,12 @@ public partial class MainWindowViewModel
                 {
                     try
                     {
+                        var config = Config.Load();
                         var w = Convert.ToDouble(wh[0]);
                         var h = Convert.ToDouble(wh[1]);
                         WindowSize?.Invoke(w, h);
-                        _config.Width = w;
-                        _config.Height = h;
+                        config.Width = w;
+                        config.Height = h;
                         AddLogMessage(ChatMessageType.LogSuccess, $"Change Window Size. Widht:{w} Height:{h}");
                     }
                     catch
@@ -173,13 +196,14 @@ public partial class MainWindowViewModel
     {
         var strs = text.Split(' ', 2);
         var arg = strs.Length == 2 ? strs[1] : "";
+        var config = Config.Load();
         switch(strs[0])
         {
             case "username":
-                _config.Username = arg;
+                config.Username = arg;
                 break;
             case "icon":
-                _config.Icon = arg;
+                config.Icon = arg;
                 break;
             case "discord.token":
                 var secret = Secret.Load();
@@ -197,7 +221,7 @@ public partial class MainWindowViewModel
                     AddLogMessage(ChatMessageType.LogWarning, "defaultChannel is ulong value.");
                     return;
                 }
-                _config.Discord = _config.Discord with { DefaultChannelId = discordDefaultChannelId};
+                config.Discord = config.Discord with { DefaultChannelId = discordDefaultChannelId};
                 break;
             case "voicevox.speaker":
                 uint? voicevoxSpeakerId = null;
@@ -211,10 +235,10 @@ public partial class MainWindowViewModel
                     return;
                 }
                 SetVoicevoxSpeakerId((uint)voicevoxSpeakerId);
-                _config.Voicevox = _config.Voicevox with { SpeakerId = (uint)voicevoxSpeakerId};
+                config.Voicevox = config.Voicevox with { SpeakerId = (uint)voicevoxSpeakerId};
                 break;
             case "application":
-                _config.Applications = _config.Applications.Concat(new string[] { arg });
+                config.Applications = config.Applications.Concat(new string[] { arg });
                 break;
             case "log":
                 var folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ApplicationName, "config");
@@ -226,6 +250,7 @@ public partial class MainWindowViewModel
                 _logger = null;
                 break;
             default:
+                OpenSettingWindow?.Invoke();
                 // TODO HELP MESSAGE
                 AddLogMessage(ChatMessageType.LogWarning, "command not found.");
                 break;
@@ -269,7 +294,10 @@ public partial class MainWindowViewModel
     private void AddCommandMessage(string message)
         => AddMessage(new ChatMessage(ChatMessageType.Command, "", null, "COMMAND", message, DateTime.Now, IsMessageOnly(ChatMessageType.Command, "", "COMMAND", DateTime.Now)));
     private void AddUserMessage(string message, DateTime timestamp)
-        => AddMessage(new ChatMessage(ChatMessageType.Text, "", _config.Icon, _config.Username, message, DateTime.Now, IsMessageOnly(ChatMessageType.Text, "", _config.Username, timestamp)));
+    {
+        var config = Config.Load();
+        AddMessage(new ChatMessage(ChatMessageType.Text, "", config.Icon, config.Username, message, DateTime.Now, IsMessageOnly(ChatMessageType.Text, "", config.Username, timestamp)));
+    }
 
     private void AddMessage(Message message)
         => AddMessage(new ChatMessage(
