@@ -3,7 +3,7 @@ using System.Windows.Threading;
 
 using Microsoft.Extensions.Logging;
 
-namespace Medoz.MessageTransporter;
+namespace Medoz.KoeKan;
 
 /// <summary>
 /// Interaction logic for App.xaml

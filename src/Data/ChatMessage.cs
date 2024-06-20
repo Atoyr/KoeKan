@@ -1,4 +1,4 @@
-namespace Medoz.MessageTransporter.Data;
+namespace Medoz.KoeKan.Data;
 
 /// <summary>
 /// </summary>

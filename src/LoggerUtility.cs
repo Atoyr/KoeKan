@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 using Medoz.Logging;
 
-namespace Medoz.MessageTransporter;
+namespace Medoz.KoeKan;
 
 /// <summary>
 /// </summary>

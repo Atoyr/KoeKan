@@ -6,11 +6,11 @@ using System.IO;
 
 using Microsoft.Extensions.Logging;
 
-using Medoz.MessageTransporter.Clients;
-using Medoz.MessageTransporter.Data;
+using Medoz.KoeKan.Clients;
+using Medoz.KoeKan.Data;
 using Medoz.Logging;
 
-namespace Medoz.MessageTransporter;
+namespace Medoz.KoeKan;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml

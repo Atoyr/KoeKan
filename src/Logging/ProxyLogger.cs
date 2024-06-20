@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Medoz.MessageTransporter;
+namespace Medoz.KoeKan;
 
 public class ProxyLogger : ILogger
 {

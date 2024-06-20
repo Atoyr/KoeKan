@@ -4,7 +4,7 @@ using System.Windows.Interop;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
-namespace Medoz.MessageTransporter;
+namespace Medoz.KoeKan;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml

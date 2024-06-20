@@ -1,3 +1,3 @@
-namespace Medoz.MessageTransporter.Clients;
+namespace Medoz.KoeKan.Clients;
 
 public record DiscordOptions(string Token) { }

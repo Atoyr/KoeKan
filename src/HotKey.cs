@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Input;
 
-namespace Medoz.MessageTransporter;
+namespace Medoz.KoeKan;
 
 /// <summary>
 /// </summary>

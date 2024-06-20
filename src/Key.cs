@@ -1,4 +1,4 @@
-namespace Medoz.MessageTransporter;
+namespace Medoz.KoeKan;
 
 /// <summary>
 /// HotKeyクラスの初期化時に指定する修飾キー
