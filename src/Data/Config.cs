@@ -210,6 +210,14 @@ public class Config : ConfigBase
         }
     }
 
+    public void Reload()
+    {
+        lock(_loadLock)
+        {
+            _instance = load();
+        }
+    }
+
     protected static string _filePath { get => Path.Combine(_folderPath, "config.json"); }
 
     private static Config? _instance;
@@ -221,17 +229,22 @@ public class Config : ConfigBase
         {
             if (_instance is null)
             {
-                if (File.Exists(_filePath))
-                {
-                    string json = File.ReadAllText(_filePath);
-                    _instance = JsonSerializer.Deserialize<Config>(json);
-                }
-                else 
-                {
-                    _instance = new();
-                }
+                _instance = load();
             }
             return _instance;
+        }
+    }
+
+    private static Config load()
+    {
+        if (File.Exists(_filePath))
+        {
+            string json = File.ReadAllText(_filePath);
+            return JsonSerializer.Deserialize<Config>(json);
+        }
+        else 
+        {
+            return new();
         }
     }
 }

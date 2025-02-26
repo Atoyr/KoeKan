@@ -11,22 +11,24 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class MainWindow : Window
 {
-    /// <summary>
-    /// このスタイルで作成されるウィンドウが透明であることを示します。
-    /// つまり、このウィンドウより奥にあるすべてのウィンドウは、このウィンドウによって隠されることはありません。
-    /// このスタイルで作成したウィンドウは、自らより奥にあるすべての兄弟ウィンドウが更新された後でのみ、WM_PAINT メッセージを受信します。
-    /// </summary>
-    private const UInt32 WS_EX_TRANSPARENT = 0x00000020;
+    /// <summary>
+    /// このスタイルで作成されるウィンドウが透明であることを示します。
+    /// つまり、このウィンドウより奥にあるすべてのウィンドウは、このウィンドウによって隠されることはありません。
+    /// このスタイルで作成したウィンドウは、自らより奥にあるすべての兄弟ウィンドウが更新された後でのみ、WM_PAINT メッセージを受信します。
+    /// </summary>
+    private const UInt32 WS_EX_TRANSPARENT = 0x00000020;
 
-    /// <summary>Sets a new extended window style.</summary>
-    private const Int32 GWL_EXSTYLE = -20;
+    /// <summary>Sets a new extended window style.</summary>
+    private const Int32 GWL_EXSTYLE = -20;
 
     private const UInt32 SWP_NOSIZE = 0x0001;
     private const UInt32 SWP_NOMOVE = 0x0002;
 
     private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
 
- 
+    // 設定画面が開いているかどうか
+    private bool isOpenModalWindow = false;
+
     [DllImport("user32.dll", SetLastError = true)]
     static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
@@ -34,19 +36,19 @@ public partial class MainWindow : Window
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-    /// <summary>ウインドウスタイルの取得</summary>
-    [DllImport("user32.dll")]
-    private static extern UInt32 GetWindowLong(IntPtr hWnd, Int32 index);
- 
-    /// <summary>ウインドウスタイルの設定</summary>
-    [DllImport("user32.dll")]
-    private static extern UInt32 SetWindowLong(IntPtr hWnd, Int32 index, UInt32 newLong);
+    /// <summary>ウインドウスタイルの取得</summary>
+    [DllImport("user32.dll")]
+    private static extern UInt32 GetWindowLong(IntPtr hWnd, Int32 index);
+
+    /// <summary>ウインドウスタイルの設定</summary>
+    [DllImport("user32.dll")]
+    private static extern UInt32 SetWindowLong(IntPtr hWnd, Int32 index, UInt32 newLong);
 
     private UInt32 _defaultStyle;
 
     private HotKey? _hk;
 
-    private SemaphoreSlim _messageSemaphore = new(1, 1);
+    private readonly SemaphoreSlim _messageSemaphore = new(1, 1);
 
     private string? _activeProcessName;
 
@@ -54,6 +56,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        // ウィンドウの初期化時にウィンドウスタイルを設定
         SourceInitialized += ((sender, e) => {
             var handle = new WindowInteropHelper(this).Handle;
             UInt32 style = GetWindowLong(handle, GWL_EXSTYLE);
@@ -61,49 +64,55 @@ public partial class MainWindow : Window
             SetWindowLong(handle, GWL_EXSTYLE, style | WS_EX_TRANSPARENT);
         });
 
+        // ViewModelの初期化
         DataContext = new MainWindowViewModel();
         MainWindowViewModel mwvm = (MainWindowViewModel)DataContext;
+        // ウィンドウサイズ変更のコールバック設定
         mwvm.WindowSize = (w, h) => {
             Width = w;
             Height = h;
         };
+        // 初期ウィンドウのサイズを設定
         Width = mwvm.Width;
         Height = mwvm.Height;
         mwvm.Close = Close;
         mwvm.Dispatcher = Dispatcher;
+
         // Windowをマウスで触れる状態にする
         mwvm.ToggleMoveWindow = () => {
-            var handle = new WindowInteropHelper(this).Handle;
             switch (MoveWindowBar.Visibility)
             {
                 case Visibility.Visible:
-                    MoveWindowBar.Visibility = Visibility.Collapsed;
-                    UInt32 style = GetWindowLong(handle, GWL_EXSTYLE);
-                    SetWindowLong(handle, GWL_EXSTYLE, style | WS_EX_TRANSPARENT);
-                    ChatListBox.SelectedItem = null;
+                    SwitchWindowVisibility(false);
                     break;
                 case Visibility.Collapsed:
-                    MoveWindowBar.Visibility = Visibility.Visible;
-                    SetWindowLong(handle, GWL_EXSTYLE, _defaultStyle);
+                    SwitchWindowVisibility(true);
                     break;
             }
         };
+
         // メッセージの変更を通知する
         mwvm.Messages.CollectionChanged += (_, e) => {
             Dispatcher.BeginInvoke( new Action(() => { ChatListBox_ScrollToEnd(); }), System.Windows.Threading.DispatcherPriority.ContextIdle);
         };
+
         // 設定画面を開く
         mwvm.OpenSettingWindow = () => {
             SettingsWindow settingsWindow = new SettingsWindow();
+            Topmost = false;
+            settingsWindow.Owner = this;
+            SwitchWindowVisibility(false);
+            isOpenModalWindow = true;
             bool? result = settingsWindow.ShowDialog();
             if (result == true)
             {
                 // ユーザーがOKボタンをクリックした場合の処理
-                string setting1 = settingsWindow.Setting1;
+                // string setting1 = settingsWindow.Setting1;
                 // 設定値を保存または反映する処理を追加
             }
+            Topmost = true;
+            isOpenModalWindow = false;
         };
-
 
         Loaded += MainWindow_Loaded;
     }
@@ -124,11 +133,11 @@ public partial class MainWindow : Window
         {
             return;
         }
-        
+
         MainWindowViewModel mwvm = (MainWindowViewModel)DataContext;
         _activeProcessName = null;
-        // プロセス名を指定
-        // var processName = "PAYDAY3Client-Win64-Shipping";
+
+        // 対象プロセスを順番に探索し、最初に見つかったプロセスをアクティブにする
         foreach(var pn in mwvm.Applications)
         {
             if (ActivateOtherWindow(pn))
@@ -139,7 +148,7 @@ public partial class MainWindow : Window
         }
         if (_activeProcessName is null)
         {
-
+            // FIXME: メッセージボックスを表示する
         }
     }
 
@@ -158,13 +167,17 @@ public partial class MainWindow : Window
 
     public void MessageBox_Focus(object? sender, EventArgs e)
     {
-        MessageBox.Focus();
-        this.Activate();
+        if (!isOpenModalWindow)
+        {
+            MessageBox.Focus();
+            this.Activate();
+        }
     }
 
+    // メッセージボックスでキーが押されたときの処理
     public async void MessageBox_KeyDown(object sender, KeyEventArgs e)
     {
-
+        // メッセージボックスでEnterキーが押された場合、メッセージを送信する
         if (e.Key == Key.Enter)
         {
             if (!await _messageSemaphore.WaitAsync(0))
@@ -174,16 +187,16 @@ public partial class MainWindow : Window
 
             try
             {
-                if (string.IsNullOrWhiteSpace(MessageBox.Text))
+                if (!string.IsNullOrWhiteSpace(MessageBox.Text))
                 {
-                }
-                else if (MessageBox.Text[0] == ':') 
-                {
-                    await ((MainWindowViewModel)DataContext).ExecuteCommand(MessageBox.Text.Substring(1));
-                }
-                else 
-                {
-                    await ((MainWindowViewModel)DataContext).SendMessage(MessageBox.Text);
+                    if (MessageBox.Text[0] == ':')
+                    {
+                        await ((MainWindowViewModel)DataContext).ExecuteCommand(MessageBox.Text.Substring(1));
+                    }
+                    else
+                    {
+                        await ((MainWindowViewModel)DataContext).SendMessage(MessageBox.Text);
+                    }
                 }
                 MessageBox.Text = "";
             }
@@ -195,6 +208,24 @@ public partial class MainWindow : Window
         else if (e.Key == Key.Escape)
         {
             ActivateOtherWindow();
+        }
+    }
+
+    // ウィンドウが移動可能かを切り替える
+    private void SwitchWindowVisibility(bool isVisible)
+    {
+        var handle = new WindowInteropHelper(this).Handle;
+        if(isVisible)
+        {
+            MoveWindowBar.Visibility = Visibility.Visible;
+            SetWindowLong(handle, GWL_EXSTYLE, _defaultStyle);
+        }
+        else
+        {
+            MoveWindowBar.Visibility = Visibility.Collapsed;
+            UInt32 style = GetWindowLong(handle, GWL_EXSTYLE);
+            SetWindowLong(handle, GWL_EXSTYLE, style | WS_EX_TRANSPARENT);
+            ChatListBox.SelectedItem = null;
         }
     }
 

@@ -17,5 +17,10 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class SettingsWindowViewModel
 {
+    public Config Config { get; private set; }
 
+    public SettingsWindowViewModel()
+    {
+        Config = Config.Load();
+    }
 }

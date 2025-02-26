@@ -32,27 +32,28 @@ public partial class MainWindowViewModel
     public Action? OpenSettingWindow { get; set; }
 
     // HOT KEY
-    public uint ModKey 
-    { 
-        get 
+    public uint ModKey
+    {
+        get
         {
             var config = Config.Load();
             return ModKeyExtension.GetModKey(config.ModKey).ToUInt();
         }
     }
 
-    public uint Key 
-    { 
-        get 
+    public uint Key
+    {
+        get
         {
             var config = Config.Load();
-            return KeyExtension.GetKey(config.Key).ToUInt(); 
+            return KeyExtension.GetKey(config.Key).ToUInt();
         }
     }
 
     public double Width { get; set; }
     public double Height { get; set; }
 
+    // アクティブに変更できるアプリケーション一覧
     public IEnumerable<string> Applications
     {
         get
@@ -84,6 +85,7 @@ public partial class MainWindowViewModel
         await Task.CompletedTask;
     }
 
+    // コマンド実行
     public async Task ExecuteCommand(string str)
     {
         var split = str.Split(' ', 2);
@@ -141,6 +143,7 @@ public partial class MainWindowViewModel
         }
     }
 
+    // ウィンドウ操作に関連するコマンド
     private void WindowCommand(string arg)
     {
         var strs = arg.Split(' ', 2);
@@ -197,6 +200,7 @@ public partial class MainWindowViewModel
         var strs = text.Split(' ', 2);
         var arg = strs.Length == 2 ? strs[1] : "";
         var config = Config.Load();
+
         switch(strs[0])
         {
             case "username":
@@ -250,9 +254,8 @@ public partial class MainWindowViewModel
                 _logger = null;
                 break;
             default:
+                // 設定画面を開く
                 OpenSettingWindow?.Invoke();
-                // TODO HELP MESSAGE
-                AddLogMessage(ChatMessageType.LogWarning, "command not found.");
                 break;
         }
     }
@@ -286,7 +289,7 @@ public partial class MainWindowViewModel
         }
         ClearMessage();
     }
-        
+
 
     private void AddLogMessage(ChatMessageType chatMessageType, string message)
         => AddMessage(new ChatMessage(chatMessageType, "", null, "SYSTEM", message, DateTime.Now, IsMessageOnly(chatMessageType, "", "SYSTEM", DateTime.Now)));
@@ -301,12 +304,12 @@ public partial class MainWindowViewModel
 
     private void AddMessage(Message message)
         => AddMessage(new ChatMessage(
-                    ChatMessageType.DiscordText, 
-                    message.Channel, 
-                    message.IconSource, 
-                    message.Username, 
-                    message.Content, 
-                    message.Timestamp, 
+                    ChatMessageType.DiscordText,
+                    message.Channel,
+                    message.IconSource,
+                    message.Username,
+                    message.Content,
+                    message.Timestamp,
                     IsMessageOnly(ChatMessageType.DiscordText, message.Channel, message.Username, message.Timestamp)));
 
     private void AddMessage(ChatMessage cm)

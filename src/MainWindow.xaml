@@ -10,7 +10,7 @@
         AllowsTransparency="true"
         Background="Transparent"
         Topmost="true"
-        Title="MESSAGE TRANSPORTER" >
+        Title="コエカン" >
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -19,17 +19,17 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions> 
+        </Grid.ColumnDefinitions>
         <Border x:Name="MoveWindowBar" MouseLeftButtonDown="Border_MouseLeftButtonDown" Height="24" HorizontalAlignment="Stretch" Background="Blue">
         </Border>
         <ListBox
-            Grid.Row="1" 
-            Grid.Column="0" 
-            Name="ChatListBox"  
-            Width="Auto" 
-            Height="Auto" 
-            HorizontalAlignment="Stretch" 
-            VerticalAlignment="Stretch" 
+            Grid.Row="1"
+            Grid.Column="0"
+            Name="ChatListBox"
+            Width="Auto"
+            Height="Auto"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
             Background="#AA000000"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
             >
@@ -44,14 +44,14 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
         </ListBox>
-        <TextBox 
-            Grid.Row="2" 
-            Grid.Column="0" 
-            Name="MessageBox" 
-            Height="Auto" 
-            Margin="6" 
-            Width="Auto" 
-            HorizontalAlignment="Stretch" 
+        <TextBox
+            Grid.Row="2"
+            Grid.Column="0"
+            Name="MessageBox"
+            Height="Auto"
+            Margin="6"
+            Width="Auto"
+            HorizontalAlignment="Stretch"
             KeyDown="MessageBox_KeyDown">
             <TextBox.Resources>
                 <Style TargetType="{x:Type Border}">
@@ -65,7 +65,7 @@
                     <Setter Property="BorderThickness" Value="1"/>
                     <Setter Property="Padding" Value="5"/>
                 </Style>
-            </TextBox.Style> 
+            </TextBox.Style>
         </TextBox>
     </Grid>
 </Window>
