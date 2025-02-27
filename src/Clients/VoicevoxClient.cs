@@ -9,11 +9,11 @@ public class VoicevoxClient: ISpeakerClient
 {
     private string _url = "http://127.0.0.1:50021";
 
-    private static string _versionPath = "/version";
+    private static readonly string _versionPath = "/version";
 
-    private static string _audioQuery = "/audio_query";
+    private static readonly string _audioQuery = "/audio_query";
 
-    private static string _synthesis = "/synthesis";
+    private static readonly string _synthesis = "/synthesis";
 
     private HttpClient _httpClient = new();
 
@@ -63,6 +63,8 @@ public class VoicevoxClient: ISpeakerClient
         _heartbeat = new Heartbeat(new TimeSpan(0, 1, 0));
         _heartbeat.OnHeartbeat += OnHeartbeat;
         _messageChannel = Channel.CreateUnbounded<string>();
+
+        // チャネル待ち受けなので、非同期で実行
         RunChannelReaderAsync();
 
         if (OnReady is not null)
@@ -106,6 +108,7 @@ public class VoicevoxClient: ISpeakerClient
         // 外部から変数を変更するとおかしな挙動になるかも？ロックしていないので、要注意
         await foreach(var message in _messageChannel.Reader.ReadAllAsync().WithCancellation(_messageCancelTokenSource.Token))
         {
+            // 音声変換用のデータを取得
             string encodedMessage = System.Net.WebUtility.UrlEncode(message);
             var audioQueryResponse = await _httpClient.PostAsync($"{_url}{_audioQuery}?text={encodedMessage}&speaker={_speakerId}", null);
             if (audioQueryResponse.StatusCode != System.Net.HttpStatusCode.OK)
@@ -113,13 +116,21 @@ public class VoicevoxClient: ISpeakerClient
                 throw new Exception($"audio_query response is {audioQueryResponse.StatusCode}");
             }
 
+            // オーディオデータを取得
             var voiceResponse = await _httpClient.PostAsync($"{_url}{_synthesis}?speaker={_speakerId}", audioQueryResponse.Content);
             var content = await voiceResponse.Content.ReadAsByteArrayAsync();
 
-            using var stream = new MemoryStream(content);
-            using var player = new SoundPlayer(stream);
-            player.PlaySync();
+            // オーディオデータを再生
+            playVoice(content);
         }
+    }
+
+    // 音声再生
+    private void playVoice(byte[] content)
+    {
+        using var stream = new MemoryStream(content);
+        using var player = new SoundPlayer(stream);
+        player.PlaySync();
     }
 
     private async void OnHeartbeat(object? _)
