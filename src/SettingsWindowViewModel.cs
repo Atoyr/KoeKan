@@ -3,6 +3,8 @@ using System.Text;
 using System.Windows.Data;
 using System.Windows.Threading;
 using System.IO;
+using System.ComponentModel;
+using System.Windows.Input;
 
 using Microsoft.Extensions.Logging;
 
@@ -15,12 +17,34 @@ namespace Medoz.KoeKan;
 /// <summary>
 /// Interaction logic for SettingsWindow.xaml
 /// </summary>
-public partial class SettingsWindowViewModel
+public partial class SettingsWindowViewModel : INotifyPropertyChanged
 {
     public Config Config { get; private set; }
+
+    public event EventHandler RequestClose;
 
     public SettingsWindowViewModel()
     {
         Config = Config.Load();
+        SubmitCommand = new RelayCommand(Submit);
+        SubmitAndCloseCommand = new RelayCommand(SubmitAndClose);
+    }
+    public ICommand SubmitCommand { get; }
+    public ICommand SubmitAndCloseCommand { get; }
+    public void Submit()
+    {
+        Config.Save();
+    }
+
+    public void SubmitAndClose()
+    {
+        Submit();
+        RequestClose?.Invoke(this, EventArgs.Empty);
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnPropertyChanged(string propertyName)
+    {
+         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
