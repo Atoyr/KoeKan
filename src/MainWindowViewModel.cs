@@ -122,6 +122,10 @@ public partial class MainWindowViewModel
             case "clear":
                 ClearCommand(arg);
                 break;
+            case "server":
+                Console.WriteLine("Server Command");
+                StartWebServer();
+                break;
             default:
                 HelpCommand(command);
                 break;
