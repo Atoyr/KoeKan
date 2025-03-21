@@ -7,5 +7,8 @@ namespace Medoz.KoeKan.Data;
 public record TwitchConfig(IEnumerable<string> Channels, bool UseSpeaker, uint? Speaker)
 {
     public TwitchOptions ToTwitchOptions()
-        => new TwitchOptions(Channels);
+        => new TwitchOptions()
+        {
+            Channels = Channels
+        };
 }

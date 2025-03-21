@@ -19,8 +19,8 @@ public partial class MainWindowViewModel
         {
             throw new NullReferenceException();
         }
-        
-        _discordClient = new DiscordClient(new DiscordOptions(token), null);
+
+        _discordClient = new DiscordClient(new DiscordOptions(){Token = token }, null);
         _discordClient.OnReceiveMessage += ((message) => {
             AddMessage(message);
             _discordVoicevoxClient?.SpeakMessageAsync(message.Content);
