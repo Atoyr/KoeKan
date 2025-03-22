@@ -3,14 +3,23 @@ namespace Medoz.KoeKan.Clients;
 
 public class DiscordOptions : IClientOptions
 {
-    public string Token
+    public string? Token
     {
         get
         {
+            if (!_options.ContainsKey("Token"))
+            {
+                return null;
+            }
             return _options["Token"];
         }
         set
         {
+            if(value is null)
+            {
+                _options.Remove("Token");
+                return;
+            }
             _options["Token"] = value;
         }
     }

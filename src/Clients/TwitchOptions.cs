@@ -13,11 +13,36 @@ public class TwitchOptions : IClientOptions
     {
         get
         {
+            if (!_options.ContainsKey("Channels"))
+            {
+                return Array.Empty<string>();
+            }
             return _options["Channels"].Split(',');
         }
         set
         {
             _options["Channels"] = string.Join(',', value);
+        }
+    }
+
+    public string? Token
+    {
+        get
+        {
+            if (!_options.ContainsKey("Token"))
+            {
+                return null;
+            }
+            return _options["Token"];
+        }
+        set
+        {
+            if (value is null)
+            {
+                _options.Remove("Token");
+                return;
+            }
+            _options["Token"] = value;
         }
     }
 

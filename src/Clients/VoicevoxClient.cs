@@ -7,7 +7,7 @@ namespace Medoz.KoeKan.Clients;
 
 public class VoicevoxClient: ISpeakerClient
 {
-    private string _url = "http://127.0.0.1:50021";
+    private readonly string _url = "http://127.0.0.1:50021";
 
     private static readonly string _versionPath = "/version";
 
@@ -15,7 +15,7 @@ public class VoicevoxClient: ISpeakerClient
 
     private static readonly string _synthesis = "/synthesis";
 
-    private HttpClient _httpClient = new();
+    private readonly HttpClient _httpClient = new();
 
     private string? _version;
 
@@ -25,7 +25,7 @@ public class VoicevoxClient: ISpeakerClient
 
     private Channel<string>? _messageChannel;
 
-    private CancellationTokenSource _messageCancelTokenSource = new();
+    private readonly CancellationTokenSource _messageCancelTokenSource = new();
 
     public VoicevoxClient(uint speakerId, string? url = null)
     {
@@ -43,6 +43,12 @@ public class VoicevoxClient: ISpeakerClient
     }
 
     public event Func<Task>? OnReady;
+
+    public async Task<string> AuthAsync()
+    {
+        await _httpClient.GetStringAsync(_url + _versionPath);
+        return "VOICEVOX";
+    }
 
     public async Task RunAsync()
     {
@@ -65,7 +71,7 @@ public class VoicevoxClient: ISpeakerClient
         _messageChannel = Channel.CreateUnbounded<string>();
 
         // チャネル待ち受けなので、非同期で実行
-        RunChannelReaderAsync();
+        _ = RunChannelReaderAsync();
 
         if (OnReady is not null)
         {

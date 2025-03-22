@@ -4,7 +4,7 @@ namespace Medoz.KoeKan.Clients;
 
 public class Heartbeat : IDisposable
 {
-    private Timer _timer;
+    private readonly Timer _timer;
 
     public event Action<object?>? OnHeartbeat;
 
