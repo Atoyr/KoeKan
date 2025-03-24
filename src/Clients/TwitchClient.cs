@@ -18,6 +18,7 @@ public class TwitchClient: ITextClient
 
     public event Func<Message, Task>? OnReceiveMessage;
     public event Func<Task>? OnReady;
+    public string Name => GetType().Name;
 
     public TwitchClient(TwitchOptions options)
     {
@@ -111,7 +112,7 @@ public class TwitchClient: ITextClient
 
                 if (OnReceiveMessage is not null)
                 {
-                    await OnReceiveMessage.Invoke(new(ClientType.Twitch, channel, username, message, DateTime.Now, null));
+                    await OnReceiveMessage.Invoke(new(Name, channel, username, message, DateTime.Now, null));
                 }
             }
             else if (receivedMessage.Contains("PING"))

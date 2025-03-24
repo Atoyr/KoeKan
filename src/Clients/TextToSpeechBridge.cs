@@ -10,6 +10,8 @@ public class TextToSpeechBridge<T, S> : ITextClient where T : ITextClient, new()
 
     public event Func<Task>? OnReady;
 
+    public string Name => GetType().Name;
+
     public async Task RunAsync()
     {
         ValidateClient();

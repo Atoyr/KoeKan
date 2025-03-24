@@ -27,12 +27,12 @@ public class ChatMessageColors
     public static ChatMessageColors Default()
     {
         ChatMessageColors colors = new();
-        colors[ChatMessageType.Text] = "#ff7b2e";
+        colors[ChatMessageType.Echo] = "#ff7b2e";
         colors[ChatMessageType.LogSuccess] = "#FFADFF2F";
         colors[ChatMessageType.LogInfo] = "#FF1E90FF";
         colors[ChatMessageType.LogWarning] = "#FFDAA520";
         colors[ChatMessageType.LogFatal] = "#FFFF0000";
-        colors[ChatMessageType.DiscordText] = "#5865F2";
+        colors[ChatMessageType.Discord] = "#5865F2";
         colors[ChatMessageType.Twitch] = "#9147ff";
         return colors;
     }

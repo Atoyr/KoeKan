@@ -18,6 +18,8 @@ public class EchoClient: ITextClient
         _options = options;
     }
 
+    public string Name => GetType().Name;
+
     public event Func<Task>? OnReady;
 
     public event Func<Message, Task>? OnReceiveMessage;

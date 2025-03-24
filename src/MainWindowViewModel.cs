@@ -20,6 +20,8 @@ public partial class MainWindowViewModel
     // Chat Messages
     public ObservableCollection<ChatMessage> Messages = new();
 
+    public Listener Listener { get; set; } = new();
+
     private Microsoft.Extensions.Logging.ILogger? _logger;
 
     private ITextClient? _activeClient;

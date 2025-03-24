@@ -9,11 +9,13 @@ using Discord;
 
 namespace Medoz.KoeKan;
 
-public class Messenger : IDisposable
+public class Listener : IDisposable
 {
     public ObservableCollection<ChatMessage> Messages { get; init; } = new();
 
     public Dispatcher? Dispatcher { get; set; }
+
+    private readonly Dictionary<string, Func<Message, ChatMessage>> _messageConverter = new();
 
     private readonly ILogger? _logger;
 
@@ -24,28 +26,34 @@ public class Messenger : IDisposable
         Messages.Clear();
     }
 
+    public Listener(ILogger? logger = null)
+    {
+        _logger = logger;
+    }
+
+    public void AddMessageConverter(string clientType, Func<Message, ChatMessage> sender)
+    {
+        _messageConverter[clientType] = sender;
+    }
+
+    public void RemoveMessageConverter(string clientType)
+    {
+        _messageConverter.Remove(clientType);
+    }
+
     public void AddLogMessage(ChatMessageType chatMessageType, string message)
         => AddMessage(new ChatMessage(chatMessageType, "", null, "SYSTEM", message, DateTime.Now, IsConsecutiveMessage(chatMessageType, "", "SYSTEM", DateTime.Now)));
 
     public void AddCommandMessage(string message)
         => AddMessage(new ChatMessage(ChatMessageType.Command, "", null, "COMMAND", message, DateTime.Now, IsConsecutiveMessage(ChatMessageType.Command, "", "COMMAND", DateTime.Now)));
 
-    public void AddUserMessage(string message, DateTime timestamp)
-    {
-        var config = Config.Load();
-        AddMessage(new ChatMessage(ChatMessageType.Text, "", config.Icon, config.Username, message, DateTime.Now, IsConsecutiveMessage(ChatMessageType.Text, "", config.Username, timestamp)));
-    }
-
     public void AddMessage(Message message)
-        => AddMessage(new ChatMessage(
-            //FIXME
-                    ChatMessageType.DiscordText,
-                    message.Channel,
-                    message.IconSource,
-                    message.Username,
-                    message.Content,
-                    message.Timestamp,
-                    IsConsecutiveMessage(ChatMessageType.DiscordText, message.Channel, message.Username, message.Timestamp)));
+    {
+        if (_messageConverter.ContainsKey(message.ClientType))
+        {
+            AddMessage(_messageConverter[message.ClientType].Invoke(message));
+        }
+    }
 
     private void AddMessage(ChatMessage cm)
     {

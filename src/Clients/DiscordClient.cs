@@ -14,6 +14,8 @@ public class DiscordClient: ITextClient
 
     private IMessageChannel? _messageChannel;
 
+    public string Name => GetType().Name;
+
     public event Func<Message, Task>? OnReceiveMessage;
     public event Func<Task>? OnReady;
 
@@ -142,7 +144,7 @@ public class DiscordClient: ITextClient
         {
             await OnReceiveMessage.Invoke(
                     new Message(
-                        ClientType.Discord,
+                        Name,
                         message.Channel.Name,
                         message.Author.GlobalName,
                         message.Content,
