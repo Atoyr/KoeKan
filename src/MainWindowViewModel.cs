@@ -24,6 +24,8 @@ public partial class MainWindowViewModel
 
     private ITextClient? _activeClient;
 
+    private readonly Dictionary<string, ITextClient> _clients = new();
+
     // View Action
     public Action? Close { get; set; }
     public Action? ToggleMoveWindow { get; set; }
