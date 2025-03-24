@@ -56,11 +56,11 @@ public class DiscordClient: ITextClient
         }
     }
 
-    public async Task SendMessageAsync(string message)
+    public async Task SendMessageAsync(Message message)
     {
         if (_messageChannel is not null)
         {
-            await _messageChannel.SendMessageAsync(message);
+            await _messageChannel.SendMessageAsync(message.Content);
         }
     }
 

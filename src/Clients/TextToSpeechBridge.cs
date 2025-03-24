@@ -124,7 +124,7 @@ public class TextToSpeechBridge<T, S> : ITextClient where T : ITextClient, new()
         return _client!.AuthAsync();
     }
 
-    public Task SendMessageAsync(string message)
+    public Task SendMessageAsync(Message message)
     {
         ValidateClient();
         return _client!.SendMessageAsync(message);

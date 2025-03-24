@@ -80,7 +80,9 @@ public class TwitchClient: ITextClient
         return Task.CompletedTask;
     }
 
-    public async Task SendMessageAsync(string message)
+    public async Task SendMessageAsync(Message message) => await SendMessageAsync(message.Content);
+
+    private async Task SendMessageAsync(string message)
     {
         byte[] buffer = Encoding.UTF8.GetBytes(message + "\r\n");
         await _webSocket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, CancellationToken.None);

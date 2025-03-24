@@ -2,6 +2,7 @@ namespace Medoz.KoeKan.Clients;
 
 public enum ClientType
 {
-    Discord, 
-    Twitch, 
+    Discord,
+    Twitch,
+    Echo
 }
