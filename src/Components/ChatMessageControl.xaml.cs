@@ -8,6 +8,18 @@ namespace Medoz.KoeKan.Components;
 
 public partial class ChatMessageControl : UserControl
 {
+    public static readonly DependencyProperty ColorsProperty =
+        DependencyProperty.Register("Colors", typeof(ChatMessageColors), typeof(ChatMessageControl),
+        new PropertyMetadata(ChatMessageColors.Default()));
+
+    public ChatMessageColors AccentColors
+    {
+        get { return (ChatMessageColors)GetValue(ColorsProperty); }
+        set { SetValue(ColorsProperty, value); }
+    }
+
+    private readonly string _defaultColor = "#000000";
+
     public ChatMessageControl()
     {
         InitializeComponent();
@@ -36,9 +48,9 @@ public partial class ChatMessageControl : UserControl
 
     public Visibility ProfileVisible
     {
-        get 
+        get
         {
-            if (DataContext is not null && DataContext is ChatMessage cm && !cm.IsMessageOnly)
+            if (DataContext is not null && DataContext is ChatMessage cm && !cm.IsConsecutiveMessage)
             {
                 return Visibility.Visible;
             }
@@ -52,20 +64,7 @@ public partial class ChatMessageControl : UserControl
         {
             if (DataContext is ChatMessage cm)
             {
-                var color = cm.MessageType switch {
-                    ChatMessageType.Text => (Color)ColorConverter.ConvertFromString("#ff7b2e"), 
-                    ChatMessageType.LogSuccess => (Color)ColorConverter.ConvertFromString("#FFADFF2F"), 
-                    ChatMessageType.LogInfo => (Color)ColorConverter.ConvertFromString("#FF1E90FF"), 
-                    ChatMessageType.LogWarning => (Color)ColorConverter.ConvertFromString("#FFDAA520"), 
-                    ChatMessageType.LogFatal => (Color)ColorConverter.ConvertFromString("#FFFF0000"), 
-                    ChatMessageType.DiscordText => (Color)ColorConverter.ConvertFromString("#5865F2"),
-                    ChatMessageType.DiscordVoice => (Color)ColorConverter.ConvertFromString("#57F287"),
-                    ChatMessageType.Twitch => (Color)ColorConverter.ConvertFromString("#9147ff"), 
-                    _ => (Color)ColorConverter.ConvertFromString("#FFFF00"),
-
-
-
-                };
+                var color = (Color)ColorConverter.ConvertFromString(AccentColors[cm.MessageType] ?? _defaultColor);
                 return new SolidColorBrush(color);
             }
             else
