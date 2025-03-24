@@ -15,6 +15,7 @@ public class DiscordClient: ITextClient
     private IMessageChannel? _messageChannel;
 
     public string Name => GetType().Name;
+    public bool IsRunning => _client.ConnectionState == ConnectionState.Connected;
 
     public event Func<Message, Task>? OnReceiveMessage;
     public event Func<Task>? OnReady;

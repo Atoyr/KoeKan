@@ -27,13 +27,17 @@ public class VoicevoxClient: ISpeakerClient
 
     private readonly CancellationTokenSource _messageCancelTokenSource = new();
 
-    public VoicevoxClient(uint speakerId, string? url = null)
+    public string Name => GetType().Name;
+
+    public bool IsRunning => _version is not null;
+
+    public VoicevoxClient(VoicevoxOptions options)
     {
-        if (url is not null)
+        if (options.Url is not null)
         {
-            _url = url;
+            _url = options.Url;
         }
-        _speakerId = speakerId;
+        _speakerId = options.SpeakerId;
     }
 
     public void Dispose()

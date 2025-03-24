@@ -9,7 +9,7 @@ namespace Medoz.KoeKan.Clients;
 
 public class EchoClient: ITextClient
 {
-    private bool isRunning = false;
+    public bool IsRunning { get; private set; } = false;
 
     private readonly IClientOptions _options;
 
@@ -31,7 +31,7 @@ public class EchoClient: ITextClient
 
     public async Task RunAsync()
     {
-        isRunning = true;
+        IsRunning = true;
         if (OnReady is not null)
         {
             await OnReady.Invoke();
@@ -40,7 +40,7 @@ public class EchoClient: ITextClient
 
     public Task StopAsync()
     {
-        isRunning = false;
+        IsRunning = false;
         return Task.CompletedTask;
     }
 
@@ -50,7 +50,7 @@ public class EchoClient: ITextClient
 
     public async Task SendMessageAsync(Message message)
     {
-        if (!isRunning)
+        if (!IsRunning)
         {
             return;
         }

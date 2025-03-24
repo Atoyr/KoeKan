@@ -19,6 +19,7 @@ public class TwitchClient: ITextClient
     public event Func<Message, Task>? OnReceiveMessage;
     public event Func<Task>? OnReady;
     public string Name => GetType().Name;
+    public bool IsRunning => _webSocket.State == WebSocketState.Open;
 
     public TwitchClient(TwitchOptions options)
     {
