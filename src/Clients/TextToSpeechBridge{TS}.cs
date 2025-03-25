@@ -17,7 +17,17 @@ public class TextToSpeechBridge<T, S> : ITextClient where T : ITextClient, new()
     public async Task RunAsync()
     {
         ValidateClient();
-        await _client!.RunAsync();
+        ValidateSpeaker();
+        List<Task> tasks = new();
+        if (!_client!.IsRunning)
+        {
+            tasks.Add(_client!.RunAsync());
+        }
+        if (!_speaker!.IsRunning)
+        {
+            tasks.Add(_speaker!.RunAsync());
+        }
+        await Task.WhenAll(tasks);
     }
 
     public async Task StopAsync()
