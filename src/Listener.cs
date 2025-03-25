@@ -57,6 +57,7 @@ public class Listener : IDisposable
 
     private void AddMessage(ChatMessage cm)
     {
+        cm = cm with {IsConsecutiveMessage = IsConsecutiveMessage(cm.MessageType, cm.Channel, cm.Username, cm.Timestamp)};
         Dispatch(() => Messages.Add(cm));
 
         if (_logger is not null)

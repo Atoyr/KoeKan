@@ -13,14 +13,14 @@ public partial class MainWindowViewModel
         var config = Config.Load();
         _twitchClient = new TwitchClient(config.Twitch.ToTwitchOptions());
         _twitchClient.OnReceiveMessage += ((message) => {
-            AddMessage(message);
+            Listener.AddMessage(message);
             return Task.CompletedTask;
         });
         _twitchClient.OnReady += (() => {
-            AddLogMessage(ChatMessageType.LogInfo, "Twitch is ready.");
+            Listener.AddLogMessage(ChatMessageType.LogInfo, "Twitch is ready.");
             return Task.CompletedTask;
         });
-        
+
         Task.Run(() =>_twitchClient.RunAsync());
     }
 
@@ -30,7 +30,7 @@ public partial class MainWindowViewModel
         if (strs[0] == "start" && strs.Length == 1)
         {
             SetTwitchClient();
-            AddLogMessage(ChatMessageType.LogInfo, "Start Twitch Connections");
+            Listener.AddLogMessage(ChatMessageType.LogInfo, "Start Twitch Connections");
             return;
         }
         await Task.CompletedTask;

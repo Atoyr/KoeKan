@@ -92,7 +92,7 @@ public partial class MainWindow : Window
         };
 
         // メッセージの変更を通知する
-        mwvm.Messages.CollectionChanged += (_, e) => {
+        mwvm.Listener.Messages.CollectionChanged += (_, e) => {
             Dispatcher.BeginInvoke( new Action(() => { ChatListBox_ScrollToEnd(); }), System.Windows.Threading.DispatcherPriority.ContextIdle);
         };
 
@@ -123,7 +123,7 @@ public partial class MainWindow : Window
         _hk = new HotKey(mwvm.ModKey, mwvm.Key, this);
         _hk.OnHotKeyPush += MessageBox_Focus;
 
-        ChatListBox.ItemsSource = ((MainWindowViewModel)DataContext).Messages;
+        ChatListBox.ItemsSource = ((MainWindowViewModel)DataContext).Listener.Messages;
         MoveWindowBar.Visibility = Visibility.Collapsed;
     }
 

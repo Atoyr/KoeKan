@@ -9,7 +9,7 @@ public class VoicevoxOptions : IClientOptions
     {
         get
         {
-            if(_options["speakerId"] is null)
+            if(!_options.ContainsKey("speakerId"))
             {
                 return 0;
             }
@@ -22,7 +22,7 @@ public class VoicevoxOptions : IClientOptions
     {
         get
         {
-            if(_options["url"] is null)
+            if(!_options.ContainsKey("url"))
             {
                 return null;
             }

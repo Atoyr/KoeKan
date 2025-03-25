@@ -22,7 +22,7 @@ public partial class MainWindowViewModel
 
         _discordClient = new DiscordClient(new DiscordOptions(){Token = token });
         _discordClient.OnReceiveMessage += ((message) => {
-            AddMessage(message);
+            Listener.AddMessage(message);
             _discordVoicevoxClient?.SpeakMessageAsync(message.Content);
             return Task.CompletedTask;
         });
@@ -34,16 +34,7 @@ public partial class MainWindowViewModel
                 _discordClient.SetChannel(id);
             }
 
-            AddLogMessage(ChatMessageType.LogInfo, "Discord is ready.");
-            if (config.Discord.UseSpeaker)
-            {
-                _discordVoicevoxClient = new VoicevoxClient(config.Discord.Speaker ?? 1, config.Voicevox.Url);
-            AddLogMessage(ChatMessageType.LogInfo, "Discord is used Voicevox and Voicevox is ready.");
-                _discordVoicevoxClient.OnReady += (() => {
-                    return Task.CompletedTask;
-                        });
-                await _discordVoicevoxClient.RunAsync();
-            }
+            Listener.AddLogMessage(ChatMessageType.LogInfo, "Discord is ready.");
         });
         Task.Run(() =>_discordClient.RunAsync());
     }
@@ -54,13 +45,13 @@ public partial class MainWindowViewModel
         if (strs[0] == "start" && strs.Length == 1)
         {
             SetDiscordClient();
-            AddLogMessage(ChatMessageType.LogInfo, "Start Discord Connections");
+            Listener.AddLogMessage(ChatMessageType.LogInfo, "Start Discord Connections");
             return;
         }
 
         if (_discordClient is null)
         {
-            AddLogMessage(ChatMessageType.LogWarning, "Discord is not started");
+            Listener.AddLogMessage(ChatMessageType.LogWarning, "Discord is not started");
             return;
         }
         if (strs[0] == "channels" && strs.Length == 1)
@@ -70,7 +61,7 @@ public partial class MainWindowViewModel
             {
                 sb.AppendLine($"{c.GuildName} | {c.Id} : {c.Name}");
             }
-            AddCommandMessage(sb.ToString());
+            Listener.AddCommandMessage(sb.ToString());
         }
         else if (strs[0] == "channel" && strs.Length == 2)
         {
@@ -80,7 +71,7 @@ public partial class MainWindowViewModel
             }
             else
             {
-                AddLogMessage(ChatMessageType.LogWarning, "Id is not validated.");
+                Listener.AddLogMessage(ChatMessageType.LogWarning, "Id is not validated.");
             }
         }
         else if (strs[0] == "guilds" && strs.Length == 1)
@@ -91,17 +82,17 @@ public partial class MainWindowViewModel
             {
                 sb.AppendLine($"{g.Id} : {g.Name}");
             }
-            AddCommandMessage(sb.ToString());
+            Listener.AddCommandMessage(sb.ToString());
         }
         else if (strs[0] == "voice" && strs.Length == 2)
         {
             if (ulong.TryParse(strs[1], out ulong id))
             {
-                AddLogMessage(ChatMessageType.LogWarning, "voice to text is not impletemt.");
+                Listener.AddLogMessage(ChatMessageType.LogWarning, "voice to text is not impletemt.");
             }
             else
             {
-                AddLogMessage(ChatMessageType.LogWarning, "voice Id is not validated.");
+                Listener.AddLogMessage(ChatMessageType.LogWarning, "voice Id is not validated.");
             }
         }
     }

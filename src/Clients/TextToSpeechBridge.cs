@@ -6,6 +6,8 @@ public class TextToSpeechBridge : ITextClient
 {
     private readonly ITextClient _client;
 
+    public ITextClient GetTextClient() => _client;
+
     private readonly ISpeakerClient _speaker;
     public bool IsRunning => _client!.IsRunning && _speaker!.IsRunning;
 
@@ -72,4 +74,5 @@ public class TextToSpeechBridge : ITextClient
     }
 
     public void Dispose() => _client?.Dispose();
+
 }

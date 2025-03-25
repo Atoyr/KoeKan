@@ -8,7 +8,9 @@ using Microsoft.Extensions.Logging;
 
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
+using Medoz.KoeKan.Command;
 using Medoz.Logging;
+using System.Windows.Input;
 
 namespace Medoz.KoeKan;
 
@@ -17,16 +19,20 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class MainWindowViewModel
 {
-    // Chat Messages
-    public ObservableCollection<ChatMessage> Messages = new();
-
     public Listener Listener { get; set; } = new();
 
     private Microsoft.Extensions.Logging.ILogger? _logger;
 
-    private ITextClient? _activeClient;
+    private readonly string _defaultClient = "default";
 
     private readonly Dictionary<string, ITextClient> _clients = new();
+
+    private ITextClient? _activeClient;
+
+    private readonly Config _config;
+
+    private readonly RootCommand _rootCommand = new RootCommand();
+
 
     // View Action
     public Action? Close { get; set; }
@@ -69,23 +75,38 @@ public partial class MainWindowViewModel
 
     public MainWindowViewModel()
     {
-        var config = Config.Load();
-        Width = config.Width;
-        Height = config.Height;
-        BindingOperations.EnableCollectionSynchronization(Messages, new object());
+        _config = Config.Load();
+        Width = _config.Width;
+        Height = _config.Height;
+        BindingOperations.EnableCollectionSynchronization(Listener.Messages, new object());
+
+        var client = new EchoClient(new EchoOptions());
+        client.OnReceiveMessage += ((message) => {
+            Listener.AddMessage(message);
+            return Task.CompletedTask;
+        });
+        _clients.Add(_defaultClient, client);
+        Listener.AddMessageConverter(
+            _defaultClient,
+            (message) => new ChatMessage(
+                ChatMessageType.Echo,
+                "",
+                _config.Icon,
+                _config.Username,
+                message.Content,
+                message.Timestamp,
+                false));
     }
 
     public async Task SendMessage(string message)
     {
-        if (_activeClient is not null)
-        {
-            _activeClient.SendMessageAsync(message);
-        }
-        if (_voicevoxClient is not null)
-        {
-            _voicevoxClient.SpeakMessageAsync(message);
-        }
-        AddUserMessage(message, DateTime.Now);
+        using var _ = _clients[_defaultClient].SendMessageAsync(
+            new Message(
+                _defaultClient,
+                "default",
+                _config.Username,
+                message,
+                _config.Icon));
         await Task.CompletedTask;
     }
 
@@ -121,7 +142,8 @@ public partial class MainWindowViewModel
                 await TwitchCommand(arg);
                 break;
             case "voicevox":
-                await VoicevoxCommand(arg);
+                var args = new CommandArgs(split, _config, Listener, _clients);
+                await _rootCommand.ExecuteCommandAsync(args);
                 break;
             case "clear":
                 ClearCommand(arg);
@@ -142,12 +164,12 @@ public partial class MainWindowViewModel
         {
             var config = Config.Load();
             config.Save();
-            AddLogMessage(ChatMessageType.LogSuccess, "Save config successed.");
+            Listener.AddLogMessage(ChatMessageType.LogSuccess, "Save config successed.");
         }
         else
         {
             // TODO ERROR
-            AddLogMessage(ChatMessageType.LogWarning, "Error Save Config is unsuccessed.");
+            Listener.AddLogMessage(ChatMessageType.LogWarning, "Error Save Config is unsuccessed.");
         }
     }
 
@@ -160,7 +182,7 @@ public partial class MainWindowViewModel
         {
             case "move":
                 ToggleMoveWindow?.Invoke();
-                AddLogMessage(ChatMessageType.LogInfo, "Toggle Move Window.");
+                Listener.AddLogMessage(ChatMessageType.LogInfo, "Toggle Move Window.");
                 break;
             case "size":
                 var wh = args.Split(' ');
@@ -174,16 +196,16 @@ public partial class MainWindowViewModel
                         WindowSize?.Invoke(w, h);
                         config.Width = w;
                         config.Height = h;
-                        AddLogMessage(ChatMessageType.LogSuccess, $"Change Window Size. Widht:{w} Height:{h}");
+                        Listener.AddLogMessage(ChatMessageType.LogSuccess, $"Change Window Size. Widht:{w} Height:{h}");
                     }
                     catch
                     {
-                        AddLogMessage(ChatMessageType.LogWarning, "Width or Height is not double value.");
+                        Listener.AddLogMessage(ChatMessageType.LogWarning, "Width or Height is not double value.");
                     }
                 }
                 else
                 {
-                    AddLogMessage(ChatMessageType.LogWarning, "args is not validate.");
+                    Listener.AddLogMessage(ChatMessageType.LogWarning, "args is not validate.");
                 }
                 break;
             default:
@@ -230,7 +252,7 @@ public partial class MainWindowViewModel
                 }
                 catch
                 {
-                    AddLogMessage(ChatMessageType.LogWarning, "defaultChannel is ulong value.");
+                    Listener.AddLogMessage(ChatMessageType.LogWarning, "defaultChannel is ulong value.");
                     return;
                 }
                 config.Discord = config.Discord with { DefaultChannelId = discordDefaultChannelId};
@@ -243,10 +265,10 @@ public partial class MainWindowViewModel
                 }
                 catch
                 {
-                    AddLogMessage(ChatMessageType.LogWarning, "speaker is uint value.");
+                    Listener.AddLogMessage(ChatMessageType.LogWarning, "speaker is uint value.");
                     return;
                 }
-                SetVoicevoxSpeakerId((uint)voicevoxSpeakerId);
+                // SetVoicevoxSpeakerId((uint)voicevoxSpeakerId);
                 config.Voicevox = config.Voicevox with { SpeakerId = (uint)voicevoxSpeakerId};
                 break;
             case "application":
@@ -255,10 +277,10 @@ public partial class MainWindowViewModel
             case "log":
                 var folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ApplicationName, "config");
                 _logger = LoggerUtility.GetLoggerFactory(new FileLoggerSettings(folderPath){ FileName = "log.txt"}).CreateLogger("Medoz");
-                AddLogMessage(ChatMessageType.LogInfo, "Start Logging.");
+                Listener.AddLogMessage(ChatMessageType.LogInfo, "Start Logging.");
                 break;
             case "nolog":
-                AddLogMessage(ChatMessageType.LogInfo, "Stop Logging.");
+                Listener.AddLogMessage(ChatMessageType.LogInfo, "Stop Logging.");
                 _logger = null;
                 break;
             default:
@@ -272,7 +294,7 @@ public partial class MainWindowViewModel
     {
         if (!string.IsNullOrEmpty(arg))
         {
-            AddLogMessage(ChatMessageType.LogWarning, $"⚠️COMMAND {arg} is not found.");
+            Listener.AddLogMessage(ChatMessageType.LogWarning, $"⚠️COMMAND {arg} is not found.");
         }
 
         StringBuilder sb = new();
@@ -285,93 +307,16 @@ public partial class MainWindowViewModel
         sb.AppendLine("  discord    : discord command");
         sb.AppendLine("  twitch     : twitch command");
         sb.AppendLine("  voicevox   : voicevox command");
-        AddLogMessage(ChatMessageType.LogInfo, sb.ToString());
+        Listener.AddLogMessage(ChatMessageType.LogInfo, sb.ToString());
     }
 
     private void ClearCommand(string arg)
     {
         if (!string.IsNullOrEmpty(arg))
         {
-            AddLogMessage(ChatMessageType.LogWarning, $"⚠️ clear command is not used argument: {arg}.");
+            Listener.AddLogMessage(ChatMessageType.LogWarning, $"⚠️ clear command is not used argument: {arg}.");
             return;
         }
-        ClearMessage();
-    }
-
-
-    private void AddLogMessage(ChatMessageType chatMessageType, string message)
-        => AddMessage(new ChatMessage(chatMessageType, "", null, "SYSTEM", message, DateTime.Now, IsMessageOnly(chatMessageType, "", "SYSTEM", DateTime.Now)));
-
-    private void AddCommandMessage(string message)
-        => AddMessage(new ChatMessage(ChatMessageType.Command, "", null, "COMMAND", message, DateTime.Now, IsMessageOnly(ChatMessageType.Command, "", "COMMAND", DateTime.Now)));
-    private void AddUserMessage(string message, DateTime timestamp)
-    {
-        var config = Config.Load();
-        AddMessage(new ChatMessage(ChatMessageType.Text, "", config.Icon, config.Username, message, DateTime.Now, IsMessageOnly(ChatMessageType.Text, "", config.Username, timestamp)));
-    }
-
-    private void AddMessage(Message message)
-        => AddMessage(new ChatMessage(
-                    ChatMessageType.DiscordText,
-                    message.Channel,
-                    message.IconSource,
-                    message.Username,
-                    message.Content,
-                    message.Timestamp,
-                    IsMessageOnly(ChatMessageType.DiscordText, message.Channel, message.Username, message.Timestamp)));
-
-    private void AddMessage(ChatMessage cm)
-    {
-        if (Dispatcher is null)
-        {
-            Messages.Add(cm);
-        }
-        else
-        {
-            Dispatcher.Invoke(() => Messages.Add(cm));
-        }
-
-        if (_logger is not null)
-        {
-            switch (cm.MessageType)
-            {
-                case ChatMessageType.LogInfo:
-                    _logger.LogInformation(cm.Message);
-                    break;
-                case ChatMessageType.LogSuccess:
-                    _logger.LogInformation(cm.Message);
-                    break;
-                case ChatMessageType.LogWarning:
-                    _logger.LogWarning(cm.Message);
-                    break;
-                case ChatMessageType.LogFatal:
-                    _logger.LogError(cm.Message);
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    private void ClearMessage()
-    {
-        if (Dispatcher is null)
-        {
-            Messages.Clear();
-        }
-        else
-        {
-            Dispatcher.Invoke(() => Messages.Clear());
-        }
-    }
-
-    private bool IsMessageOnly(ChatMessageType chatMessageType, string channel, string username, DateTime timestamp)
-    {
-        if (Messages.Count == 0)
-        {
-            return false;
-        }
-        var last = Messages.Last();
-        return (last.MessageType == chatMessageType && last.Channel == channel && last.Username == username && (timestamp - last.Timestamp).TotalMinutes <= 1);
+        Listener.ClearMessage();
     }
 }
