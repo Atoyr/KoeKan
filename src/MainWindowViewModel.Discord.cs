@@ -27,7 +27,7 @@ public partial class MainWindowViewModel
             return Task.CompletedTask;
         });
         _discordClient.OnReady += (async () => {
-            _activeClient = _discordClient;
+            // _activeClient = _discordClient;
 
             if (config.Discord.DefaultChannelId is ulong id)
             {

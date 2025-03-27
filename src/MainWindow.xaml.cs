@@ -3,6 +3,9 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using Newtonsoft.Json.Bson;
+
+using Medoz.KoeKan.Data;
 
 namespace Medoz.KoeKan;
 
@@ -52,6 +55,8 @@ public partial class MainWindow : Window
 
     private string? _activeProcessName;
 
+    private Listener Listener { get; set; } = new ();
+
     public MainWindow()
     {
         InitializeComponent();
@@ -67,29 +72,11 @@ public partial class MainWindow : Window
         // ViewModelの初期化
         DataContext = new MainWindowViewModel();
         MainWindowViewModel mwvm = (MainWindowViewModel)DataContext;
-        // ウィンドウサイズ変更のコールバック設定
-        mwvm.WindowSize = (w, h) => {
-            Width = w;
-            Height = h;
-        };
         // 初期ウィンドウのサイズを設定
         Width = mwvm.Width;
         Height = mwvm.Height;
-        mwvm.Close = Close;
         mwvm.Dispatcher = Dispatcher;
-
-        // Windowをマウスで触れる状態にする
-        mwvm.ToggleMoveWindow = () => {
-            switch (MoveWindowBar.Visibility)
-            {
-                case Visibility.Visible:
-                    SwitchWindowVisibility(false);
-                    break;
-                case Visibility.Collapsed:
-                    SwitchWindowVisibility(true);
-                    break;
-            }
-        };
+        mwvm.Listener = Listener;
 
         // メッセージの変更を通知する
         mwvm.Listener.Messages.CollectionChanged += (_, e) => {
@@ -122,8 +109,7 @@ public partial class MainWindow : Window
         MainWindowViewModel mwvm = (MainWindowViewModel)DataContext;
         _hk = new HotKey(mwvm.ModKey, mwvm.Key, this);
         _hk.OnHotKeyPush += MessageBox_Focus;
-
-        ChatListBox.ItemsSource = ((MainWindowViewModel)DataContext).Listener.Messages;
+        ChatListBox.ItemsSource = Listener.Messages;
         MoveWindowBar.Visibility = Visibility.Collapsed;
     }
 
@@ -187,18 +173,7 @@ public partial class MainWindow : Window
 
             try
             {
-                if (!string.IsNullOrWhiteSpace(MessageBox.Text))
-                {
-                    if (MessageBox.Text[0] == ':')
-                    {
-                        await ((MainWindowViewModel)DataContext).ExecuteCommand(MessageBox.Text.Substring(1));
-                    }
-                    else
-                    {
-                        await ((MainWindowViewModel)DataContext).SendMessage(MessageBox.Text);
-                    }
-                }
-                MessageBox.Text = "";
+                await MessageEnterAsync(MessageBox.Text);
             }
             finally
             {
@@ -209,6 +184,76 @@ public partial class MainWindow : Window
         {
             ActivateOtherWindow();
         }
+    }
+
+    private async Task MessageEnterAsync(string text)
+    {
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            if (text[0] == ':')
+            {
+                await ExecuteCommandAsync(text.Substring(1));
+            }
+            else if (DataContext is MainWindowViewModel mwvm)
+            {
+                await mwvm.SendMessage(text);
+            }
+        }
+    }
+
+    private async Task ExecuteCommandAsync(string command)
+    {
+        if(command.Length == 0)
+        {
+            return;
+        }
+
+        var sprit = command.Split(' ');
+        switch(sprit[0])
+        {
+            case "q":
+                Close();
+                break;
+            case "window":
+                WindowCommand(sprit.Skip(1).ToArray());
+                break;
+            default:
+                await ((MainWindowViewModel)DataContext).ExecuteCommand(command);
+                break;
+        }
+    }
+
+    private void WindowCommand(string[] args)
+    {
+        if (args.Length == 0)
+        {
+            return;
+        }
+        switch(args[0])
+        {
+            case "move":
+                ToggleMoveableWindow();
+                break;
+            case "size":
+                SetWindowSize(args.Skip(1).ToArray());
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void ToggleMoveableWindow()
+    {
+        switch (MoveWindowBar.Visibility)
+        {
+            case Visibility.Visible:
+                SwitchWindowVisibility(false);
+                break;
+            case Visibility.Collapsed:
+                SwitchWindowVisibility(true);
+                break;
+        }
+        Listener.AddLogMessage(ChatMessageType.LogInfo, "Toggle Moveable Window.");
     }
 
     // ウィンドウが移動可能かを切り替える
@@ -229,6 +274,22 @@ public partial class MainWindow : Window
         }
     }
 
+    private void SetWindowSize(string[] args)
+    {
+        if (args.Length == 2
+        && int.TryParse(args[0], out int w)
+        && int.TryParse(args[1], out int h)
+        && DataContext is MainWindowViewModel mwvm)
+        {
+            Width = w;
+            Height = h;
+            mwvm.Width = w;
+            mwvm.Height = h;
+            Listener.AddLogMessage(ChatMessageType.LogSuccess, $"Change Window Size. Widht:{w} Height:{h}");
+        }
+
+    }
+
     private void Border_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         => DragMove();
 
@@ -242,6 +303,11 @@ public partial class MainWindow : Window
     {
         var item = ChatListBox.Items[ChatListBox.Items.Count - 1];
         ChatListBox.ScrollIntoView(item);
+    }
+
+    private void AddMessage(string message)
+    {
+        // ((MainWindowViewModel)DataContext).Listener.Messages.Add(message);
     }
 
 }

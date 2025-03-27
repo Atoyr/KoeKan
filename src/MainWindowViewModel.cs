@@ -19,74 +19,95 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class MainWindowViewModel
 {
-    public Listener Listener { get; set; } = new();
+    /// <summary>
+    /// メッセージのリスナー
+    /// </summary>
+    public Listener? Listener { get; set; }
 
-    private Microsoft.Extensions.Logging.ILogger? _logger;
+    private ILogger? _logger;
 
     private readonly string _defaultClient = "default";
 
     private readonly Dictionary<string, ITextClient> _clients = new();
 
-    private ITextClient? _activeClient;
-
+    /// <summary>
+    /// 設定ファイル
+    /// </summary>
     private readonly Config _config;
 
     private readonly RootCommand _rootCommand = new RootCommand();
 
-
     // View Action
-    public Action? Close { get; set; }
-    public Action? ToggleMoveWindow { get; set; }
-    public Action<double, double>? WindowSize { get; set; }
     public Dispatcher? Dispatcher { get; set; }
     public Action? OpenSettingWindow { get; set; }
 
-    // HOT KEY
+    /// <summary>
+    /// MOD KEY
+    /// </summary>
     public uint ModKey
     {
         get
         {
-            var config = Config.Load();
-            return ModKeyExtension.GetModKey(config.ModKey).ToUInt();
+            return ModKeyExtension.GetModKey(_config.ModKey).ToUInt();
         }
     }
 
+    /// <summary>
+    /// HOT KEY
+    /// </summary>
     public uint Key
     {
         get
         {
-            var config = Config.Load();
-            return KeyExtension.GetKey(config.Key).ToUInt();
+            return KeyExtension.GetKey(_config.Key).ToUInt();
         }
     }
 
-    public double Width { get; set; }
-    public double Height { get; set; }
+    public double Width
+    {
+        get => _config.Width;
+        set
+        {
+            _config.Width = value;
+            _config.Save();
+        }
+    }
+    public double Height
+    {
+        get => _config.Height;
+        set
+        {
+            _config.Height = value;
+            _config.Save();
+        }
+    }
 
     // アクティブに変更できるアプリケーション一覧
     public IEnumerable<string> Applications
     {
         get
         {
-            var config = Config.Load();
-            return config.Applications;
+            return _config.Applications;
         }
     }
 
     public MainWindowViewModel()
     {
         _config = Config.Load();
-        Width = _config.Width;
-        Height = _config.Height;
-        BindingOperations.EnableCollectionSynchronization(Listener.Messages, new object());
+        BindingOperations.EnableCollectionSynchronization(Listener?.Messages, new object());
 
+        AddDefaultClient();
+    }
+
+    private void AddDefaultClient()
+    {
         var client = new EchoClient(new EchoOptions());
-        client.OnReceiveMessage += ((message) => {
-            Listener.AddMessage(message);
+        client.OnReceiveMessage += message => {
+            Listener?.AddMessage(message);
             return Task.CompletedTask;
-        });
+        };
         _clients.Add(_defaultClient, client);
-        Listener.AddMessageConverter(
+        Listener?.AddMessageConverter(
             _defaultClient,
             (message) => new ChatMessage(
                 ChatMessageType.Echo,
@@ -100,14 +121,23 @@ public partial class MainWindowViewModel
 
     public async Task SendMessage(string message)
     {
-        using var _ = _clients[_defaultClient].SendMessageAsync(
+        if (!_clients.ContainsKey(_defaultClient))
+        {
+            throw new InvalidOperationException("Default client is not found.");
+        }
+
+        await _clients[_defaultClient].SendMessageAsync(
             new Message(
                 _defaultClient,
                 "default",
                 _config.Username,
                 message,
                 _config.Icon));
-        await Task.CompletedTask;
+    }
+
+    public CommandArgs CreateCommandArgs(string[] args)
+    {
+        return new CommandArgs(args, _config, Listener, _clients);
     }
 
     // コマンド実行
@@ -126,14 +156,8 @@ public partial class MainWindowViewModel
             case "w":
                 WriteCommand(arg);
                 break;
-            case "q":
-                QuitCommand(arg);
-                break;
             case "set":
                 SetCommand(arg);
-                break;
-            case "window":
-                WindowCommand(arg);
                 break;
             case "discord":
                 await DiscordCommand(arg);
@@ -170,58 +194,6 @@ public partial class MainWindowViewModel
         {
             // TODO ERROR
             Listener.AddLogMessage(ChatMessageType.LogWarning, "Error Save Config is unsuccessed.");
-        }
-    }
-
-    // ウィンドウ操作に関連するコマンド
-    private void WindowCommand(string arg)
-    {
-        var strs = arg.Split(' ', 2);
-        var args = strs.Length == 2 ? strs[1] : "";
-        switch (strs[0])
-        {
-            case "move":
-                ToggleMoveWindow?.Invoke();
-                Listener.AddLogMessage(ChatMessageType.LogInfo, "Toggle Move Window.");
-                break;
-            case "size":
-                var wh = args.Split(' ');
-                if (wh.Length == 2)
-                {
-                    try
-                    {
-                        var config = Config.Load();
-                        var w = Convert.ToDouble(wh[0]);
-                        var h = Convert.ToDouble(wh[1]);
-                        WindowSize?.Invoke(w, h);
-                        config.Width = w;
-                        config.Height = h;
-                        Listener.AddLogMessage(ChatMessageType.LogSuccess, $"Change Window Size. Widht:{w} Height:{h}");
-                    }
-                    catch
-                    {
-                        Listener.AddLogMessage(ChatMessageType.LogWarning, "Width or Height is not double value.");
-                    }
-                }
-                else
-                {
-                    Listener.AddLogMessage(ChatMessageType.LogWarning, "args is not validate.");
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void QuitCommand(string arg)
-    {
-        if(string.IsNullOrEmpty(arg))
-        {
-            Close?.Invoke();
-        }
-        else
-        {
-            // TODO ERROR
         }
     }
 
