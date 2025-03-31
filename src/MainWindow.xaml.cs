@@ -186,6 +186,11 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// メッセージボックスでEnterキーが押されたときの処理
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
     private async Task MessageEnterAsync(string text)
     {
         if (!string.IsNullOrWhiteSpace(text))
@@ -201,6 +206,13 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// コマンドを実行する
+    /// UI操作系はクラス内で処理
+    /// ロジック系はViewModelに処理を移譲
+    /// </summary>
+    /// <param name="command"></param>
+    /// <returns></returns>
     private async Task ExecuteCommandAsync(string command)
     {
         if(command.Length == 0)
