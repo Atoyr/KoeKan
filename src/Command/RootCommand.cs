@@ -12,6 +12,8 @@ public class RootCommand : ICommand
     private readonly string _helpCommandName = "help";
     private readonly Dictionary<string, ICommand> _childCommands = new()
     {
+        { "write", new WriteCommand()},
+        { "w", new WriteCommand()},
         { "voicevox", new VoicevoxCommand() },
     };
 
@@ -39,6 +41,11 @@ public class RootCommand : ICommand
 
         args.Listener.AddLogMessage(ChatMessageType.LogInfo, "unknown command.");
         await Task.CompletedTask;
+    }
+
+    public void AddCommand(string commandName, ICommand command)
+    {
+        _childCommands[commandName] = command;
     }
 }
 

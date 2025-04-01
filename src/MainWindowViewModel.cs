@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows.Data;
-using System.Windows.Threading;
 using System.IO;
 
 using Microsoft.Extensions.Logging;
@@ -37,9 +36,6 @@ public partial class MainWindowViewModel
 
     private readonly RootCommand _rootCommand = new RootCommand();
 
-    // View Action
-    public Dispatcher? Dispatcher { get; set; }
-    public Action? OpenSettingWindow { get; set; }
 
     /// <summary>
     /// MOD KEY
@@ -119,6 +115,12 @@ public partial class MainWindowViewModel
                 false));
     }
 
+    private void AddUICommand()
+    {
+        _rootCommand.AddCommand("q", new QCommand(this));
+        _rootCommand.AddCommand("window", new WindowCommand(this));
+    }
+
     public async Task SendMessage(string message)
     {
         if (!_clients.ContainsKey(_defaultClient))
@@ -143,31 +145,22 @@ public partial class MainWindowViewModel
     // コマンド実行
     public async Task ExecuteCommand(string str)
     {
-        var split = str.Split(' ', 2);
+        var split = str.Split(' ');
         var command = split[0];
-        string arg = "";
-        if (split.Length > 1)
-        {
-            arg = split[1];
-        }
+
+        var args = new CommandArgs(split, _config, Listener, _clients);
+        await _rootCommand.ExecuteCommandAsync(args);
 
         switch(command)
         {
-            case "w":
-                WriteCommand(arg);
-                break;
             case "set":
-                SetCommand(arg);
+                SetCommand(args);
                 break;
             case "discord":
-                await DiscordCommand(arg);
+                await DiscordCommand(args);
                 break;
             case "twitch":
                 await TwitchCommand(arg);
-                break;
-            case "voicevox":
-                var args = new CommandArgs(split, _config, Listener, _clients);
-                await _rootCommand.ExecuteCommandAsync(args);
                 break;
             case "clear":
                 ClearCommand(arg);
@@ -181,6 +174,7 @@ public partial class MainWindowViewModel
                 break;
         }
     }
+
 
     private void WriteCommand(string arg)
     {
