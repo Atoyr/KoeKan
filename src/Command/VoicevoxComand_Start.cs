@@ -38,8 +38,25 @@ public class VoicevoxCommand_Start : ICommand
         {
             clientName = args[0];
         }
-        // TODO: speakerIdを取得する
-        var speaker = new VoicevoxClient(new VoicevoxOptions() { });
+
+        var config = _configService.GetConfig();
+        DynamicConfig? clientConfig;
+        config.Clients.TryGetValue("voicevox", out clientConfig);
+        if (clientConfig == null)
+        {
+            clientConfig = new DynamicConfig();
+            config.Clients["voicevox"] = clientConfig;
+        }
+
+        if (clientConfig.TryGetValue("speaker_id", out uint speakerId) == false)
+        {
+            clientConfig["speaker_id"] = 0;
+        }
+        clientConfig.TryGetValue("speaker_id", out string? url);
+
+        var speaker = new VoicevoxClient(new VoicevoxOptions() {
+            SpeakerId = speakerId,
+            Url = url,});
         speaker.OnReady += (() => {
             _listenerService.AddLogMessage("Voicevox is ready.");
             return Task.CompletedTask;

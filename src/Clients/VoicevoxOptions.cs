@@ -33,7 +33,10 @@ public class VoicevoxOptions : IClientOptions
         {
             if(value is null)
             {
-                _options.Remove("url");
+                if (_options.ContainsKey("url"))
+                {
+                    _options.Remove("url");
+                }
             }
             else
             {

@@ -10,15 +10,15 @@ namespace Medoz.KoeKan.Data;
 [JsonConverter(typeof(DynamicConfigConverter))]
 public class DynamicConfig
 {
-    private readonly Dictionary<string, object> _configValues = new();
+    private readonly Dictionary<string, object?> _configValues = new();
 
-    public object this[string key]
+    public object? this[string key]
     {
         get => GetValue<object>(key);
         set => SetValue(key, value);
     }
 
-    private void SetValue(string key, object value)
+    private void SetValue(string key, object? value)
     {
         if (_configValues.ContainsKey(key))
         {
@@ -31,7 +31,7 @@ public class DynamicConfig
     }
 
     // ジェネリックメソッドを使用して型安全に値を取得
-    public T GetValue<T>(string key)
+    public T? GetValue<T>(string key)
     {
         if (_configValues.TryGetValue(key, out var value))
         {
@@ -60,11 +60,16 @@ public class DynamicConfig
     }
 
     // 値を適切な型に変換するヘルパーメソッド
-    private T ConvertValue<T>(object value)
+    private T? ConvertValue<T>(object? value)
     {
         if (value is T typedValue)
         {
             return typedValue;
+        }
+
+        if (value is null)
+        {
+            return default;
         }
 
         // JsonSerializerを使用して型変換を試みる（複雑な型変換に対応）

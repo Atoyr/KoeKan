@@ -34,7 +34,7 @@ public class DynamicConfigConverter : JsonConverter<DynamicConfig>
     }
 
     // 値を適切な型でシリアライズするヘルパーメソッド
-    private void WriteValue(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
+    private void WriteValue(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
     {
         // nullの場合
         if (value == null)
@@ -109,7 +109,7 @@ public class DynamicConfigConverter : JsonConverter<DynamicConfig>
             reader.Read();
 
             // 値を型に応じて読み込む
-            object value = ReadValue(ref reader, options);
+            object? value = ReadValue(ref reader, options);
 
             // インデクサーを使用して値を設定
             config[propertyName] = value;
@@ -119,12 +119,12 @@ public class DynamicConfigConverter : JsonConverter<DynamicConfig>
     }
 
     // JSONから値を読み込むヘルパーメソッド
-    private object ReadValue(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    private object? ReadValue(ref Utf8JsonReader reader, JsonSerializerOptions options)
     {
         switch (reader.TokenType)
         {
             case JsonTokenType.Null:
-                return new();
+                return null;
             case JsonTokenType.True:
                 return true;
             case JsonTokenType.False:
@@ -155,9 +155,9 @@ public class DynamicConfigConverter : JsonConverter<DynamicConfig>
     }
 
     // 配列を読み込むヘルパーメソッド
-    private List<object> ReadArray(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    private List<object?> ReadArray(ref Utf8JsonReader reader, JsonSerializerOptions options)
     {
-        var list = new List<object>();
+        var list = new List<object?>();
 
         while (reader.Read())
         {
@@ -174,9 +174,9 @@ public class DynamicConfigConverter : JsonConverter<DynamicConfig>
     }
 
     // オブジェクトを読み込むヘルパーメソッド
-    private Dictionary<string, object> ReadObject(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    private Dictionary<string, object?> ReadObject(ref Utf8JsonReader reader, JsonSerializerOptions options)
     {
-        var dict = new Dictionary<string, object>();
+        var dict = new Dictionary<string, object?>();
 
         while (reader.Read())
         {
