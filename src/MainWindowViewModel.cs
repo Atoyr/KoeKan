@@ -9,7 +9,7 @@ using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Command;
 using Medoz.Logging;
-using System.Windows.Input;
+using Medoz.KoeKan.Services;
 
 namespace Medoz.KoeKan;
 
@@ -18,24 +18,17 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class MainWindowViewModel
 {
-    /// <summary>
-    /// メッセージのリスナー
-    /// </summary>
-    public Listener? Listener { get; set; }
+    private readonly IConfigService _configService;
+    private readonly IClientService _clientService;
+    private readonly IListenerService _listenerService;
 
-    private ILogger? _logger;
-
-    private readonly string _defaultClient = "default";
-
-    private readonly Dictionary<string, ITextClient> _clients = new();
 
     /// <summary>
     /// 設定ファイル
     /// </summary>
     private readonly Config _config;
 
-    private readonly RootCommand _rootCommand = new RootCommand();
-
+    private readonly CommandManager _commandManager = new();
 
     /// <summary>
     /// MOD KEY
@@ -44,7 +37,7 @@ public partial class MainWindowViewModel
     {
         get
         {
-            return ModKeyExtension.GetModKey(_config.ModKey).ToUInt();
+            return ModKeyExtension.GetModKey(_configService.GetConfig().ModKey).ToUInt();
         }
     }
 
@@ -55,26 +48,26 @@ public partial class MainWindowViewModel
     {
         get
         {
-            return KeyExtension.GetKey(_config.Key).ToUInt();
+            return KeyExtension.GetKey(_configService.GetConfig().Key).ToUInt();
         }
     }
 
     public double Width
     {
-        get => _config.Width;
+        get => _configService.GetConfig().Width;
         set
         {
-            _config.Width = value;
-            _config.Save();
+            _configService.GetConfig().Width = value;
+            _configService.SaveConfig();
         }
     }
     public double Height
     {
-        get => _config.Height;
+        get => _configService.GetConfig().Height;
         set
         {
-            _config.Height = value;
-            _config.Save();
+            _configService.GetConfig().Height = value;
+            _configService.SaveConfig();
         }
     }
 
@@ -87,92 +80,61 @@ public partial class MainWindowViewModel
         }
     }
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(
+        IConfigService configService,
+        IClientService clientService,
+        IListenerService listenerService)
     {
-        _config = Config.Load();
-        BindingOperations.EnableCollectionSynchronization(Listener?.Messages, new object());
+        _configService = configService;
+        _clientService = clientService;
+        _listenerService = listenerService;
 
-        AddDefaultClient();
+        var listener = _listenerService.GetListener();
+        BindingOperations.EnableCollectionSynchronization(listener.Messages, new object());
     }
 
-    private void AddDefaultClient()
-    {
-        var client = new EchoClient(new EchoOptions());
-        client.OnReceiveMessage += message => {
-            Listener?.AddMessage(message);
-            return Task.CompletedTask;
-        };
-        _clients.Add(_defaultClient, client);
-        Listener?.AddMessageConverter(
-            _defaultClient,
-            (message) => new ChatMessage(
-                ChatMessageType.Echo,
-                "",
-                _config.Icon,
-                _config.Username,
-                message.Content,
-                message.Timestamp,
-                false));
-    }
-
-    private void AddUICommand()
-    {
-        _rootCommand.AddCommand("q", new QCommand(this));
-        _rootCommand.AddCommand("window", new WindowCommand(this));
-    }
 
     public async Task SendMessage(string message)
     {
-        if (!_clients.ContainsKey(_defaultClient))
-        {
-            throw new InvalidOperationException("Default client is not found.");
-        }
+        var client = _clientService.GetClient();
+        var config = _configService.GetConfig();
 
-        await _clients[_defaultClient].SendMessageAsync(
+        await client.SendMessageAsync(
             new Message(
-                _defaultClient,
+                "_",
                 "default",
-                _config.Username,
+                config.Username,
                 message,
-                _config.Icon));
-    }
-
-    public CommandArgs CreateCommandArgs(string[] args)
-    {
-        return new CommandArgs(args, _config, Listener, _clients);
+                config.Icon));
     }
 
     // コマンド実行
     public async Task ExecuteCommand(string str)
     {
-        var split = str.Split(' ');
-        var command = split[0];
+        var ok = await _commandManager.TryExecuteCommandAsync(str);
 
-        var args = new CommandArgs(split, _config, Listener, _clients);
-        await _rootCommand.ExecuteCommandAsync(args);
-
-        switch(command)
-        {
-            case "set":
-                SetCommand(args);
-                break;
-            case "discord":
-                await DiscordCommand(args);
-                break;
-            case "twitch":
-                await TwitchCommand(arg);
-                break;
-            case "clear":
-                ClearCommand(arg);
-                break;
-            case "server":
-                Console.WriteLine("Server Command");
-                StartWebServer();
-                break;
-            default:
-                HelpCommand(command);
-                break;
-        }
+        // switch(command)
+        // {
+        //     case "set":
+        //         SetCommand(args);
+        //         break;
+        //     case "discord":
+        //         await DiscordCommand(args);
+        //         break;
+        //     case "twitch":
+        //         await TwitchCommand(arg);
+        //         break;
+        //     case "clear":
+        //         ClearCommand(arg);
+        //         break;
+        //     case "server":
+        //         Console.WriteLine("Server Command");
+        //         StartWebServer();
+        //         break;
+        //     default:
+        //         HelpCommand(command);
+        //         break;
+        // }
     }
 
 

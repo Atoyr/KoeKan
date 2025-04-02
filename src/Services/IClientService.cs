@@ -7,7 +7,7 @@ public interface IClientService
     /// <summary>
     /// クライアントの取得
     /// </summary>
-    ITextClient GetClient(string? name);
+    ITextClient GetClient(string? name = null);
 
     /// <summary>
     /// クライアントの登録

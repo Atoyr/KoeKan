@@ -5,9 +5,18 @@ namespace Medoz.KoeKan.Data;
 
 /// <summary>
 /// </summary>
-public class Config : ConfigBase
+public class Config
 {
+    public Config()
+    {
+    }
+
     private readonly object _lock = new();
+
+    public IDictionary<string, DynamicConfig> Clients
+    {
+        get;
+    } = new Dictionary<string, DynamicConfig>();
 
     private string _username = "";
     public string Username
@@ -122,63 +131,6 @@ public class Config : ConfigBase
         }
     }
 
-    private DiscordConfig _discord = new(null, false, null);
-    public DiscordConfig Discord
-    {
-        get
-        {
-            lock(_lock)
-            {
-                return _discord;
-            }
-        }
-        set
-        {
-            lock(_lock)
-            {
-                _discord = value;
-            }
-        }
-    }
-
-    private TwitchConfig _twitch = new(Enumerable.Empty<string>(), false, null);
-    public TwitchConfig Twitch
-    {
-        get
-        {
-            lock(_lock)
-            {
-                return _twitch;
-            }
-        }
-        set
-        {
-            lock(_lock)
-            {
-                _twitch = value;
-            }
-        }
-    }
-
-    private VoicevoxConfig _voicevox = new(1, null);
-    public VoicevoxConfig Voicevox
-    {
-        get
-        {
-            lock(_lock)
-            {
-                return _voicevox;
-            }
-        }
-        set
-        {
-            lock(_lock)
-            {
-                _voicevox = value;
-            }
-        }
-    }
-
     private IEnumerable<string> _applications = new List<string>();
     public IEnumerable<string> Applications
     {
@@ -195,61 +147,6 @@ public class Config : ConfigBase
             {
                 _applications = value;
             }
-        }
-    }
-
-    public Config()
-    {
-    }
-
-    public void Save()
-    {
-        lock(_lock)
-        {
-            Save<Config>(_filePath);
-        }
-    }
-
-    public void Reload()
-    {
-        lock(_loadLock)
-        {
-            _instance = load();
-        }
-    }
-
-    protected static string _filePath { get => Path.Combine(_folderPath, "config.json"); }
-
-    private static Config? _instance;
-    private static readonly object _loadLock = new();
-
-    public static Config Load()
-    {
-        lock(_loadLock)
-        {
-            if (_instance is null)
-            {
-                _instance = load();
-            }
-            return _instance;
-        }
-    }
-
-    private static Config load()
-    {
-        if (File.Exists(_filePath))
-        {
-            string json = File.ReadAllText(_filePath);
-            var config =  JsonSerializer.Deserialize<Config>(json);
-            if (config is null)
-            {
-                throw new FileLoadException("Config file is corrupted.");
-            }
-            return config;
-        }
-        else
-        {
-            return new();
         }
     }
 }

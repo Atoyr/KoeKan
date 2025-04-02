@@ -1,7 +1,7 @@
 using System.Text;
 using System.Security.Cryptography;
 
-namespace Medoz.KoeKan.Data;
+namespace Medoz.KoeKan.Services;
 
 public class Credential
 {
