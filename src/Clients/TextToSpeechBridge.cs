@@ -31,7 +31,16 @@ public class TextToSpeechBridge : ITextClient
 
     public async Task StopAsync()
     {
+        if (_speaker.IsRunning)
+        {
+            await _speaker!.StopAsync();
+        }
         await _client!.StopAsync();
+    }
+
+    public async Task StopSeakerAsync()
+    {
+        await _speaker!.StopAsync();
     }
 
     public TextToSpeechBridge(ITextClient textClient, ISpeakerClient speakerClient)
@@ -73,6 +82,9 @@ public class TextToSpeechBridge : ITextClient
         return _client!.SendMessageAsync(message);
     }
 
-    public void Dispose() => _client?.Dispose();
-
+    public void Dispose()
+    {
+        // クライアントは再利用する可能性があるのでDisposeしない
+        _speaker?.Dispose();
+    }
 }

@@ -7,7 +7,7 @@ namespace Medoz.KoeKan.Data;
 /// </summary>
 public class Config : ConfigBase
 {
-    private object _lock = new();
+    private readonly object _lock = new();
 
     private string _username = "";
     public string Username
@@ -29,7 +29,7 @@ public class Config : ConfigBase
     }
 
     private string? _icon;
-    public string? Icon 
+    public string? Icon
     {
         get
         {
@@ -48,7 +48,7 @@ public class Config : ConfigBase
     }
 
     private double _width = 400;
-    public double Width 
+    public double Width
     {
         get
         {
@@ -67,7 +67,7 @@ public class Config : ConfigBase
     }
 
     private double _height = 800;
-    public double Height 
+    public double Height
     {
         get
         {
@@ -87,7 +87,7 @@ public class Config : ConfigBase
 
     private string _modKey = "CONTROL";
     private string _key = "ENTER";
-    public string ModKey 
+    public string ModKey
     {
         get
         {
@@ -123,7 +123,7 @@ public class Config : ConfigBase
     }
 
     private DiscordConfig _discord = new(null, false, null);
-    public DiscordConfig Discord 
+    public DiscordConfig Discord
     {
         get
         {
@@ -142,7 +142,7 @@ public class Config : ConfigBase
     }
 
     private TwitchConfig _twitch = new(Enumerable.Empty<string>(), false, null);
-    public TwitchConfig Twitch 
+    public TwitchConfig Twitch
     {
         get
         {
@@ -161,7 +161,7 @@ public class Config : ConfigBase
     }
 
     private VoicevoxConfig _voicevox = new(1, null);
-    public VoicevoxConfig Voicevox 
+    public VoicevoxConfig Voicevox
     {
         get
         {
@@ -180,7 +180,7 @@ public class Config : ConfigBase
     }
 
     private IEnumerable<string> _applications = new List<string>();
-    public IEnumerable<string> Applications 
+    public IEnumerable<string> Applications
     {
         get
         {
@@ -199,7 +199,7 @@ public class Config : ConfigBase
     }
 
     public Config()
-    { 
+    {
     }
 
     public void Save()
@@ -221,7 +221,7 @@ public class Config : ConfigBase
     protected static string _filePath { get => Path.Combine(_folderPath, "config.json"); }
 
     private static Config? _instance;
-    private static object _loadLock = new();
+    private static readonly object _loadLock = new();
 
     public static Config Load()
     {
@@ -240,9 +240,14 @@ public class Config : ConfigBase
         if (File.Exists(_filePath))
         {
             string json = File.ReadAllText(_filePath);
-            return JsonSerializer.Deserialize<Config>(json);
+            var config =  JsonSerializer.Deserialize<Config>(json);
+            if (config is null)
+            {
+                throw new FileLoadException("Config file is corrupted.");
+            }
+            return config;
         }
-        else 
+        else
         {
             return new();
         }

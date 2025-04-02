@@ -8,24 +8,17 @@ namespace Medoz.KoeKan.Command;
 
 public class DiscordCommand : ICommand
 {
-    private readonly Dictionary<string, ICommand> _commands = new()
-    {
-    };
+    public string CommandName => "discord";
 
-    public async Task ExecuteCommandAsync(CommandArgs args)
-    {
-        if (args.Args.Length == 0 || args.Args[0] == string.Empty)
-        {
-            return;
-        }
+    public string HelpText => "discord command";
 
-        if (args.Args[0] == "start" && args.Args.Length == 1)
-        {
-            if (_commands.ContainsKey("start"))
-            {
-                _ = _commands["start"].ExecuteCommandAsync(args);
-            }
-        }
+    public bool CanExecute(string[] args)
+    {
+        return false;
+    }
+
+    public async Task ExecuteCommandAsync(string[] args)
+    {
         await Task.CompletedTask;
     }
 }

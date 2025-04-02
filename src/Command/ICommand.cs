@@ -2,5 +2,8 @@ namespace Medoz.KoeKan.Command;
 
 public interface ICommand
 {
-    Task ExecuteCommandAsync(CommandArgs args);
+    string CommandName { get; }
+    string HelpText { get; }
+    bool CanExecute(string[] args);
+    Task ExecuteCommandAsync(string[] args);
 }

@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
-using Discord;
 
 namespace Medoz.KoeKan;
 

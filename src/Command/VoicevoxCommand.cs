@@ -8,27 +8,17 @@ namespace Medoz.KoeKan.Command;
 
 public class VoicevoxCommand : ICommand
 {
-    private readonly Dictionary<string, ICommand> _childCommands = new()
+    public string CommandName => "voicevox";
+
+    public string HelpText => "voicevox command";
+
+    public bool CanExecute(string[] args)
     {
-        { "start", new VoicevoxCommand_Start() },
-    };
-
-    public async Task ExecuteCommandAsync(CommandArgs args)
-    {
-
-        if (args.Args.Length > 0 && _childCommands.ContainsKey(args.Args[0]))
-        {
-            var command = _childCommands[args.Args[0]];
-            args.Next();
-            await command.ExecuteCommandAsync(args);
-            return;
-        }
-
-        HelpCommand(args);
-        await Task.CompletedTask;
+        return false;
     }
 
-    private void HelpCommand(CommandArgs args)
+    public async Task ExecuteCommandAsync(string[] args)
     {
+        await Task.CompletedTask;
     }
 }

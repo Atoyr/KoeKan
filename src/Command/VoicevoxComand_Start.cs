@@ -4,28 +4,51 @@ using System.Windows.Input;
 
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
+using Medoz.KoeKan.Services;
 namespace Medoz.KoeKan.Command;
 
 public class VoicevoxCommand_Start : ICommand
 {
-    public async Task ExecuteCommandAsync(CommandArgs args)
+    public string CommandName => "start";
+    public string HelpText => "[textClientName?] start voicevox client for textClient.";
+
+    private readonly IListenerService _listenerService;
+    private readonly IClientService _clientService;
+    private readonly IConfigService _configService;
+
+    public VoicevoxCommand_Start(
+        IListenerService listenerService,
+        IClientService clientService,
+        IConfigService configService)
     {
-        var clientName = "default";
-        if (args.Options.ContainsKey("client"))
+        _listenerService = listenerService;
+        _configService = configService;
+        _clientService = clientService;
+    }
+
+    public bool CanExecute(string[] args)
+    {
+        return args.Length == 0;
+    }
+
+    public async Task ExecuteCommandAsync(string[] args)
+    {
+        string? clientName = null;
+        if (args.Length > 0)
         {
-            clientName = args.Options["client"];
+            clientName = args[0];
         }
-        var client = args.Clients[clientName];
-        var speaker = new VoicevoxClient(new VoicevoxOptions() { SpeakerId = args.Config.Voicevox.SpeakerId });
+        // TODO: speakerIdを取得する
+        var speaker = new VoicevoxClient(new VoicevoxOptions() { });
         speaker.OnReady += (() => {
-            args.Listener.AddLogMessage(ChatMessageType.LogInfo, "Voicevox is ready.");
+            _listenerService.AddLogMessage("Voicevox is ready.");
             return Task.CompletedTask;
         });
-        args.Clients[clientName] = new TextToSpeechBridge(client, speaker);
+        _clientService.AppendSpeaker(speaker, clientName);
 
-        var bridge = args.Clients[clientName];
+        var bridge = _clientService.GetClient(clientName);
         var _ = bridge.RunAsync();
-        args.Listener.AddLogMessage(ChatMessageType.LogInfo, "Start Voicevox connections.");
+        _listenerService.AddLogMessage("Start Voicevox connections.");
         await Task.CompletedTask;
     }
 }

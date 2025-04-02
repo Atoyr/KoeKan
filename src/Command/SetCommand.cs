@@ -8,25 +8,16 @@ namespace Medoz.KoeKan.Command;
 
 public class SetCommand : ICommand
 {
-    private readonly Dictionary<string, ICommand> _commands = new()
-    {
-        { "start", new VoicevoxCommand_Start() },
-    };
+    public string CommandName => "set";
+    public string HelpText => "set command";
 
-    public async Task ExecuteCommandAsync(CommandArgs args)
+    public bool CanExecute(string[] args)
     {
-        if (args.Args.Length == 0 || args.Args[0] == string.Empty)
-        {
-            return;
-        }
+        return args.Length > 0 && args[0] == CommandName;
+    }
 
-        if (args.Args[0] == "start" && args.Args.Length == 1)
-        {
-            if (_commands.ContainsKey("start"))
-            {
-                _ = _commands["start"].ExecuteCommandAsync(args);
-            }
-        }
+    public async Task ExecuteCommandAsync(string[] args)
+    {
         await Task.CompletedTask;
     }
 }

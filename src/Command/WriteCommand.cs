@@ -1,21 +1,46 @@
 using Medoz.KoeKan.Data;
+using Medoz.KoeKan.Services;
 
 namespace Medoz.KoeKan.Command;
 
 public class WriteCommand : ICommand
 {
-    public async Task ExecuteCommandAsync(CommandArgs args)
+    public string CommandName => "write";
+
+    public string HelpText => "write command - save config file.";
+
+    private readonly IConfigService _configService;
+    private readonly IListenerService _listenerService;
+
+    public WriteCommand(
+        IListenerService listenerService,
+        IConfigService configService)
     {
-        if (args.Args.Length == 0 || args.Args[0] == string.Empty)
+        _listenerService = listenerService;
+        _configService = configService;
+    }
+
+    public bool CanExecute(string[] args)
+    {
+        if (args.Length == 0 || args[0] == string.Empty)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public async Task ExecuteCommandAsync(string[] args)
+    {
+        if (args.Length == 0 || args[0] == string.Empty)
         {
             try
             {
-                args.Config.Save();
-                args.Listener.AddLogMessage(ChatMessageType.LogInfo, "Config saved.");
+                _configService.SaveConfig();
+                _listenerService.AddLogMessage("Config saved.");
             }
             catch (System.Exception)
             {
-                args.Listener.AddLogMessage(ChatMessageType.LogWarning, "Save config is faild.");
+                _listenerService.AddLogMessage("Save config is faild.");
             }
         }
         await Task.CompletedTask;
