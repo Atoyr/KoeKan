@@ -20,7 +20,6 @@ public class DiscordCommand_Init : ICommand
 
     public DiscordCommand_Init(
         IListenerService listenerService,
-        IClientService clientService,
         IConfigService configService)
     {
         _listenerService = listenerService;
@@ -29,16 +28,11 @@ public class DiscordCommand_Init : ICommand
 
     public bool CanExecute(string[] args)
     {
-        return args.Length <= 1;
+        return args.Length == 0;
     }
 
     public async Task ExecuteCommandAsync(string[] args)
     {
-        string? clientName = null;
-        if (args.Length > 0)
-        {
-            clientName = args[0];
-        }
         var config = _configService.GetConfig();
         DynamicConfig? clientConfig;
         config.Clients.TryGetValue(_clientConfigName, out clientConfig);
