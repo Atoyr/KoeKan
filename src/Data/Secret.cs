@@ -21,4 +21,16 @@ public class Secret
         }
         return string.Empty;
     }
+
+    public void SetValue(string key, string value)
+    {
+        if (_secretDictionary.ContainsKey(key))
+        {
+            _secretDictionary[key] = value;
+        }
+        else
+        {
+            _secretDictionary.Add(key, value);
+        }
+    }
 }
