@@ -12,7 +12,7 @@ namespace Medoz.KoeKan.Command;
 public class DiscordCommand_Init : ICommand
 {
     public string CommandName => "init";
-    public string HelpText => "[textClientName?] init discord client setting.";
+    public string HelpText => "init discord client setting.";
 
     private readonly IListenerService _listenerService;
     private readonly IConfigService _configService;
