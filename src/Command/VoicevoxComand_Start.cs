@@ -1,6 +1,7 @@
 using System.CodeDom;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
+using System.Windows.Navigation;
 
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
@@ -28,7 +29,7 @@ public class VoicevoxCommand_Start : ICommand
 
     public bool CanExecute(string[] args)
     {
-        return args.Length == 0;
+        return args.Length <= 1;
     }
 
     public async Task ExecuteCommandAsync(string[] args)
@@ -44,15 +45,16 @@ public class VoicevoxCommand_Start : ICommand
         config.Clients.TryGetValue("voicevox", out clientConfig);
         if (clientConfig == null)
         {
-            clientConfig = new DynamicConfig();
-            config.Clients["voicevox"] = clientConfig;
+            _listenerService.AddLogMessage($"Voicevox client {clientName ?? ""} config not found.");
+            return;
         }
 
         if (clientConfig.TryGetValue("speaker_id", out uint speakerId) == false)
         {
-            clientConfig["speaker_id"] = 0;
+            _listenerService.AddLogMessage($"Voicevox client {clientName ?? ""} speaker_id not found.");
+            return;
         }
-        clientConfig.TryGetValue("speaker_id", out string? url);
+        clientConfig.TryGetValue("url", out string? url);
 
         var speaker = new VoicevoxClient(new VoicevoxOptions() {
             SpeakerId = speakerId,

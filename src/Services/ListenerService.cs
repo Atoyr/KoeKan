@@ -35,5 +35,10 @@ public class ListenerService : IListenerService
     {
         _listener.AddMessage(message);
     }
+
+    public void Clear()
+    {
+        _listener.Messages.Clear();
+    }
 }
 

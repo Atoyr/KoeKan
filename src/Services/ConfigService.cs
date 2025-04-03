@@ -32,6 +32,12 @@ public class ConfigService : IConfigService
         return _config;
     }
 
+    public void Save()
+    {
+        SaveConfig(GetConfig(), _configFileName);
+        SaveSecret(GetSecret(), _secretFileName);
+    }
+
     protected string _folderPath
     {
         get => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ApplicationName, "config");

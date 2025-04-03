@@ -9,4 +9,5 @@ public interface IListenerService
     void AddLogMessage(string message, string? logLevel = null);
     void AddCommandMessage(string message);
     void AddMessage(Message message);
+    void Clear();
 }

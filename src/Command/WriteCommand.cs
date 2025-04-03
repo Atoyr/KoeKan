@@ -22,26 +22,25 @@ public class WriteCommand : ICommand
 
     public bool CanExecute(string[] args)
     {
-        if (args.Length == 0 || args[0] == string.Empty)
-        {
-            return true;
-        }
-        return false;
+        return args.Length == 0 || args[0] == string.Empty;
     }
 
     public async Task ExecuteCommandAsync(string[] args)
     {
-        if (args.Length == 0 || args[0] == string.Empty)
+        if (!CanExecute(args))
         {
-            try
-            {
-                _configService.SaveConfig();
-                _listenerService.AddLogMessage("Config saved.");
-            }
-            catch (System.Exception)
-            {
-                _listenerService.AddLogMessage("Save config is faild.");
-            }
+            _listenerService.AddLogMessage("Invalid arguments for write command.");
+            return;
+        }
+
+        try
+        {
+            _configService.Save();
+            _listenerService.AddLogMessage("Config saved.");
+        }
+        catch (Exception)
+        {
+            _listenerService.AddLogMessage("Save config is faild.");
         }
         await Task.CompletedTask;
     }

@@ -137,22 +137,6 @@ public partial class MainWindowViewModel
         // }
     }
 
-
-    private void WriteCommand(string arg)
-    {
-        if (arg == "config")
-        {
-            var config = Config.Load();
-            config.Save();
-            Listener.AddLogMessage(ChatMessageType.LogSuccess, "Save config successed.");
-        }
-        else
-        {
-            // TODO ERROR
-            Listener.AddLogMessage(ChatMessageType.LogWarning, "Error Save Config is unsuccessed.");
-        }
-    }
-
     private void SetCommand(string text)
     {
         var strs = text.Split(' ', 2);
@@ -216,35 +200,5 @@ public partial class MainWindowViewModel
                 OpenSettingWindow?.Invoke();
                 break;
         }
-    }
-
-    private void HelpCommand(string arg)
-    {
-        if (!string.IsNullOrEmpty(arg))
-        {
-            Listener.AddLogMessage(ChatMessageType.LogWarning, $"⚠️COMMAND {arg} is not found.");
-        }
-
-        StringBuilder sb = new();
-        sb.AppendLine("COMMAND LIST");
-        sb.AppendLine("  w          : write");
-        sb.AppendLine("  q          : quit application");
-        sb.AppendLine("  set        : set config value");
-        sb.AppendLine("  clear      : clear messages");
-        sb.AppendLine("  window     : window command");
-        sb.AppendLine("  discord    : discord command");
-        sb.AppendLine("  twitch     : twitch command");
-        sb.AppendLine("  voicevox   : voicevox command");
-        Listener.AddLogMessage(ChatMessageType.LogInfo, sb.ToString());
-    }
-
-    private void ClearCommand(string arg)
-    {
-        if (!string.IsNullOrEmpty(arg))
-        {
-            Listener.AddLogMessage(ChatMessageType.LogWarning, $"⚠️ clear command is not used argument: {arg}.");
-            return;
-        }
-        Listener.ClearMessage();
     }
 }
