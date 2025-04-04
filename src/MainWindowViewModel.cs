@@ -145,30 +145,6 @@ public partial class MainWindowViewModel
 
         switch(strs[0])
         {
-            case "username":
-                config.Username = arg;
-                break;
-            case "icon":
-                config.Icon = arg;
-                break;
-            case "discord.token":
-                var secret = Secret.Load();
-                secret.EncryptDiscord(arg);
-                secret.Save();
-                break;
-            case "discord.defaultChannel":
-                ulong? discordDefaultChannelId = null;
-                try
-                {
-                    discordDefaultChannelId = Convert.ToUInt64(arg);
-                }
-                catch
-                {
-                    Listener.AddLogMessage(ChatMessageType.LogWarning, "defaultChannel is ulong value.");
-                    return;
-                }
-                config.Discord = config.Discord with { DefaultChannelId = discordDefaultChannelId};
-                break;
             case "voicevox.speaker":
                 uint? voicevoxSpeakerId = null;
                 try
@@ -185,15 +161,6 @@ public partial class MainWindowViewModel
                 break;
             case "application":
                 config.Applications = config.Applications.Concat(new string[] { arg });
-                break;
-            case "log":
-                var folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ApplicationName, "config");
-                _logger = LoggerUtility.GetLoggerFactory(new FileLoggerSettings(folderPath){ FileName = "log.txt"}).CreateLogger("Medoz");
-                Listener.AddLogMessage(ChatMessageType.LogInfo, "Start Logging.");
-                break;
-            case "nolog":
-                Listener.AddLogMessage(ChatMessageType.LogInfo, "Stop Logging.");
-                _logger = null;
                 break;
             default:
                 // 設定画面を開く

@@ -54,26 +54,6 @@ public partial class MainWindowViewModel
             Listener.AddLogMessage(ChatMessageType.LogWarning, "Discord is not started");
             return;
         }
-        if (strs[0] == "channels" && strs.Length == 1)
-        {
-            StringBuilder sb = new();
-            foreach(var c in _discordClient.GetChannels())
-            {
-                sb.AppendLine($"{c.GuildName} | {c.Id} : {c.Name}");
-            }
-            Listener.AddCommandMessage(sb.ToString());
-        }
-        else if (strs[0] == "channel" && strs.Length == 2)
-        {
-            if (ulong.TryParse(strs[1], out ulong id))
-            {
-                _discordClient.SetChannel(id);
-            }
-            else
-            {
-                Listener.AddLogMessage(ChatMessageType.LogWarning, "Id is not validated.");
-            }
-        }
         else if (strs[0] == "guilds" && strs.Length == 1)
         {
             var guilds = await _discordClient.GetGuildsAsync();

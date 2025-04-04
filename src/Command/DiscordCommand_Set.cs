@@ -15,14 +15,17 @@ public class DiscordCommand_Set : ICommand
     public string HelpText => "set discord property";
 
     private readonly IListenerService _listenerService;
+    private readonly IClientService _clientService;
     private readonly IConfigService _configService;
     private readonly string _clientConfigName = "discord";
 
     public DiscordCommand_Set(
         IListenerService listenerService,
+        IClientService clientService,
         IConfigService configService)
     {
         _listenerService = listenerService;
+        _clientService = clientService;
         _configService = configService;
     }
 
@@ -53,6 +56,9 @@ public class DiscordCommand_Set : ICommand
             case "token":
                 SetToken(args[1]);
                 break;
+            case "channel":
+                SetChannel(args[1]);
+                break;
             default:
                 _listenerService.AddLogMessage($"Unknown property {args[0]}.");
                 return;
@@ -62,12 +68,7 @@ public class DiscordCommand_Set : ICommand
 
     private void SetDefaultChannelId(DynamicConfig clientConfig, string id)
     {
-        ulong channelId = 0;
-        try
-        {
-            channelId = Convert.ToUInt64(id);
-        }
-        catch (Exception)
+        if (ulong.TryParse(id, out ulong channelId) == false)
         {
             _listenerService.AddLogMessage($"Invalid channel id {id}.");
             return;
@@ -84,6 +85,20 @@ public class DiscordCommand_Set : ICommand
         _configService.SaveSecret();
         _listenerService.AddLogMessage($"Token set to {token}.");
     }
+
+    private void SetChannel(string id)
+    {
+        if (ulong.TryParse(id, out ulong channelId) == false)
+        {
+            _listenerService.AddLogMessage($"Invalid channel id {id}.");
+            return;
+        }
+        var client = _clientService.GetClient(_clientConfigName);
+        if (client is not DiscordClient discordClient)
+        {
+            _listenerService.AddLogMessage("Discord client is not started.");
+            return;
+        }
+        discordClient.SetChannel(channelId);
+    }
 }
-
-
