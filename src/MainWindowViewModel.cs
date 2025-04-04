@@ -136,36 +136,4 @@ public partial class MainWindowViewModel
         //         break;
         // }
     }
-
-    private void SetCommand(string text)
-    {
-        var strs = text.Split(' ', 2);
-        var arg = strs.Length == 2 ? strs[1] : "";
-        var config = Config.Load();
-
-        switch(strs[0])
-        {
-            case "voicevox.speaker":
-                uint? voicevoxSpeakerId = null;
-                try
-                {
-                    voicevoxSpeakerId = Convert.ToUInt32(arg);
-                }
-                catch
-                {
-                    Listener.AddLogMessage(ChatMessageType.LogWarning, "speaker is uint value.");
-                    return;
-                }
-                // SetVoicevoxSpeakerId((uint)voicevoxSpeakerId);
-                config.Voicevox = config.Voicevox with { SpeakerId = (uint)voicevoxSpeakerId};
-                break;
-            case "application":
-                config.Applications = config.Applications.Concat(new string[] { arg });
-                break;
-            default:
-                // 設定画面を開く
-                OpenSettingWindow?.Invoke();
-                break;
-        }
-    }
 }
