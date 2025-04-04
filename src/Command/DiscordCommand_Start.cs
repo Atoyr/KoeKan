@@ -59,6 +59,7 @@ public class DiscordCommand_Start : ICommand
             _listenerService.AddLogMessage("Discord is ready.");
             await Task.CompletedTask;
         };
+        await discordClient.AuthAsync();
         _ = Task.Run(() => discordClient.RunAsync());
         await Task.CompletedTask;
     }
