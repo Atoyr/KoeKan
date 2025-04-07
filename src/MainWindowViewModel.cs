@@ -21,6 +21,7 @@ public partial class MainWindowViewModel
     private readonly IConfigService _configService;
     private readonly IClientService _clientService;
     private readonly IListenerService _listenerService;
+    private readonly IWindowService _windowService;
 
 
     /// <summary>
@@ -29,6 +30,7 @@ public partial class MainWindowViewModel
     private readonly Config _config;
 
     private readonly CommandManager _commandManager = new();
+    private readonly CommandFactory _commandFactory;
 
     /// <summary>
     /// MOD KEY
@@ -83,11 +85,23 @@ public partial class MainWindowViewModel
     public MainWindowViewModel(
         IConfigService configService,
         IClientService clientService,
-        IListenerService listenerService)
+        IListenerService listenerService,
+        IWindowService windowService)
     {
         _configService = configService;
         _clientService = clientService;
         _listenerService = listenerService;
+        _windowService = windowService;
+
+        // CommandFactoryの初期化
+        _commandFactory = new CommandFactory(
+            configService,
+            clientService,
+            listenerService,
+            windowService);
+
+        // CommandManagerの初期化
+        _commandFactory.InitializeCommandManager(_commandManager);
 
         var listener = _listenerService.GetListener();
         BindingOperations.EnableCollectionSynchronization(listener.Messages, new object());

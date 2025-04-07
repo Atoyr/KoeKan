@@ -1,4 +1,9 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Runtime.InteropServices;
@@ -6,6 +11,8 @@ using System.Diagnostics;
 using Newtonsoft.Json.Bson;
 
 using Medoz.KoeKan.Data;
+using Medoz.KoeKan.Services;
+using Medoz.KoeKan.Clients;
 
 namespace Medoz.KoeKan;
 
@@ -69,17 +76,26 @@ public partial class MainWindow : Window
             SetWindowLong(handle, GWL_EXSTYLE, style | WS_EX_TRANSPARENT);
         });
 
+        // サービスの初期化
+        var configService = new ConfigService();
+        var listenerService = new ListenerService(Listener);
+        var clientService = new ClientService(listenerService, configService);
+        var windowService = new WindowService(this);
+
         // ViewModelの初期化
-        DataContext = new MainWindowViewModel();
+        DataContext = new MainWindowViewModel(
+            configService,
+            clientService,
+            listenerService,
+            windowService);
         MainWindowViewModel mwvm = (MainWindowViewModel)DataContext;
         // 初期ウィンドウのサイズを設定
         Width = mwvm.Width;
         Height = mwvm.Height;
         mwvm.Dispatcher = Dispatcher;
-        mwvm.Listener = Listener;
 
         // メッセージの変更を通知する
-        mwvm.Listener.Messages.CollectionChanged += (_, e) => {
+        Listener.Messages.CollectionChanged += (_, e) => {
             Dispatcher.BeginInvoke( new Action(() => { ChatListBox_ScrollToEnd(); }), System.Windows.Threading.DispatcherPriority.ContextIdle);
         };
 

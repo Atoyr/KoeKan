@@ -12,6 +12,7 @@ public class CommandFactory
     private readonly IConfigService _configService;
     private readonly IClientService _clientService;
     private readonly IListenerService _listenerService;
+    private readonly IWindowService _windowService;
 
     /// <summary>
     /// コンストラクタ
@@ -19,14 +20,17 @@ public class CommandFactory
     /// <param name="configService">設定サービス</param>
     /// <param name="clientService">クライアントサービス</param>
     /// <param name="listenerService">リスナーサービス</param>
+    /// <param name="windowService">ウィンドウサービス</param>
     public CommandFactory(
         IConfigService configService,
         IClientService clientService,
-        IListenerService listenerService)
+        IListenerService listenerService,
+        IWindowService windowService)
     {
         _configService = configService;
         _clientService = clientService;
         _listenerService = listenerService;
+        _windowService = windowService;
     }
 
     /// <summary>
@@ -79,6 +83,10 @@ public class CommandFactory
             else if (parameterType == typeof(IListenerService))
             {
                 arguments[i] = _listenerService;
+            }
+            else if (parameterType == typeof(IWindowService))
+            {
+                arguments[i] = _windowService;
             }
             else
             {

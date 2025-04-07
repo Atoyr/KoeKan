@@ -1,11 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.IO;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Threading;
 
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Command;
-using System.Windows;
 
 namespace Medoz.KoeKan;
 
@@ -13,25 +17,29 @@ public partial class MainWindowViewModel
 {
 
     // View Action
-    public Action? CloseAction { get; set; }
-    public Action? ToggleMoveableWindowAction { get; set; }
-    public Action<double, double>? SetWindowSizeAction { get; set; }
     public Dispatcher? Dispatcher { get; set; }
     public Action? OpenSettingWindow { get; set; }
 
-    class QCommand: ICommand
+    class QCommand : ICommand
     {
         private readonly MainWindowViewModel _viewModel;
+
+        public string CommandName => "q";
+        public string HelpText => "アプリケーションを終了します";
+
         public QCommand(MainWindowViewModel viewModel)
         {
             _viewModel = viewModel;
         }
-        public Task ExecuteCommandAsync(CommandArgs args)
-        {
-            var commandArgs = args.Args.Skip(1).ToArray();
-            _viewModel.QuitCommand(commandArgs);
 
-            // TODO: 引数がなかったらエラーとする
+        public bool CanExecute(string[] args)
+        {
+            return true;
+        }
+
+        public Task ExecuteCommandAsync(string[] args)
+        {
+            _viewModel.QuitCommand(args);
             return Task.CompletedTask;
         }
     }
@@ -44,7 +52,11 @@ public partial class MainWindowViewModel
             { "setsize", (args) => { } },
         };
 
+        public string CommandName => "window";
+        public string HelpText => "ウィンドウ操作を行います";
+
         private readonly MainWindowViewModel _viewModel;
+
         public WindowCommand(MainWindowViewModel viewModel)
         {
             _viewModel = viewModel;
@@ -52,17 +64,25 @@ public partial class MainWindowViewModel
             _commands["size"] = _viewModel.SetWindowSize;
             _commands["quit"] = _viewModel.QuitCommand;
         }
-        public Task ExecuteCommandAsync(CommandArgs args)
+
+        public bool CanExecute(string[] args)
         {
-            var commandName = args.Args[0];
-            var commandArgs = args.Args.Skip(1).ToArray();
+            if (args.Length == 0) return false;
+            return _commands.ContainsKey(args[0]);
+        }
+
+        public Task ExecuteCommandAsync(string[] args)
+        {
+            if (args.Length == 0) return Task.CompletedTask;
+
+            var commandName = args[0];
+            var commandArgs = args.Skip(1).ToArray();
+
             if (_commands.ContainsKey(commandName))
             {
                 _commands[commandName](commandArgs);
-                return Task.CompletedTask;
             }
 
-            // TODO: 引数がなかったらエラーとする
             return Task.CompletedTask;
         }
     }
@@ -71,17 +91,16 @@ public partial class MainWindowViewModel
     {
         if (args.Length == 0)
         {
-            CloseAction?.Invoke();
+            _windowService.Close();
             return;
         }
         // TODO: 引数があったらエラーとする
     }
-
     private void ToggleMoveableWindow(string[] args)
     {
         if (args.Length == 0)
         {
-            ToggleMoveableWindowAction?.Invoke();
+            _windowService.ToggleMoveableWindow();
             return;
         }
         // TODO: 引数があったらエラーとする
@@ -93,11 +112,11 @@ public partial class MainWindowViewModel
         && int.TryParse(args[0], out int w)
         && int.TryParse(args[1], out int h))
         {
-            _config.Width = w;
-            _config.Height = h;
-            SetWindowSizeAction?.Invoke(w, h);
-            _config.Save();
-            Listener?.AddLogMessage(ChatMessageType.LogSuccess, $"Change Window Size. Widht:{w} Height:{h}");
+            _configService.GetConfig().Width = w;
+            _configService.GetConfig().Height = h;
+            _windowService.SetWindowSize(w, h);
+            _configService.SaveConfig();
+            _listenerService.GetListener()?.AddLogMessage(ChatMessageType.LogSuccess, $"Change Window Size. Widht:{w} Height:{h}");
             return;
         }
 
