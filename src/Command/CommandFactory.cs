@@ -166,7 +166,7 @@ public class CommandFactory
         commandManager.RegisterCommand(
             CreateCommandWithSubCommands<VoicevoxCommand>(
                 typeof(VoicevoxCommand_Init),
-                typeof(VoicevoxComand_Start)
+                typeof(VoicevoxCommand_Start)
             )
         );
 
