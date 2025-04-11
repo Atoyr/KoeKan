@@ -178,6 +178,14 @@ public class CommandFactory
             )
         );
 
+        // Windowコマンド
+        commandManager.RegisterCommand(
+            CreateCommandWithSubCommands<WindowCommand>(
+                typeof(WindowCommand_Size),
+                typeof(WindowCommand_Move)
+            )
+        );
+
         // その他のコマンド
         commandManager.RegisterCommand(CreateCommand<ClearCommand>());
         commandManager.RegisterCommand(CreateCommand<SetCommand>());
