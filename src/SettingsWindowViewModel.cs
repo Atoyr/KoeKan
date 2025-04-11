@@ -25,7 +25,7 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
 
     public SettingsWindowViewModel()
     {
-        Config = Config.Load();
+        // Config = Config.Load();
         SubmitCommand = new RelayCommand(Submit);
         SubmitAndCloseCommand = new RelayCommand(SubmitAndClose);
     }
@@ -33,7 +33,7 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
     public ICommand SubmitAndCloseCommand { get; }
     public void Submit()
     {
-        Config.Save();
+        // Config.Save();
     }
 
     public void SubmitAndClose()
