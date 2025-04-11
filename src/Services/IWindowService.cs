@@ -13,5 +13,8 @@ public interface IWindowService
 
     void SetWindowSize(double width, double height);
     void SetWindowPosition(double x, double y);
+
+    event EventHandler? WindowSizeChanged;
+    event EventHandler<bool>? MoveableWindowStateChanged;
 }
 

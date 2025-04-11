@@ -44,19 +44,23 @@ public static class WindowExtention
         SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
     }
 
-    public static void ToggleWindowTransparent(this Window window)
+    public static bool IsWindowTransparent(this Window window)
     {
         var handle = new WindowInteropHelper(window).Handle;
         UInt32 style = GetWindowLong(handle, GWL_EXSTYLE);
-        if ((style & WS_EX_TRANSPARENT) == WS_EX_TRANSPARENT)
+        return (style & WS_EX_TRANSPARENT) == WS_EX_TRANSPARENT;
+    }
+
+    public static void ToggleWindowTransparent(this Window window)
+    {
+        if (window.IsWindowTransparent())
         {
-            style &= ~WS_EX_TRANSPARENT;
+            window.SetWindowTransparent(false);
         }
         else
         {
-            style |= WS_EX_TRANSPARENT;
+            window.SetWindowTransparent(true);
         }
-        SetWindowLong(handle, GWL_EXSTYLE, style);
     }
 
     public static void SetWindowTransparent(this Window window, bool isTransparent = false)

@@ -21,40 +21,14 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class MainWindow : Window
 {
-    /// <summary>
-    /// このスタイルで作成されるウィンドウが透明であることを示します。
-    /// つまり、このウィンドウより奥にあるすべてのウィンドウは、このウィンドウによって隠されることはありません。
-    /// このスタイルで作成したウィンドウは、自らより奥にあるすべての兄弟ウィンドウが更新された後でのみ、WM_PAINT メッセージを受信します。
-    /// </summary>
-    private const UInt32 WS_EX_TRANSPARENT = 0x00000020;
-
-    /// <summary>Sets a new extended window style.</summary>
-    private const Int32 GWL_EXSTYLE = -20;
-
-    private const UInt32 SWP_NOSIZE = 0x0001;
-    private const UInt32 SWP_NOMOVE = 0x0002;
-
-    private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
 
     // 設定画面が開いているかどうか
     private bool isOpenModalWindow = false;
-
-    [DllImport("user32.dll", SetLastError = true)]
-    static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
 
-    /// <summary>ウインドウスタイルの取得</summary>
-    [DllImport("user32.dll")]
-    private static extern UInt32 GetWindowLong(IntPtr hWnd, Int32 index);
-
-    /// <summary>ウインドウスタイルの設定</summary>
-    [DllImport("user32.dll")]
-    private static extern UInt32 SetWindowLong(IntPtr hWnd, Int32 index, UInt32 newLong);
-
-    private UInt32 _defaultStyle;
 
     private HotKey? _hk;
 
@@ -68,19 +42,23 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        // ウィンドウの初期化時にウィンドウスタイルを設定
-        SourceInitialized += ((sender, e) => {
-            var handle = new WindowInteropHelper(this).Handle;
-            UInt32 style = GetWindowLong(handle, GWL_EXSTYLE);
-            _defaultStyle = style;
-            SetWindowLong(handle, GWL_EXSTYLE, style | WS_EX_TRANSPARENT);
-        });
-
         // サービスの初期化
         var configService = new ConfigService();
         var listenerService = new ListenerService(Listener);
         var clientService = new ClientService(listenerService, configService);
         var windowService = new WindowService(this);
+
+        windowService.MoveableWindowStateChanged += (s, e) => {
+            if (e)
+            {
+                MoveWindowBar.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                MoveWindowBar.Visibility = Visibility.Collapsed;
+                ChatListBox.SelectedItem = null;
+            }
+        };
 
         // ViewModelの初期化
         DataContext = new MainWindowViewModel(
@@ -104,7 +82,7 @@ public partial class MainWindow : Window
             SettingsWindow settingsWindow = new SettingsWindow();
             Topmost = false;
             settingsWindow.Owner = this;
-            SwitchWindowVisibility(false);
+            windowService.ChangeMoveableWindowState(false);
             isOpenModalWindow = true;
             bool? result = settingsWindow.ShowDialog();
             if (result == true)
@@ -209,133 +187,27 @@ public partial class MainWindow : Window
     /// <returns></returns>
     private async Task MessageEnterAsync(string text)
     {
-        if (!string.IsNullOrWhiteSpace(text))
+        if (!string.IsNullOrWhiteSpace(text)
+            && text.Length > 0
+            && DataContext is MainWindowViewModel mwvm)
         {
             if (text[0] == ':')
             {
-                await ExecuteCommandAsync(text.Substring(1));
+                await mwvm.ExecuteCommand(text.Substring(1));
             }
-            else if (DataContext is MainWindowViewModel mwvm)
+            else
             {
                 await mwvm.SendMessage(text);
             }
         }
     }
 
-    /// <summary>
-    /// コマンドを実行する
-    /// UI操作系はクラス内で処理
-    /// ロジック系はViewModelに処理を移譲
-    /// </summary>
-    /// <param name="command"></param>
-    /// <returns></returns>
-    private async Task ExecuteCommandAsync(string command)
-    {
-        if(command.Length == 0)
-        {
-            return;
-        }
-
-        var sprit = command.Split(' ');
-        switch(sprit[0])
-        {
-            case "q":
-                Close();
-                break;
-            case "window":
-                WindowCommand(sprit.Skip(1).ToArray());
-                break;
-            default:
-                await ((MainWindowViewModel)DataContext).ExecuteCommand(command);
-                break;
-        }
-    }
-
-    private void WindowCommand(string[] args)
-    {
-        if (args.Length == 0)
-        {
-            return;
-        }
-        switch(args[0])
-        {
-            case "move":
-                ToggleMoveableWindow();
-                break;
-            case "size":
-                SetWindowSize(args.Skip(1).ToArray());
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void ToggleMoveableWindow()
-    {
-        switch (MoveWindowBar.Visibility)
-        {
-            case Visibility.Visible:
-                SwitchWindowVisibility(false);
-                break;
-            case Visibility.Collapsed:
-                SwitchWindowVisibility(true);
-                break;
-        }
-        Listener.AddLogMessage(ChatMessageType.LogInfo, "Toggle Moveable Window.");
-    }
-
-    // ウィンドウが移動可能かを切り替える
-    private void SwitchWindowVisibility(bool isVisible)
-    {
-        var handle = new WindowInteropHelper(this).Handle;
-        if(isVisible)
-        {
-            MoveWindowBar.Visibility = Visibility.Visible;
-            SetWindowLong(handle, GWL_EXSTYLE, _defaultStyle);
-        }
-        else
-        {
-            MoveWindowBar.Visibility = Visibility.Collapsed;
-            UInt32 style = GetWindowLong(handle, GWL_EXSTYLE);
-            SetWindowLong(handle, GWL_EXSTYLE, style | WS_EX_TRANSPARENT);
-            ChatListBox.SelectedItem = null;
-        }
-    }
-
-    private void SetWindowSize(string[] args)
-    {
-        if (args.Length == 2
-        && int.TryParse(args[0], out int w)
-        && int.TryParse(args[1], out int h)
-        && DataContext is MainWindowViewModel mwvm)
-        {
-            Width = w;
-            Height = h;
-            mwvm.Width = w;
-            mwvm.Height = h;
-            Listener.AddLogMessage(ChatMessageType.LogSuccess, $"Change Window Size. Widht:{w} Height:{h}");
-        }
-
-    }
-
     private void Border_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         => DragMove();
-
-    private void SetWindowIsTops()
-    {
-        var helper = new WindowInteropHelper(this);
-        SetWindowPos(helper.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-    }
 
     private void ChatListBox_ScrollToEnd()
     {
         var item = ChatListBox.Items[ChatListBox.Items.Count - 1];
         ChatListBox.ScrollIntoView(item);
     }
-
-    private void AddMessage(string message)
-    {
-        // ((MainWindowViewModel)DataContext).Listener.Messages.Add(message);
-    }
-
 }
