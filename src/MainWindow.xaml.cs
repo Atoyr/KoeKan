@@ -48,6 +48,10 @@ public partial class MainWindow : Window
         var clientService = new ClientService(listenerService, configService);
         var windowService = new WindowService(this);
 
+        SourceInitialized += ((sender, e) => {
+            this.SetWindowTransparent(true);
+        });
+
         windowService.MoveableWindowStateChanged += (s, e) => {
             if (e)
             {
