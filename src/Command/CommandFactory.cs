@@ -189,6 +189,7 @@ public class CommandFactory
         // その他のコマンド
         commandManager.RegisterCommand(CreateCommand<ClearCommand>());
         commandManager.RegisterCommand(CreateCommand<SetCommand>());
-        commandManager.RegisterCommand(CreateCommand<WriteCommand>());
+        commandManager.RegisterCommand(CreateCommand<WriteCommand>(), "w");
+        commandManager.RegisterCommand(CreateCommand<QuitCommand>(), "q");
     }
 }
