@@ -63,17 +63,17 @@ public static class WindowExtention
         }
     }
 
-    public static void SetWindowTransparent(this Window window, bool isTransparent = false)
+    public static void SetWindowTransparent(this Window window, bool transparenting = false)
     {
         var handle = new WindowInteropHelper(window).Handle;
         UInt32 style = GetWindowLong(handle, GWL_EXSTYLE);
-        if (isTransparent)
+        if (transparenting)
         {
-            style &= ~WS_EX_TRANSPARENT;
+            style |= WS_EX_TRANSPARENT;
         }
         else
         {
-            style |= WS_EX_TRANSPARENT;
+            style &= ~WS_EX_TRANSPARENT;
         }
         SetWindowLong(handle, GWL_EXSTYLE, style);
     }

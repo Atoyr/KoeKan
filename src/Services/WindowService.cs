@@ -27,14 +27,16 @@ public class WindowService : IWindowService
 
     public void ToggleMoveableWindow()
     {
-        var isMoveable = !_window.IsWindowTransparent();
-        ChangeMoveableWindowState(isMoveable);
+        // ウィンドウが透明でない場合は移動可能、透明な場合は移動不可とする
+        var moveable = _window.IsWindowTransparent();
+        ChangeMoveableWindowState(moveable);
     }
 
-    public void ChangeMoveableWindowState(bool isMoveable)
+    public void ChangeMoveableWindowState(bool moveable)
     {
-        _window.SetWindowTransparent(!isMoveable);
-        MoveableWindowStateChanged?.Invoke(this, isMoveable);
+        // 透明な状態は移動不可、透明でない状態は移動可能とする
+        _window.SetWindowTransparent(!moveable);
+        MoveableWindowStateChanged?.Invoke(this, moveable);
     }
 
     public void SetWindowSize(double width, double height)
