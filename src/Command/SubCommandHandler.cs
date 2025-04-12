@@ -68,7 +68,7 @@ public class SubCommandHandler : ICommand
         {
             var subCommand = _subCommands[args[0]];
             var subArgs = args.Skip(1).ToArray();
-            await subCommand.ExecuteCommandAsync(args);
+            await subCommand.ExecuteCommandAsync(subArgs);
         }
     }
 
