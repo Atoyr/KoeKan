@@ -12,7 +12,7 @@ public class DynamicConfigConverter : JsonConverter<DynamicConfig>
     {
 
         // リフレクションを使ってプライベートフィールドにアクセス
-        var field = typeof(Config).GetField("_configValues",
+        var field = typeof(DynamicConfig).GetField("_configValues",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var configValues = field!.GetValue(value) as Dictionary<string, object>;
 

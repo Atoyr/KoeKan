@@ -90,7 +90,7 @@ public class ClientService : IClientService
         {
             clientName = _defaultClient;
         }
-        if (_clients.ContainsKey(clientName))
+        if (!_clients.ContainsKey(clientName))
         {
             throw new ArgumentException($"Client {clientName} is not registered.");
         }
