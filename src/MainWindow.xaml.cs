@@ -203,6 +203,7 @@ public partial class MainWindow : Window
             {
                 await mwvm.SendMessage(text);
             }
+            MessageBox.Text = string.Empty;
         }
     }
 
