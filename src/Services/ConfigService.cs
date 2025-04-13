@@ -13,7 +13,7 @@ public class ConfigService : IConfigService
     private readonly string _configFileName = "config.json";
     private Config? _config = null;
 
-    private readonly string _secretFileName = "secret.json";
+    private readonly string _secretFileName = "secret";
     private Secret? _secret = null;
 
     public ConfigService() { }
@@ -28,6 +28,11 @@ public class ConfigService : IConfigService
         if (_config is null)
         {
             _config = LoadConfig(_configFileName);
+            if (_config is null)
+            {
+                _config = new Config();
+                Save();
+            }
         }
         return _config;
     }
@@ -43,7 +48,7 @@ public class ConfigService : IConfigService
         get => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ApplicationName, "config");
     }
 
-    private Config LoadConfig(string fileName)
+    private Config? LoadConfig(string fileName)
     {
         string filePath = Path.Combine(_folderPath, "secret.json");
         if (File.Exists(filePath))
@@ -55,7 +60,7 @@ public class ConfigService : IConfigService
                 return config;
             }
         }
-        return new Config();
+        return null;
     }
 
     public void SaveConfig()
@@ -67,11 +72,12 @@ public class ConfigService : IConfigService
         SaveConfig(_config, _configFileName);
     }
 
-    private void SaveConfig(Config source, string filePath)
+    private void SaveConfig(Config source, string fileName)
     {
         Directory.CreateDirectory(_folderPath); // フォルダが存在しない場合は作成
 
         string json = JsonSerializer.Serialize(source);
+        string filePath = Path.Combine(_folderPath, fileName);
         File.WriteAllText(filePath, json);
     }
 
