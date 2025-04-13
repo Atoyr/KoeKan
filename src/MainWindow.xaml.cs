@@ -36,11 +36,12 @@ public partial class MainWindow : Window
 
     private string? _activeProcessName;
 
-    private Listener Listener { get; set; } = new ();
+    private Listener Listener { get; set; }
 
     public MainWindow()
     {
         InitializeComponent();
+        Listener = new Listener(Dispatcher, null);
 
         // サービスの初期化
         var configService = new ConfigService();
@@ -74,7 +75,6 @@ public partial class MainWindow : Window
         // 初期ウィンドウのサイズを設定
         Width = mwvm.Width;
         Height = mwvm.Height;
-        mwvm.Dispatcher = Dispatcher;
 
         // メッセージの変更を通知する
         Listener.Messages.CollectionChanged += (_, e) => {

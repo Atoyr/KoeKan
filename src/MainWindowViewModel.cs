@@ -1,14 +1,7 @@
-using System.Collections.ObjectModel;
-using System.Text;
 using System.Windows.Data;
-using System.IO;
-
-using Microsoft.Extensions.Logging;
 
 using Medoz.KoeKan.Clients;
-using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Command;
-using Medoz.Logging;
 using Medoz.KoeKan.Services;
 
 namespace Medoz.KoeKan;
@@ -25,6 +18,8 @@ public partial class MainWindowViewModel
 
     private readonly CommandManager _commandManager = new();
     private readonly CommandFactory _commandFactory;
+
+    public Action? OpenSettingWindow { get; set; }
 
     /// <summary>
     /// MOD KEY

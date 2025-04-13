@@ -12,7 +12,7 @@ public class Listener : IDisposable
 {
     public ObservableCollection<ChatMessage> Messages { get; init; } = new();
 
-    public Dispatcher? Dispatcher { get; set; }
+    private Dispatcher? _dispatcher { get; set; }
 
     private readonly Dictionary<string, Func<Message, ChatMessage>> _messageConverter = new();
 
@@ -25,8 +25,9 @@ public class Listener : IDisposable
         Messages.Clear();
     }
 
-    public Listener(ILogger? logger = null)
+    public Listener(Dispatcher? dispatcher = null, ILogger? logger = null)
     {
+        _dispatcher = dispatcher;
         _logger = logger;
     }
 
@@ -92,13 +93,13 @@ public class Listener : IDisposable
     /// <param name="action"></param>
     private void Dispatch(Action action)
     {
-        if (Dispatcher is null)
+        if (_dispatcher is null)
         {
             action();
         }
         else
         {
-            Dispatcher.Invoke(action);
+            _dispatcher.Invoke(action);
         }
     }
 

@@ -29,6 +29,7 @@ public class ClientService : IClientService
             _listener?.AddMessage(message);
             return Task.CompletedTask;
         };
+        client.RunAsync().Wait();
         _clients.Add(_defaultClient, client);
         var listener = _listener.GetListener();
         var config = _config.GetConfig();
