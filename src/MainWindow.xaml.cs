@@ -118,7 +118,11 @@ public partial class MainWindow : Window
             return;
         }
 
-        MainWindowViewModel mwvm = (MainWindowViewModel)DataContext;
+        if (DataContext is not MainWindowViewModel mwvm)
+        {
+            return;
+        }
+
         _activeProcessName = null;
 
         // 対象プロセスを順番に探索し、最初に見つかったプロセスをアクティブにする

@@ -50,7 +50,7 @@ public class ConfigService : IConfigService
 
     private Config? LoadConfig(string fileName)
     {
-        string filePath = Path.Combine(_folderPath, "secret.json");
+        string filePath = Path.Combine(_folderPath, fileName);
         if (File.Exists(filePath))
         {
             string json = File.ReadAllText(filePath);

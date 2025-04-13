@@ -23,12 +23,6 @@ public partial class MainWindowViewModel
     private readonly IListenerService _listenerService;
     private readonly IWindowService _windowService;
 
-
-    /// <summary>
-    /// 設定ファイル
-    /// </summary>
-    private readonly Config _config;
-
     private readonly CommandManager _commandManager = new();
     private readonly CommandFactory _commandFactory;
 
@@ -78,7 +72,7 @@ public partial class MainWindowViewModel
     {
         get
         {
-            return _config.Applications;
+            return _configService.GetConfig().Applications;
         }
     }
 
