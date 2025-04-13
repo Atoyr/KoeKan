@@ -40,8 +40,7 @@ public class VoicevoxCommand_Init : ICommand
         }
         var config = _configService.GetConfig();
         var clientConfigName = GetClientConfigName(clientName);
-        DynamicConfig? clientConfig;
-        config.Clients.TryGetValue(clientConfigName, out clientConfig);
+        config.Clients.TryGetValue(clientConfigName, out DynamicConfig? clientConfig);
         if (clientConfig is null)
         {
             clientConfig = new DynamicConfig();
