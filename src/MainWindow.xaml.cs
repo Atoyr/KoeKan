@@ -162,7 +162,11 @@ public partial class MainWindow : Window
         }
     }
 
-    // メッセージボックスでキーが押されたときの処理
+    /// <summary>
+    /// メッセージボックスでキーが押されたときの処理のハンドラ
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     public async void MessageBox_KeyDown(object sender, KeyEventArgs e)
     {
         // メッセージボックスでEnterキーが押された場合、メッセージを送信する

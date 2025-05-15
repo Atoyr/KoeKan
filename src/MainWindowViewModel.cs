@@ -19,12 +19,12 @@ public partial class MainWindowViewModel
     private readonly CommandManager _commandManager = new();
     private readonly CommandFactory _commandFactory;
 
-    public Action? OpenSettingWindow { get; set; }
+    internal Action? OpenSettingWindow { get; set; }
 
     /// <summary>
     /// MOD KEY
     /// </summary>
-    public uint ModKey
+    internal uint ModKey
     {
         get
         {
@@ -35,7 +35,7 @@ public partial class MainWindowViewModel
     /// <summary>
     /// HOT KEY
     /// </summary>
-    public uint Key
+    internal uint Key
     {
         get
         {
@@ -43,7 +43,7 @@ public partial class MainWindowViewModel
         }
     }
 
-    public double Width
+    internal double Width
     {
         get => _configService.GetConfig().Width;
         set
@@ -52,7 +52,7 @@ public partial class MainWindowViewModel
             _configService.SaveConfig();
         }
     }
-    public double Height
+    internal double Height
     {
         get => _configService.GetConfig().Height;
         set
@@ -63,7 +63,7 @@ public partial class MainWindowViewModel
     }
 
     // アクティブに変更できるアプリケーション一覧
-    public IEnumerable<string> Applications
+    internal IEnumerable<string> Applications
     {
         get
         {
@@ -96,8 +96,12 @@ public partial class MainWindowViewModel
         BindingOperations.EnableCollectionSynchronization(listener.Messages, new object());
     }
 
-
-    public async Task SendMessage(string message)
+    /// <summary>
+    /// メッセージを送信します。
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    internal async Task SendMessage(string message)
     {
         var client = _clientService.GetClient();
         var config = _configService.GetConfig();
@@ -111,32 +115,20 @@ public partial class MainWindowViewModel
                 config.Icon));
     }
 
-    // コマンド実行
-    public async Task ExecuteCommand(string str)
+    /// <summary>
+    /// コマンドを実行します。
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    internal async Task ExecuteCommand(string str)
     {
-        var ok = await _commandManager.TryExecuteCommandAsync(str);
-
-        // switch(command)
-        // {
-        //     case "set":
-        //         SetCommand(args);
-        //         break;
-        //     case "discord":
-        //         await DiscordCommand(args);
-        //         break;
-        //     case "twitch":
-        //         await TwitchCommand(arg);
-        //         break;
-        //     case "clear":
-        //         ClearCommand(arg);
-        //         break;
-        //     case "server":
-        //         Console.WriteLine("Server Command");
-        //         StartWebServer();
-        //         break;
-        //     default:
-        //         HelpCommand(command);
-        //         break;
-        // }
+        if (!await _commandManager.TryExecuteCommandAsync(str))
+        {
+            // コマンドが存在しない場合はヘルプを表示
+            var command = str.Split(' ')[0];
+            var helpText = _commandManager.GetHelpText(command);
+            _listenerService.AddLogMessage(helpText);
+            return;
+        }
     }
 }
