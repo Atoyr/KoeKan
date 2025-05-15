@@ -16,6 +16,10 @@ public class Config
     public IDictionary<string, DynamicConfig> Clients
     {
         get;
+        // FIXME: Json形式で保存するために、setをpublicにしているが、
+        // できればprivateにしたい。
+
+        set;
     } = new Dictionary<string, DynamicConfig>();
 
     private string _username = "";
