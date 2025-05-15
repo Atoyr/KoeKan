@@ -4,15 +4,23 @@ using System.Text.Encodings.Web;
 using System.Text.Unicode;
 
 using Medoz.KoeKan.Data;
-using System.Runtime.CompilerServices;
 
 namespace Medoz.KoeKan.Services;
 
+/// <summary>
+/// 設定情報を管理するクラス
+/// </summary>
 public class ConfigService : IConfigService
 {
+    /// <summary>
+    /// 設定ファイルの名前
+    /// </summary>
     private readonly string _configFileName = "config.json";
     private Config? _config = null;
 
+    /// <summary>
+    /// シークレットファイルの名前
+    /// </summary>
     private readonly string _secretFileName = "secret";
     private Secret? _secret = null;
 
@@ -23,6 +31,10 @@ public class ConfigService : IConfigService
         _config = config;
     }
 
+    /// <summary>
+    /// 設定情報を取得します。
+    /// </summary>
+    /// <returns></returns>
     public Config GetConfig()
     {
         if (_config is null)
@@ -37,17 +49,28 @@ public class ConfigService : IConfigService
         return _config;
     }
 
+    /// <summary>
+    /// 設定とシークレット情報を保存します。
+    /// </summary>
     public void Save()
     {
         SaveConfig(GetConfig(), _configFileName);
         SaveSecret(GetSecret(), _secretFileName);
     }
 
+    /// <summary>
+    /// 設定ファイルのパスを取得します。
+    /// </summary>
     protected string _folderPath
     {
         get => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ApplicationName, "config");
     }
 
+    /// <summary>
+    /// 設定ファイルを読み込みます。
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
     private Config? LoadConfig(string fileName)
     {
         string filePath = Path.Combine(_folderPath, fileName);
@@ -63,6 +86,9 @@ public class ConfigService : IConfigService
         return null;
     }
 
+    /// <summary>
+    /// 設定ファイルを保存します。
+    /// </summary>
     public void SaveConfig()
     {
         if (_config is null)
@@ -72,6 +98,11 @@ public class ConfigService : IConfigService
         SaveConfig(_config, _configFileName);
     }
 
+    /// <summary>
+    /// 設定ファイルを保存します。
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="fileName"></param>
     private void SaveConfig(Config source, string fileName)
     {
         Directory.CreateDirectory(_folderPath); // フォルダが存在しない場合は作成
@@ -81,12 +112,21 @@ public class ConfigService : IConfigService
         File.WriteAllText(filePath, json);
     }
 
+    /// <summary>
+    /// シークレット情報を取得します。
+    /// </summary>
+    /// <returns></returns>
     public Secret GetSecret()
     {
         string filePath = Path.Combine(_folderPath, "secret.json");
         return LoadSecret(filePath);
     }
 
+    /// <summary>
+    /// シークレット情報をファイルから読込みます。
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
     private Secret LoadSecret(string filePath)
     {
         if (_secret is not null)
@@ -109,6 +149,9 @@ public class ConfigService : IConfigService
         return _secret;
     }
 
+    /// <summary>
+    /// シークレット情報をファイルに保存します。
+    /// </summary>
     public void SaveSecret()
     {
         if (_secret is null)
@@ -118,6 +161,9 @@ public class ConfigService : IConfigService
         SaveSecret(_secret, _secretFileName);
     }
 
+    /// <summary>
+    /// シークレット情報をファイルに保存します。
+    /// </summary>
     private void SaveSecret(Secret source, string fileName)
     {
         Directory.CreateDirectory(_folderPath); // フォルダが存在しない場合は作成
@@ -130,7 +176,7 @@ public class ConfigService : IConfigService
         };
 
         string json = JsonSerializer.Serialize(source, source.GetType(), jsonSerializerOption);
-        string credentialString = Credential.EncryptString(json);
+        string credentialString = Credential.EncryptString(json); // 暗号化
         string filePath = Path.Combine(_folderPath, fileName);
         File.WriteAllText(filePath, credentialString);
     }

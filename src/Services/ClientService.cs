@@ -1,10 +1,11 @@
-using System.Runtime.CompilerServices;
-
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 
 namespace Medoz.KoeKan.Services;
 
+/// <summary>
+/// クライアントの管理を行うクラス
+/// </summary>
 public class ClientService : IClientService
 {
     private readonly Dictionary<string, ITextClient> _clients = new();
@@ -15,6 +16,11 @@ public class ClientService : IClientService
     private readonly IConfigService _config;
 
 
+    /// <summary>
+    /// クライアントの管理を行うクラス
+    /// </summary>
+    /// <param name="listenerService"></param>
+    /// <param name="configService"></param>
     public ClientService(IListenerService listenerService, IConfigService configService)
     {
         _config = configService;
@@ -22,6 +28,9 @@ public class ClientService : IClientService
         AddDefaultClient();
     }
 
+    /// <summary>
+    /// デフォルトクライアントを追加します。
+    /// </summary>
     private void AddDefaultClient()
     {
         var client = new EchoClient(new EchoOptions());
@@ -31,6 +40,7 @@ public class ClientService : IClientService
         };
         client.RunAsync().Wait();
         _clients.Add(_defaultClient, client);
+
         var listener = _listener.GetListener();
         var config = _config.GetConfig();
         listener?.AddMessageConverter(
@@ -84,6 +94,12 @@ public class ClientService : IClientService
         }
     }
 
+    /// <summary>
+    /// テキストクライアントにスピーカーを追加します。
+    /// </summary>
+    /// <param name="speaker"></param>
+    /// <param name="clientName"></param>
+    /// <exception cref="ArgumentException"></exception>
     public void AppendSpeaker(ISpeakerClient speaker, string? clientName = null)
     {
         if (clientName == null)
@@ -98,6 +114,11 @@ public class ClientService : IClientService
         _clients[clientName] = new TextToSpeechBridge(_clients[clientName], speaker);
     }
 
+    /// <summary>
+    /// テキストクライントに紐付いたスピーカーを削除します。
+    /// </summary>
+    /// <param name="clientName"></param>
+    /// <exception cref="ArgumentException"></exception>
     public void RemoveSpeaker(string? clientName = null)
     {
         if (clientName == null)

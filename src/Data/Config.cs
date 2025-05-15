@@ -13,6 +13,9 @@ public class Config
 
     private readonly object _lock = new();
 
+    /// <summary>
+    /// クライアントの設定
+    /// </summary>
     public IDictionary<string, DynamicConfig> Clients
     {
         get;
@@ -23,6 +26,9 @@ public class Config
     } = new Dictionary<string, DynamicConfig>();
 
     private string _username = "";
+    /// <summary>
+    /// 自身の名前
+    /// </summary>
     public string Username
     {
         get
@@ -42,6 +48,9 @@ public class Config
     }
 
     private string? _icon;
+    /// <summary>
+    /// 自身のアイコンファイルのパス
+    /// </summary>
     public string? Icon
     {
         get
@@ -61,6 +70,9 @@ public class Config
     }
 
     private double _width = 400;
+    /// <summary>
+    /// ウィンドウの幅
+    /// </summary>
     public double Width
     {
         get
@@ -80,6 +92,9 @@ public class Config
     }
 
     private double _height = 800;
+    /// <summary>
+    /// ウィンドウの高さ
+    /// </summary>
     public double Height
     {
         get
@@ -100,6 +115,10 @@ public class Config
 
     private string _modKey = "CONTROL";
     private string _key = "ENTER";
+
+    /// <summary>
+    /// ホットキーの修飾キー
+    /// </summary>
     public string ModKey
     {
         get
@@ -117,6 +136,10 @@ public class Config
             }
         }
     }
+
+    /// <summary>
+    /// ホットキーのキー
+    /// </summary>
     public string Key
     {
         get
@@ -136,6 +159,9 @@ public class Config
     }
 
     private IEnumerable<string> _applications = new List<string>();
+    /// <summary>
+    /// アクティブに変更できるアプリケーション一覧
+    /// </summary>
     public IEnumerable<string> Applications
     {
         get
