@@ -17,4 +17,3 @@ public interface IWindowService
     event EventHandler? WindowSizeChanged;
     event EventHandler<bool>? MoveableWindowStateChanged;
 }
-
