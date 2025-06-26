@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
+using Medoz.KoeKan.Services;
 using Medoz.Logging;
 
 namespace Medoz.KoeKan;
@@ -19,13 +20,22 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class SettingsWindowViewModel : INotifyPropertyChanged
 {
+    private IConfigService _configService;
     public Config Config { get; private set; }
 
     public event EventHandler RequestClose;
 
     public SettingsWindowViewModel()
     {
-        // Config = Config.Load();
+        Config = new Config();
+        SubmitCommand = new RelayCommand(Submit);
+        SubmitAndCloseCommand = new RelayCommand(SubmitAndClose);
+    }
+
+    public SettingsWindowViewModel(IConfigService configService)
+    {
+        _configService = configService;
+        Config = _configService.GetConfig();
         SubmitCommand = new RelayCommand(Submit);
         SubmitAndCloseCommand = new RelayCommand(SubmitAndClose);
     }
@@ -33,6 +43,7 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
     public ICommand SubmitAndCloseCommand { get; }
     public void Submit()
     {
+        _configService.Save();
         // Config.Save();
     }
 

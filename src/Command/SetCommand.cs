@@ -15,15 +15,18 @@ public class SetCommand : ICommand
     private readonly IListenerService _listenerService;
     private readonly IConfigService _configService;
 
-    public SetCommand(IListenerService listenerService, IConfigService configService)
+    private readonly IWindowService _windowService;
+
+    public SetCommand(IListenerService listenerService, IConfigService configService, IWindowService windowService)
     {
+        _windowService = windowService;
         _listenerService = listenerService;
         _configService = configService;
     }
 
     public bool CanExecute(string[] args)
     {
-        return args.Length > 0;
+        return args.Length >= 0;
     }
 
     public async Task ExecuteCommandAsync(string[] args)
@@ -31,6 +34,12 @@ public class SetCommand : ICommand
         if (!CanExecute(args))
         {
             _listenerService.AddLogMessage("Invalid arguments for set command.");
+            return;
+        }
+
+        if (args.Length == 0)
+        {
+            _windowService.OpenSettingWindow();
             return;
         }
 

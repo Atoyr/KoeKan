@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
+using Discord.Rest;
 
 namespace Medoz.KoeKan.Services;
 
@@ -15,6 +16,10 @@ public class WindowService : IWindowService
     public event EventHandler? WindowSizeChanged;
     public event EventHandler<bool>? MoveableWindowStateChanged;
 
+
+    public event EventHandler? SettingWindowOpened;
+    public event EventHandler? SettingWindowClosed;
+
     public WindowService(Window window)
     {
         _window = window ?? throw new ArgumentNullException(nameof(window));
@@ -24,6 +29,21 @@ public class WindowService : IWindowService
     {
         _window.Close();
     }
+
+    public bool OpenSettingWindow()
+    {
+        var settingsWindow = new SettingsWindow();
+        settingsWindow.Owner = _window;
+        settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        ChangeMoveableWindowState(false);
+        SettingWindowOpened?.Invoke(this, EventArgs.Empty);
+        var result = settingsWindow.ShowDialog() ?? false;
+
+        ChangeMoveableWindowState(true);
+        SettingWindowClosed?.Invoke(this, EventArgs.Empty);
+        return result;
+    }
+
 
     public void ToggleMoveableWindow()
     {

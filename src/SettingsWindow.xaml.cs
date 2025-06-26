@@ -4,8 +4,6 @@ namespace Medoz.KoeKan;
 
 public partial class SettingsWindow : Window
 {
-    public string Username { get; private set; } = "";
-
     public SettingsWindow()
     {
         InitializeComponent();

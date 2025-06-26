@@ -81,6 +81,18 @@ public partial class MainWindow : Window
             Dispatcher.BeginInvoke( new Action(() => { ChatListBox_ScrollToEnd(); }), System.Windows.Threading.DispatcherPriority.ContextIdle);
         };
 
+        windowService.SettingWindowOpened += (s, e) => {
+            // 設定画面が開いたときの処理
+            Topmost = false;
+            isOpenModalWindow = true;
+        };
+
+        windowService.SettingWindowClosed += (s, e) => {
+            // 設定画面が開いたときの処理
+            Topmost = true;
+            isOpenModalWindow = false;
+        };
+
         // 設定画面を開く
         mwvm.OpenSettingWindow = () => {
             SettingsWindow settingsWindow = new SettingsWindow();
