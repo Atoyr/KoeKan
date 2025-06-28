@@ -13,6 +13,7 @@ using Newtonsoft.Json.Bson;
 using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Services;
 using Medoz.KoeKan.Clients;
+using System.Net.WebSockets;
 
 namespace Medoz.KoeKan;
 
@@ -48,6 +49,14 @@ public partial class MainWindow : Window
         var listenerService = new ListenerService(Listener);
         var clientService = new ClientService(listenerService, configService);
         var windowService = new WindowService(this);
+        var serverService = new ServerService();
+        serverService.WebApiMessageReceived += async (s, e) => {
+            // WebAPIからのメッセージを受信したときの処理
+            // FIXME: 通常のテキスト入力と同じ形になっている
+            await MessageEnterAsync(e);
+        };
+
+        serverService.StartWebApiAsync();
 
         SourceInitialized += ((sender, e) => {
             this.SetWindowTransparent(true);
