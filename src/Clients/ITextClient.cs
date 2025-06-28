@@ -2,6 +2,6 @@ namespace Medoz.KoeKan.Clients;
 
 public interface ITextClient: IClient
 {
-    event Func<Message, Task>? OnReceiveMessage;
-    Task SendMessageAsync(Message message);
+    event Func<ClientMessage, Task>? OnReceiveMessage;
+    Task SendMessageAsync(ClientMessage message);
 }

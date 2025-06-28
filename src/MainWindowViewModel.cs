@@ -107,7 +107,7 @@ public partial class MainWindowViewModel
         var config = _configService.GetConfig();
 
         await client.SendMessageAsync(
-            new Message(
+            new ClientMessage(
                 "_",
                 "default",
                 config.Username,

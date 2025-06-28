@@ -22,7 +22,7 @@ public class EchoClient: ITextClient
 
     public event Func<Task>? OnReady;
 
-    public event Func<Message, Task>? OnReceiveMessage;
+    public event Func<ClientMessage, Task>? OnReceiveMessage;
 
     public Task<string> AuthAsync()
     {
@@ -48,7 +48,7 @@ public class EchoClient: ITextClient
     {
     }
 
-    public async Task SendMessageAsync(Message message)
+    public async Task SendMessageAsync(ClientMessage message)
     {
         if (!IsRunning)
         {

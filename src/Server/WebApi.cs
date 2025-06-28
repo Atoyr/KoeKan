@@ -165,7 +165,7 @@ internal class WebApi : IDisposable
             }
 
             // WPFのUIスレッドで処理結果を表示
-            Application.Current.Dispatcher.Invoke(() => _dataReceivedAction?.Invoke(apiRequest));
+            System.Windows.Application.Current.Dispatcher.Invoke(() => _dataReceivedAction?.Invoke(apiRequest));
 
             // 成功レスポンスを返す
             var successResponse = JsonSerializer.Serialize(new Response(

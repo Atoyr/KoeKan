@@ -17,7 +17,7 @@ public class DiscordClient: ITextClient
     public string Name => GetType().Name;
     public bool IsRunning => _client.ConnectionState == ConnectionState.Connected;
 
-    public event Func<Message, Task>? OnReceiveMessage;
+    public event Func<ClientMessage, Task>? OnReceiveMessage;
     public event Func<Task>? OnReady;
 
     public DiscordClient(DiscordOptions options)
@@ -59,7 +59,7 @@ public class DiscordClient: ITextClient
         }
     }
 
-    public async Task SendMessageAsync(Message message)
+    public async Task SendMessageAsync(ClientMessage message)
     {
         if (_messageChannel is not null)
         {
@@ -144,7 +144,7 @@ public class DiscordClient: ITextClient
         if (OnReceiveMessage is not null)
         {
             await OnReceiveMessage.Invoke(
-                    new Message(
+                    new ClientMessage(
                         Name,
                         message.Channel.Name,
                         message.Author.GlobalName,

@@ -16,7 +16,7 @@ public class TwitchClient: ITextClient
 
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
-    public event Func<Message, Task>? OnReceiveMessage;
+    public event Func<ClientMessage, Task>? OnReceiveMessage;
     public event Func<Task>? OnReady;
     public string Name => GetType().Name;
     public bool IsRunning => _webSocket.State == WebSocketState.Open;
@@ -82,7 +82,7 @@ public class TwitchClient: ITextClient
         return Task.CompletedTask;
     }
 
-    public async Task SendMessageAsync(Message message) => await SendMessageAsync(message.Content);
+    public async Task SendMessageAsync(ClientMessage message) => await SendMessageAsync(message.Content);
 
     private async Task SendMessageAsync(string message)
     {

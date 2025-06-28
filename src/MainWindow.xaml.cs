@@ -42,6 +42,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        InitializeNotifyIcon();
         Listener = new Listener(Dispatcher, null);
 
         // サービスの初期化
@@ -188,7 +189,7 @@ public partial class MainWindow : Window
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    public async void MessageBox_KeyDown(object sender, KeyEventArgs e)
+    public async void MessageBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         // メッセージボックスでEnterキーが押された場合、メッセージを送信する
         if (e.Key == Key.Enter)

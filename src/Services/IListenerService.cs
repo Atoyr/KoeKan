@@ -8,6 +8,6 @@ public interface IListenerService
     Listener GetListener();
     void AddLogMessage(string message, string? logLevel = null);
     void AddCommandMessage(string message);
-    void AddMessage(Message message);
+    void AddMessage(ClientMessage message);
     void Clear();
 }

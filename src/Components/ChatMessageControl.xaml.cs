@@ -6,7 +6,7 @@ using Medoz.KoeKan.Data;
 
 namespace Medoz.KoeKan.Components;
 
-public partial class ChatMessageControl : UserControl
+public partial class ChatMessageControl : System.Windows.Controls.UserControl
 {
     public static readonly DependencyProperty ColorsProperty =
         DependencyProperty.Register("Colors", typeof(ChatMessageColors), typeof(ChatMessageControl),
@@ -58,13 +58,13 @@ public partial class ChatMessageControl : UserControl
         }
     }
 
-    public Brush Accent
+    public System.Windows.Media.Brush Accent
     {
         get
         {
             if (DataContext is ChatMessage cm)
             {
-                var color = (Color)ColorConverter.ConvertFromString(AccentColors[cm.MessageType] ?? _defaultColor);
+                var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(AccentColors[cm.MessageType] ?? _defaultColor);
                 return new SolidColorBrush(color);
             }
             else

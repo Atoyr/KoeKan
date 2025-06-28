@@ -60,7 +60,7 @@ public class TextToSpeechBridge : ITextClient
         };
     }
 
-    public event Func<Message, Task>? OnReceiveMessage
+    public event Func<ClientMessage, Task>? OnReceiveMessage
     {
         add
         {
@@ -77,7 +77,7 @@ public class TextToSpeechBridge : ITextClient
         return _client!.AuthAsync();
     }
 
-    public Task SendMessageAsync(Message message)
+    public Task SendMessageAsync(ClientMessage message)
     {
         return _client!.SendMessageAsync(message);
     }

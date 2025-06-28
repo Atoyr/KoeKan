@@ -143,7 +143,7 @@ public class TextToSpeechBridge<T, S> : ITextClient where T : ITextClient, new()
         }
     }
 
-    public event Func<Message, Task>? OnReceiveMessage
+    public event Func<ClientMessage, Task>? OnReceiveMessage
     {
         add
         {
@@ -163,7 +163,7 @@ public class TextToSpeechBridge<T, S> : ITextClient where T : ITextClient, new()
         return _client!.AuthAsync();
     }
 
-    public Task SendMessageAsync(Message message)
+    public Task SendMessageAsync(ClientMessage message)
     {
         ValidateClient();
         return _client!.SendMessageAsync(message);

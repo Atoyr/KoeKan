@@ -20,7 +20,7 @@ public class ListenerService : IListenerService
         return _listener;
     }
 
-    public void AddLogMessage(string message, string logLevel = "Info")
+    public void AddLogMessage(string message, string? logLevel = "Info")
     {
         // FIXME: LogLevel is not used in the original code, but it is used in the interface.
         _listener.AddLogMessage(ChatMessageType.LogInfo, message);
@@ -31,7 +31,7 @@ public class ListenerService : IListenerService
         _listener.AddCommandMessage(message);
     }
 
-    public void AddMessage(Message message)
+    public void AddMessage(ClientMessage message)
     {
         _listener.AddMessage(message);
     }

@@ -14,7 +14,7 @@ public class Listener : IDisposable
 
     private Dispatcher? _dispatcher { get; set; }
 
-    private readonly Dictionary<string, Func<Message, ChatMessage>> _messageConverter = new();
+    private readonly Dictionary<string, Func<ClientMessage, ChatMessage>> _messageConverter = new();
 
     private readonly ILogger? _logger;
 
@@ -31,7 +31,7 @@ public class Listener : IDisposable
         _logger = logger;
     }
 
-    public void AddMessageConverter(string clientType, Func<Message, ChatMessage> sender)
+    public void AddMessageConverter(string clientType, Func<ClientMessage, ChatMessage> sender)
     {
         _messageConverter[clientType] = sender;
     }
@@ -47,7 +47,7 @@ public class Listener : IDisposable
     public void AddCommandMessage(string message)
         => AddMessage(new ChatMessage(ChatMessageType.Command, "", null, "COMMAND", message, DateTime.Now, IsConsecutiveMessage(ChatMessageType.Command, "", "COMMAND", DateTime.Now)));
 
-    public void AddMessage(Message message)
+    public void AddMessage(ClientMessage message)
     {
         if (_messageConverter.ContainsKey(message.ClientType))
         {
