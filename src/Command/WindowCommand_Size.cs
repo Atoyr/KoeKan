@@ -31,7 +31,7 @@ public class WindowCommand_Size : ICommand
         if (double.TryParse(args[0], out double width) &&
             double.TryParse(args[1], out double height))
         {
-            _windowService.SetWindowSize(width, height);
+            _windowService.SetMainWindowSize(width, height);
             _listenerService.AddLogMessage($"ウィンドウサイズを変更しました: 幅={width}, 高さ={height}");
         }
         else

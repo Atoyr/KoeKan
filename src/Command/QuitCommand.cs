@@ -33,7 +33,7 @@ public class QuitCommand : ICommand
             return;
         }
 
-        _windowService.Close();
+        _windowService.CloseMainWindow();
         await Task.CompletedTask;
     }
 }

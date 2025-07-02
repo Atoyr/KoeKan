@@ -8,19 +8,29 @@ namespace Medoz.KoeKan.Services;
 
 public interface IWindowService
 {
-    void Close();
+    Func<MainWindow>? CreateMainWindow { get; set; }
+    Func<SettingsWindow>? CreateSettingsWindow { get; set; }
+
+    void OpenMainWindow();
+    void CloseMainWindow();
+    void ShowMainWindow();
+    void HideMainWindow();
+
+    bool IsMainWindowVisible();
 
     void ToggleMoveableWindow();
     void ChangeMoveableWindowState(bool isMoveable);
 
-    void SetWindowSize(double width, double height);
-    void SetWindowPosition(double x, double y);
+    void SetMainWindowSize(double width, double height);
+    void SetMainWindowPosition(double x, double y);
 
     bool OpenSettingWindow();
 
+    event EventHandler? OpenMainWindowRequested;
+    event EventHandler? CloseMainWindowRequested;
     event EventHandler? WindowSizeChanged;
     event EventHandler<bool>? MoveableWindowStateChanged;
 
-    event EventHandler? SettingWindowOpened;
-    event EventHandler? SettingWindowClosed;
+    event EventHandler? OpenSettingWindowRequested;
+    event EventHandler? CloseSettingWindowRequested;
 }

@@ -12,6 +12,7 @@ namespace Medoz.KoeKan;
 public partial class App : System.Windows.Application
 {
     private System.Threading.Mutex? _mutex;
+    public ApplicationCoordinator? Coordinator { get; private set; }
 
     public void HandleException(
             object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -38,6 +39,7 @@ public partial class App : System.Windows.Application
 
         // シャットダウンモードを明示的に設定
         this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        Coordinator = new ApplicationCoordinator();
 
         base.OnStartup(e);
     }

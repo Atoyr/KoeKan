@@ -15,6 +15,17 @@ public class ClientService : IClientService
     private readonly IListenerService _listener;
     private readonly IConfigService _config;
 
+    /// <summary>
+    /// クライアントの管理を行うクラス
+    /// </summary>
+    /// <param name="listenerService"></param>
+    /// <param name="configService"></param>
+    public ClientService()
+    {
+        _config = ServiceContainer.Instance.ConfigService;
+        _listener = ServiceContainer.Instance.ListenerService;
+        AddDefaultClient();
+    }
 
     /// <summary>
     /// クライアントの管理を行うクラス

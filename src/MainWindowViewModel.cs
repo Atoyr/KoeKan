@@ -11,10 +11,10 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class MainWindowViewModel
 {
-    private readonly IConfigService _configService;
-    private readonly IClientService _clientService;
-    private readonly IListenerService _listenerService;
-    private readonly IWindowService _windowService;
+    internal readonly IConfigService ConfigService;
+    internal readonly IClientService ClientService;
+    internal readonly IListenerService ListenerService;
+    internal readonly IWindowService WindowService;
 
     private readonly CommandManager _commandManager = new();
     private readonly CommandFactory _commandFactory;
@@ -28,7 +28,7 @@ public partial class MainWindowViewModel
     {
         get
         {
-            return ModKeyExtension.GetModKey(_configService.GetConfig().ModKey).ToUInt();
+            return ModKeyExtension.GetModKey(ConfigService.GetConfig().ModKey).ToUInt();
         }
     }
 
@@ -39,26 +39,26 @@ public partial class MainWindowViewModel
     {
         get
         {
-            return KeyExtension.GetKey(_configService.GetConfig().Key).ToUInt();
+            return KeyExtension.GetKey(ConfigService.GetConfig().Key).ToUInt();
         }
     }
 
     internal double Width
     {
-        get => _configService.GetConfig().Width;
+        get => ConfigService.GetConfig().Width;
         set
         {
-            _configService.GetConfig().Width = value;
-            _configService.SaveConfig();
+            ConfigService.GetConfig().Width = value;
+            ConfigService.SaveConfig();
         }
     }
     internal double Height
     {
-        get => _configService.GetConfig().Height;
+        get => ConfigService.GetConfig().Height;
         set
         {
-            _configService.GetConfig().Height = value;
-            _configService.SaveConfig();
+            ConfigService.GetConfig().Height = value;
+            ConfigService.SaveConfig();
         }
     }
 
@@ -67,32 +67,28 @@ public partial class MainWindowViewModel
     {
         get
         {
-            return _configService.GetConfig().Applications;
+            return ConfigService.GetConfig().Applications;
         }
     }
 
-    public MainWindowViewModel(
-        IConfigService configService,
-        IClientService clientService,
-        IListenerService listenerService,
-        IWindowService windowService)
+    public MainWindowViewModel()
     {
-        _configService = configService;
-        _clientService = clientService;
-        _listenerService = listenerService;
-        _windowService = windowService;
+        ConfigService = ServiceContainer.Instance.ConfigService;
+        ClientService = ServiceContainer.Instance.ClientService;
+        ListenerService = ServiceContainer.Instance.ListenerService;
+        WindowService = ServiceContainer.Instance.WindowService;
 
         // CommandFactoryの初期化
         _commandFactory = new CommandFactory(
-            configService,
-            clientService,
-            listenerService,
-            windowService);
+            ConfigService,
+            ClientService,
+            ListenerService,
+            WindowService);
 
         // CommandManagerの初期化
         _commandFactory.InitializeCommandManager(_commandManager);
 
-        var listener = _listenerService.GetListener();
+        var listener = ListenerService.GetListener();
         BindingOperations.EnableCollectionSynchronization(listener.Messages, new object());
     }
 
@@ -103,8 +99,8 @@ public partial class MainWindowViewModel
     /// <returns></returns>
     internal async Task SendMessage(string message)
     {
-        var client = _clientService.GetClient();
-        var config = _configService.GetConfig();
+        var client = ClientService.GetClient();
+        var config = ConfigService.GetConfig();
 
         await client.SendMessageAsync(
             new ClientMessage(
@@ -127,7 +123,7 @@ public partial class MainWindowViewModel
             // コマンドが存在しない場合はヘルプを表示
             var command = str.Split(' ')[0];
             var helpText = _commandManager.GetHelpText(command);
-            _listenerService.AddLogMessage(helpText);
+            ListenerService.AddLogMessage(helpText);
             return;
         }
     }

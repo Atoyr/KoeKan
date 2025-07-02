@@ -14,6 +14,7 @@ using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Services;
 using Medoz.KoeKan.Clients;
 using System.Net.WebSockets;
+using System.Drawing.Imaging;
 
 namespace Medoz.KoeKan;
 
@@ -37,33 +38,23 @@ public partial class MainWindow : Window
 
     private string? _activeProcessName;
 
-    private Listener Listener { get; set; }
+    private MainWindow() { }
 
-    public MainWindow()
+    public MainWindow(MainWindowViewModel mwvm) : this()
     {
+        DataContext = mwvm;
+        // 初期ウィンドウのサイズを設定
+        Width = mwvm.Width;
+        Height = mwvm.Height;
+
         InitializeComponent();
-        InitializeNotifyIcon();
-        Listener = new Listener(Dispatcher, null);
-
-        // サービスの初期化
-        var configService = new ConfigService();
-        var listenerService = new ListenerService(Listener);
-        var clientService = new ClientService(listenerService, configService);
-        var windowService = new WindowService(this);
-        var serverService = new ServerService();
-        serverService.WebApiMessageReceived += async (s, e) => {
-            // WebAPIからのメッセージを受信したときの処理
-            // FIXME: 通常のテキスト入力と同じ形になっている
-            await MessageEnterAsync(e);
-        };
-
-        serverService.StartWebApiAsync();
-
-        SourceInitialized += ((sender, e) => {
+        SourceInitialized += ((_, _) =>
+        {
             this.SetWindowTransparent(true);
         });
 
-        windowService.MoveableWindowStateChanged += (s, e) => {
+        mwvm.WindowService.MoveableWindowStateChanged += (s, e) =>
+        {
             if (e)
             {
                 MoveWindowBar.Visibility = Visibility.Visible;
@@ -75,40 +66,33 @@ public partial class MainWindow : Window
             }
         };
 
-        // ViewModelの初期化
-        DataContext = new MainWindowViewModel(
-            configService,
-            clientService,
-            listenerService,
-            windowService);
-        MainWindowViewModel mwvm = (MainWindowViewModel)DataContext;
-        // 初期ウィンドウのサイズを設定
-        Width = mwvm.Width;
-        Height = mwvm.Height;
-
         // メッセージの変更を通知する
-        Listener.Messages.CollectionChanged += (_, e) => {
-            Dispatcher.BeginInvoke( new Action(() => { ChatListBox_ScrollToEnd(); }), System.Windows.Threading.DispatcherPriority.ContextIdle);
+        mwvm.ListenerService.GetListener().Messages.CollectionChanged += (_, e) =>
+        {
+            Dispatcher.BeginInvoke(new Action(() => { ChatListBox_ScrollToEnd(); }), System.Windows.Threading.DispatcherPriority.ContextIdle);
         };
 
-        windowService.SettingWindowOpened += (s, e) => {
+        mwvm.WindowService.OpenSettingWindowRequested += (s, e) =>
+        {
             // 設定画面が開いたときの処理
             Topmost = false;
             isOpenModalWindow = true;
         };
 
-        windowService.SettingWindowClosed += (s, e) => {
+        mwvm.WindowService.CloseSettingWindowRequested += (s, e) =>
+        {
             // 設定画面が開いたときの処理
             Topmost = true;
             isOpenModalWindow = false;
         };
 
         // 設定画面を開く
-        mwvm.OpenSettingWindow = () => {
+        mwvm.OpenSettingWindow = () =>
+        {
             SettingsWindow settingsWindow = new SettingsWindow();
             Topmost = false;
             settingsWindow.Owner = this;
-            windowService.ChangeMoveableWindowState(false);
+            mwvm.WindowService.ChangeMoveableWindowState(false);
             isOpenModalWindow = true;
             bool? result = settingsWindow.ShowDialog();
             if (result == true)
@@ -121,6 +105,15 @@ public partial class MainWindow : Window
             isOpenModalWindow = false;
         };
 
+        // serverService.WebApiMessageReceived += async (s, e) =>
+        // {
+        //     // WebAPIからのメッセージを受信したときの処理
+        //     // FIXME: 通常のテキスト入力と同じ形になっている
+        //     await MessageEnterAsync(e);
+        // };
+
+        // serverService.StartWebApiAsync();
+
         Loaded += MainWindow_Loaded;
     }
 
@@ -129,7 +122,7 @@ public partial class MainWindow : Window
         MainWindowViewModel mwvm = (MainWindowViewModel)DataContext;
         _hk = new HotKey(mwvm.ModKey, mwvm.Key, this);
         _hk.OnHotKeyPush += MessageBox_Focus;
-        ChatListBox.ItemsSource = Listener.Messages;
+        ChatListBox.ItemsSource = mwvm.ListenerService.GetListener().Messages;
         MoveWindowBar.Visibility = Visibility.Collapsed;
     }
 
