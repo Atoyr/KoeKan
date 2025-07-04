@@ -12,10 +12,10 @@ namespace Medoz.KoeKan.Services;
 public class WindowService : IWindowService
 {
     internal MainWindow? MainWindow;
-    internal Window? SettingsWindow;
+    internal SettingsWindow? SettingsWindow;
 
-    public Func<MainWindow>? CreateMainWindow { get; set; }
-    public Func<SettingsWindow>? CreateSettingsWindow { get; set; }
+    public Func<IWindowService, MainWindow>? CreateMainWindow { get; set; }
+    public Func<IWindowService, SettingsWindow>? CreateSettingsWindow { get; set; }
 
     public event EventHandler? OpenMainWindowRequested;
     public event EventHandler? CloseMainWindowRequested;
@@ -31,7 +31,7 @@ public class WindowService : IWindowService
 
     private void InitializeMainWindow()
     {
-        MainWindow = CreateMainWindow?.Invoke();
+        MainWindow = CreateMainWindow?.Invoke(this);
         if (MainWindow == null)
         {
             throw new InvalidOperationException("MainWindow is not set after invoking CreateMainWindow.");
@@ -157,20 +157,6 @@ public class WindowService : IWindowService
         return MainWindow.IsVisible;
     }
 
-    public bool OpenSettingWindow()
-    {
-        var settingsWindow = new SettingsWindow();
-        settingsWindow.Owner = MainWindow;
-        settingsWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        ChangeMoveableWindowState(false);
-        OpenSettingWindowRequested?.Invoke(this, EventArgs.Empty);
-        var result = settingsWindow.ShowDialog() ?? false;
-
-        ChangeMoveableWindowState(true);
-        CloseMainWindowRequested?.Invoke(this, EventArgs.Empty);
-        return result;
-    }
-
     public void ToggleMoveableWindow()
     {
         if (MainWindow == null)
@@ -206,5 +192,29 @@ public class WindowService : IWindowService
     public void SetMainWindowPosition(double x, double y)
     {
         MainWindow?.SetWindowPosition(x, y);
+    }
+
+
+    private void InitializeSettingsWindow()
+    {
+        SettingsWindow = CreateSettingsWindow?.Invoke(this);
+        if (SettingsWindow == null)
+        {
+            throw new InvalidOperationException("SettingsWindow is not set after invoking CreateSettingsWindow.");
+        }
+    }
+
+    public void OpenSettingsWindow()
+    {
+        InitializeSettingsWindow();
+        SettingsWindow!.Show();
+        SettingsWindow.ShowInTaskbar = true;
+        SettingsWindow.Activate();
+    }
+
+    public void CloseSettingsWindow()
+    {
+        SettingsWindow?.Close();
+        SettingsWindow = null;
     }
 }

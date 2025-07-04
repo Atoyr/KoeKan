@@ -39,7 +39,7 @@ public class SetCommand : ICommand
 
         if (args.Length == 0)
         {
-            _windowService.OpenSettingWindow();
+            _windowService.OpenSettingsWindow();
             return;
         }
 

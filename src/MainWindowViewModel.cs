@@ -19,8 +19,6 @@ public partial class MainWindowViewModel
     private readonly CommandManager _commandManager = new();
     private readonly CommandFactory _commandFactory;
 
-    internal Action? OpenSettingWindow { get; set; }
-
     /// <summary>
     /// MOD KEY
     /// </summary>

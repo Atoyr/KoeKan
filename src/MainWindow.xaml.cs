@@ -86,25 +86,6 @@ public partial class MainWindow : Window
             isOpenModalWindow = false;
         };
 
-        // 設定画面を開く
-        mwvm.OpenSettingWindow = () =>
-        {
-            SettingsWindow settingsWindow = new SettingsWindow();
-            Topmost = false;
-            settingsWindow.Owner = this;
-            mwvm.WindowService.ChangeMoveableWindowState(false);
-            isOpenModalWindow = true;
-            bool? result = settingsWindow.ShowDialog();
-            if (result == true)
-            {
-                // ユーザーがOKボタンをクリックした場合の処理
-                // string setting1 = settingsWindow.Setting1;
-                // 設定値を保存または反映する処理を追加
-            }
-            Topmost = true;
-            isOpenModalWindow = false;
-        };
-
         // serverService.WebApiMessageReceived += async (s, e) =>
         // {
         //     // WebAPIからのメッセージを受信したときの処理

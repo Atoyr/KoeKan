@@ -24,9 +24,14 @@ public class ApplicationCoordinator : IDisposable
     private void Initialize()
     {
         var ws = ServiceContainer.Instance.WindowService;
-        ws.CreateMainWindow = () =>
+        ws.CreateMainWindow = (_) =>
         {
             return new MainWindow(new MainWindowViewModel());
+        };
+        ws.CreateSettingsWindow = (_) =>
+        {
+            SettingsWindow settingsWindow = new ();
+            return settingsWindow;
         };
     }
 
@@ -58,12 +63,12 @@ public class ApplicationCoordinator : IDisposable
 
     private void ShowSettingsWindow()
     {
-        // FIXME
+        ServiceContainer.Instance.WindowService.OpenSettingsWindow();
     }
 
     private void SettingsWindow_Closed(object? sender, EventArgs e)
     {
-        // FIXME
+        ServiceContainer.Instance.WindowService.CloseSettingsWindow();
     }
 
     public void HandleMainWindowStateChanged(WindowState newState)

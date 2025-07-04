@@ -8,8 +8,8 @@ namespace Medoz.KoeKan.Services;
 
 public interface IWindowService
 {
-    Func<MainWindow>? CreateMainWindow { get; set; }
-    Func<SettingsWindow>? CreateSettingsWindow { get; set; }
+    Func<IWindowService, MainWindow>? CreateMainWindow { get; set; }
+    Func<IWindowService, SettingsWindow>? CreateSettingsWindow { get; set; }
 
     void OpenMainWindow();
     void CloseMainWindow();
@@ -30,7 +30,8 @@ public interface IWindowService
     void SetMainWindowSize(double width, double height);
     void SetMainWindowPosition(double x, double y);
 
-    bool OpenSettingWindow();
+    void OpenSettingsWindow();
+    void CloseSettingsWindow();
 
     event EventHandler? OpenMainWindowRequested;
     event EventHandler? CloseMainWindowRequested;
