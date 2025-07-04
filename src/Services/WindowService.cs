@@ -36,6 +36,8 @@ public class WindowService : IWindowService
         {
             throw new InvalidOperationException("MainWindow is not set after invoking CreateMainWindow.");
         }
+        SetMainWindowSizeWithConfig();
+        SetMainWindowPositionWithConfig();
     }
 
     public void OpenMainWindow()
@@ -78,6 +80,74 @@ public class WindowService : IWindowService
         MainWindow.ShowInTaskbar = false;
     }
 
+    private void SetMainWindowSizeWithConfig() =>
+        SetMainWindowSize(
+            ServiceContainer.Instance.ConfigService.GetConfig().Width,
+            ServiceContainer.Instance.ConfigService.GetConfig().Height);
+
+
+    public void SetMainWindowSize(double width, double height, bool save = true)
+    {
+        if (MainWindow == null)
+        {
+            throw new InvalidOperationException("MainWindow is not set.");
+        }
+        MainWindow.Width = width;
+        MainWindow.Height = height;
+
+        if (save)
+        {
+            SaveMainWindowSize();
+        }
+        WindowSizeChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SaveMainWindowSize()
+    {
+        if (MainWindow == null)
+        {
+            throw new InvalidOperationException("MainWindow is not set.");
+        }
+        var config = ServiceContainer.Instance.ConfigService.GetConfig();
+        config.Width = MainWindow.Width;
+        config.Height = MainWindow.Height;
+        ServiceContainer.Instance.ConfigService.SaveConfig();
+    }
+
+    private void SetMainWindowPositionWithConfig()
+    {
+        var config = ServiceContainer.Instance.ConfigService.GetConfig();
+        SetMainWindowPosition(config.X, config.Y);
+    }
+
+    public void SetMainWindowPosition(double x, double y, bool save = true)
+    {
+        if (MainWindow == null)
+        {
+            throw new InvalidOperationException("MainWindow is not set.");
+        }
+        MainWindow.Left = x;
+        MainWindow.Top = y;
+
+        if (save)
+        {
+            SaveMainWindowPosition();
+        }
+        WindowSizeChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SaveMainWindowPosition()
+    {
+        if (MainWindow == null)
+        {
+            throw new InvalidOperationException("MainWindow is not set.");
+        }
+        var config = ServiceContainer.Instance.ConfigService.GetConfig();
+        config.X = MainWindow.Left;
+        config.Y = MainWindow.Top;
+        ServiceContainer.Instance.ConfigService.SaveConfig();
+    }
+
     public bool IsMainWindowVisible()
     {
         if (MainWindow == null)
@@ -117,6 +187,11 @@ public class WindowService : IWindowService
         if (MainWindow == null)
         {
             throw new InvalidOperationException("MainWindow is not set.");
+        }
+        if (!moveable)
+        {
+            // 移動不可にしたら保存する
+            SaveMainWindowPosition();
         }
         // 透明な状態は移動不可、透明でない状態は移動可能とする
         MainWindow.SetWindowTransparent(!moveable);

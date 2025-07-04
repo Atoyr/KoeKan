@@ -16,6 +16,12 @@ public interface IWindowService
     void ShowMainWindow();
     void HideMainWindow();
 
+    void SetMainWindowSize(double width, double height, bool save = true);
+    void SetMainWindowPosition(double x, double y, bool save = true);
+
+    void SaveMainWindowSize();
+    void SaveMainWindowPosition();
+
     bool IsMainWindowVisible();
 
     void ToggleMoveableWindow();

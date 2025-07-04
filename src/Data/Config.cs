@@ -113,6 +113,52 @@ public class Config
         }
     }
 
+    public double _x = 100;
+    /// <summary>
+    /// ウィンドウの左位置
+    /// </summary>
+    public double X
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _x;
+            }
+        }
+        set
+        {
+            lock(_lock)
+            {
+                _x = value;
+            }
+        }
+    }
+
+    public double _y = 100;
+    /// <summary>
+    /// ウィンドウの上位置
+    /// </summary>
+    public double Y
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _y;
+            }
+        }
+        set
+        {
+            lock(_lock)
+            {
+                _y = value;
+            }
+        }
+    }
+
+
+
     private string _modKey = "CONTROL";
     private string _key = "ENTER";
 
