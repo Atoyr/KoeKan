@@ -9,8 +9,6 @@ public class ApplicationCoordinator : IDisposable
 {
     private readonly TrayManager _trayManager;
 
-    private bool isFirstTimeShow = true;
-
     public ApplicationCoordinator()
     {
         _trayManager = new TrayManager();
@@ -77,10 +75,4 @@ public class ApplicationCoordinator : IDisposable
         // FIXME
         _trayManager?.Dispose();
     }
-}
-
-// 設定変更を監視するインターフェース（オプション）
-public interface ISettingsObserver
-{
-    void OnSettingsChanged();
 }
