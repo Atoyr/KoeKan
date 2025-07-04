@@ -9,7 +9,7 @@ namespace Medoz.KoeKan;
 
 /// <summary>
 /// </summary>
-public class HotKey :IDisposable 
+public class HotKey :IDisposable
 {
     [DllImport("user32.dll")]
     extern static bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -19,20 +19,20 @@ public class HotKey :IDisposable
 
     private const int WM_HOTKEY = 0x0312;
     private int _id = 0;
-    private IntPtr _hWnd;
-    private HwndSource? _hwndSource;
+    private readonly IntPtr _hWnd;
+    private readonly HwndSource? _hwndSource;
 
     public event EventHandler? OnHotKeyPush;
 
     // https://learn.microsoft.com/ja-jp/windows/win32/api/winuser/nf-winuser-registerhotkey
     // https://learn.microsoft.com/ja-jp/windows/win32/inputdev/virtual-key-codes
-    public HotKey(uint modKey, uint key, Window window) 
+    public HotKey(uint modKey, uint key, Window window)
     {
         var helper = new WindowInteropHelper(window);
         _hWnd = helper.Handle;
         _hwndSource = HwndSource.FromHwnd(_hWnd);
 
-        for (int i = 0x0000; i <= 0xbfff; i++) 
+        for (int i = 0x0000; i <= 0xbfff; i++)
         {
             if (RegisterHotKey(_hWnd, i, modKey, key))
             {
@@ -49,9 +49,9 @@ public class HotKey :IDisposable
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
-        if (msg == WM_HOTKEY) 
+        if (msg == WM_HOTKEY)
         {
-            if((int)wParam == _id) 
+            if((int)wParam == _id)
             {
                 InvokeHotKeyPush();
             }
@@ -59,15 +59,15 @@ public class HotKey :IDisposable
         return IntPtr.Zero;
     }
 
-    private void InvokeHotKeyPush() 
+    private void InvokeHotKeyPush()
     {
-        if(OnHotKeyPush != null) 
+        if(OnHotKeyPush != null)
         {
             OnHotKeyPush(this, EventArgs.Empty);
         }
     }
 
-    public void Dispose() 
+    public void Dispose()
     {
         UnregisterHotKey(_hWnd, _id);
         _hwndSource?.RemoveHook(WndProc);
