@@ -78,6 +78,16 @@ public static class ModKeyExtension
 
     public static uint ToUInt(this MOD_KEY modKey)
         => (uint)modKey;
+
+    public static string ToString(this MOD_KEY modKey)
+        =>  modKey switch{
+            MOD_KEY.ALT         => "ALT", 
+            MOD_KEY.CONTROL     => "CONTROL", 
+            MOD_KEY.SHIFT       => "SHIFT", 
+            MOD_KEY.WIN         => "WIN", 
+            MOD_KEY.NONE        => "", 
+            _                   => ""
+        };
 }
 
 public static class KeyExtension
@@ -139,4 +149,60 @@ public static class KeyExtension
 
     public static uint ToUInt(this KEY key)
         => (uint)key;
+
+    public static string ToString(this KEY key)
+        => key switch {
+            KEY.NUM_0       => "0"         ,
+            KEY.NUM_1       => "1"         ,
+            KEY.NUM_2       => "2"         ,
+            KEY.NUM_3       => "3"         ,
+            KEY.NUM_4       => "4"         ,
+            KEY.NUM_5       => "5"         ,
+            KEY.NUM_6       => "6"         ,
+            KEY.NUM_7       => "7"         ,
+            KEY.NUM_8       => "8"         ,
+            KEY.NUM_9       => "9"         ,
+            KEY.KEY_A       => "A"         ,
+            KEY.KEY_B       => "B"         ,
+            KEY.KEY_C       => "C"         ,
+            KEY.KEY_D       => "D"         ,
+            KEY.KEY_E       => "E"         ,
+            KEY.KEY_F       => "F"         ,
+            KEY.KEY_G       => "G"         ,
+            KEY.KEY_H       => "H"         ,
+            KEY.KEY_I       => "I"         ,
+            KEY.KEY_J       => "J"         ,
+            KEY.KEY_K       => "K"         ,
+            KEY.KEY_L       => "L"         ,
+            KEY.KEY_M       => "M"         ,
+            KEY.KEY_N       => "N"         ,
+            KEY.KEY_O       => "O"         ,
+            KEY.KEY_P       => "P"         ,
+            KEY.KEY_Q       => "Q"         ,
+            KEY.KEY_R       => "R"         ,
+            KEY.KEY_S       => "S"         ,
+            KEY.KEY_T       => "T"         ,
+            KEY.KEY_U       => "U"         ,
+            KEY.KEY_V       => "V"         ,
+            KEY.KEY_W       => "W"         ,
+            KEY.KEY_X       => "X"         ,
+            KEY.KEY_Y       => "Y"         ,
+            KEY.KEY_Z       => "Z"         ,
+            KEY.ENTER       => "ENTER"     ,
+            KEY.ESCAPE      => "ESCAPE"    ,
+            KEY.KEY_F1      => "F1"        ,
+            KEY.KEY_F2      => "F2"        ,
+            KEY.KEY_F3      => "F3"        ,
+            KEY.KEY_F4      => "F4"        ,
+            KEY.KEY_F5      => "F5"        ,
+            KEY.KEY_F6      => "F6"        ,
+            KEY.KEY_F7      => "F7"        ,
+            KEY.KEY_F8      => "F8"        ,
+            KEY.KEY_F9      => "F9"        ,
+            KEY.KEY_F10     => "F10"       ,
+            KEY.KEY_F11     => "F11"       ,
+            KEY.KEY_F12     => "F12"       ,
+            KEY.NONE        => "",
+            _               => "",
+    };
 }
