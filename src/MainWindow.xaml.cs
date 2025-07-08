@@ -72,20 +72,6 @@ public partial class MainWindow : Window
             Dispatcher.BeginInvoke(new Action(() => { ChatListBox_ScrollToEnd(); }), System.Windows.Threading.DispatcherPriority.ContextIdle);
         };
 
-        mwvm.WindowService.OpenSettingWindowRequested += (s, e) =>
-        {
-            // 設定画面が開いたときの処理
-            Topmost = false;
-            isOpenModalWindow = true;
-        };
-
-        mwvm.WindowService.CloseSettingWindowRequested += (s, e) =>
-        {
-            // 設定画面が開いたときの処理
-            Topmost = true;
-            isOpenModalWindow = false;
-        };
-
         // serverService.WebApiMessageReceived += async (s, e) =>
         // {
         //     // WebAPIからのメッセージを受信したときの処理

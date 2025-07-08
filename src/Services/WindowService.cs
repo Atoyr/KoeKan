@@ -43,6 +43,8 @@ public class WindowService : IWindowService
     public void OpenMainWindow()
     {
         InitializeMainWindow();
+        MainWindow!.Closed += (s, e) => CloseMainWindowRequested?.Invoke(s, e);
+        OpenMainWindowRequested?.Invoke(MainWindow, EventArgs.Empty);
         MainWindow!.Show();
         MainWindow.ShowInTaskbar = true;
         MainWindow.Activate();
@@ -207,6 +209,8 @@ public class WindowService : IWindowService
     public void OpenSettingsWindow()
     {
         InitializeSettingsWindow();
+        SettingsWindow!.Closed += (s, e) => CloseSettingWindowRequested?.Invoke(s,e);
+        OpenSettingWindowRequested?.Invoke(SettingsWindow, EventArgs.Empty);
         SettingsWindow!.Show();
         SettingsWindow.ShowInTaskbar = true;
         SettingsWindow.Activate();
