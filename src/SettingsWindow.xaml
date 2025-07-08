@@ -105,13 +105,17 @@
                         HorizontalAlignment="Stretch"
                         Margin="16,8,16,0"/>
                 </Grid>
-
-
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto" MinWidth="64"/>
+                        <ColumnDefinition Width="Auto" MinWidth="64"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="1" Content="OK" Width="160" Margin="16" Command="{Binding SubmitCommand}" />
+                    <Button Grid.Column="2" Content="Cancel" Width="160" Margin="16" Command="{Binding CloseCommand}" />
+                </Grid>
             </StackPanel>
 
-            <TextBlock Text="Application:" Margin="16,16,16,0"/>
-
-            <Button Content="OK" Width="160" Margin="16" Command="{Binding SubmitCommand}" />
         </StackPanel>
     </Grid>
 </Window>

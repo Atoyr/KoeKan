@@ -206,18 +206,21 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
     {
         SetPreviewMyName(MyName);
         SetPreviewIconPath(IconPath);
+
+        SubmitCommand = new RelayCommand(Submit);
+        CloseCommand = new RelayCommand(Close);
     }
 
     public ICommand SubmitCommand { get; }
-    public ICommand SubmitAndCloseCommand { get; }
+    public ICommand CloseCommand { get; }
     public void Submit()
     {
         ServiceContainer.Instance.ConfigService.SaveConfig();
+        RequestClose?.Invoke(this, EventArgs.Empty);
     }
 
-    public void SubmitAndClose()
+    public void Close()
     {
-        Submit();
         RequestClose?.Invoke(this, EventArgs.Empty);
     }
 

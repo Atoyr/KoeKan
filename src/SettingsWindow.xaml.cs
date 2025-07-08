@@ -19,12 +19,6 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private void OkButton_Click(object sender, RoutedEventArgs e)
-    {
-        DialogResult = true;
-    }
-
-
     private void NumericTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
     {
         var textBox = sender as TextBox;

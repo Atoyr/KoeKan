@@ -24,6 +24,9 @@ public class ConfigService : IConfigService
     private readonly string _secretFileName = "secret";
     private Secret? _secret = null;
 
+    public event EventHandler? ConfigChanged;
+    public event EventHandler? SecretChanged;
+
     public ConfigService() { }
 
     public ConfigService(Config config)
@@ -56,6 +59,12 @@ public class ConfigService : IConfigService
     {
         SaveConfig(GetConfig(), _configFileName);
         SaveSecret(GetSecret(), _secretFileName);
+    }
+
+    public void Reload()
+    {
+        _config = null;
+        GetConfig();
     }
 
     /// <summary>
@@ -110,6 +119,7 @@ public class ConfigService : IConfigService
         string json = JsonSerializer.Serialize(source);
         string filePath = Path.Combine(_folderPath, fileName);
         File.WriteAllText(filePath, json);
+        ConfigChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -179,6 +189,8 @@ public class ConfigService : IConfigService
         string credentialString = Credential.EncryptString(json); // 暗号化
         string filePath = Path.Combine(_folderPath, fileName);
         File.WriteAllText(filePath, credentialString);
+
+        SecretChanged?.Invoke(this, EventArgs.Empty);
     }
 }
 

@@ -7,9 +7,13 @@ namespace Medoz.KoeKan.Services;
 public interface IConfigService
 {
     void Save();
+    void Reload();
     Config GetConfig();
     void SaveConfig();
+    event EventHandler? ConfigChanged;
 
     Secret GetSecret();
     void SaveSecret();
+
+    event EventHandler? SecretChanged;
 }
