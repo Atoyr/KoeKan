@@ -111,7 +111,13 @@
                         <ColumnDefinition Width="Auto" MinWidth="64"/>
                         <ColumnDefinition Width="Auto" MinWidth="64"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="1" Content="OK" Width="160" Margin="16" Command="{Binding SubmitCommand}" />
+                    <Button
+                        Grid.Column="1"
+                        Style="{StaticResource PrimaryButton}"
+                        Content="OK"
+                        Width="160"
+                        Margin="16"
+                        Command="{Binding SubmitCommand}" />
                     <Button Grid.Column="2" Content="Cancel" Width="160" Margin="16" Command="{Binding CloseCommand}" />
                 </Grid>
             </StackPanel>

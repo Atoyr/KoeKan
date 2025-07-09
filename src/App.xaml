@@ -5,6 +5,11 @@
              DispatcherUnhandledException="HandleException"
              >
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/Index.xaml"/>
+                <!-- 他のスタイルファイルも追加可能 -->
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
