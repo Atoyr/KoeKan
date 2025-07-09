@@ -7,7 +7,7 @@
     <Window.DataContext>
         <local:SettingsWindowViewModel/>
     </Window.DataContext>
-    <Grid>
+    <Grid Height="Auto" Width="Auto">
         <StackPanel Margin="8,0,8,0">
             <TextBlock Text="設定" FontSize="24" Margin="0,16,0,0"/>
             <StackPanel Margin="16,8,16,0">
@@ -115,13 +115,18 @@
                         Grid.Column="1"
                         Style="{StaticResource PrimaryButton}"
                         Content="OK"
-                        Width="160"
+                        Width="124"
                         Margin="16"
                         Command="{Binding SubmitCommand}" />
-                    <Button Grid.Column="2" Content="Cancel" Width="160" Margin="16" Command="{Binding CloseCommand}" />
+                    <Button
+                        Grid.Column="2"
+                        Style="{StaticResource SecondaryButton}"
+                        Content="Cancel"
+                        Width="124"
+                        Margin="16"
+                        Command="{Binding CloseCommand}" />
                 </Grid>
             </StackPanel>
-
         </StackPanel>
     </Grid>
 </Window>
