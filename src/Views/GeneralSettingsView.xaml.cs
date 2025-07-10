@@ -1,78 +1,20 @@
-using System;
-using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using Controls = System.Windows.Controls;
 
 namespace Medoz.KoeKan;
 
-public partial class SettingsWindow : Window
+public partial class GeneralSettingsView : System.Windows.Controls.UserControl
 {
 
-    public SettingsWindow()
+    public GeneralSettingsView()
     {
         InitializeComponent();
-        InitializeViewComponents();
-
-        // DataContextにバインドされたViewModelがDialogViewModelであることを前提に購読
-        if (DataContext is SettingsWindowViewModel vm)
-        {
-            vm.RequestClose += (s, e) => this.Close();
-        }
-        ShowPanel("General"); // 初期表示パネルを設定
-    }
-
-    GeneralSettingsView? _generalSettingsView;
-
-    private void InitializeViewComponents()
-    {
-        var g = new GeneralSettingsView();
-        g.DataContext = DataContext;
-        _generalSettingsView = g;
-    }
-
-    /// <summary>
-    /// メニューリストの選択変更イベント
-    /// </summary>
-    private void MenuListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (MenuListBox.SelectedItem is ListBoxItem selectedItem)
-        {
-            string tag = selectedItem.Tag?.ToString();
-            if (!string.IsNullOrEmpty(tag))
-            {
-                ShowPanel(tag);
-            }
-        }
-    }
-
-    /// <summary>
-    /// 指定されたパネルを表示する
-    /// </summary>
-    /// <param name="panelName">表示するパネル名</param>
-    private void ShowPanel(string panelName)
-    {
-        System.Windows.Controls.UserControl? controlToShow = null;
-
-        switch (panelName)
-        {
-            case "General":
-                controlToShow = _generalSettingsView;
-                break;
-        }
-
-        if (controlToShow != null)
-        {
-            // ContentControlに選択されたUserControlを設定
-            MainContent.Content = controlToShow;
-        }
     }
 
     private void NumericTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
     {
-        var textBox = sender as Controls.TextBox;
+        var textBox = sender as TextBox;
         if (textBox == null) return;
 
         // 現在のテキストと入力文字を結合
@@ -98,7 +40,7 @@ public partial class SettingsWindow : Window
         // ペースト操作をブロック（必要に応じて）
         if (e.Command == ApplicationCommands.Paste)
         {
-            var textBox = sender as Controls.TextBox;
+            var textBox = sender as TextBox;
             if (textBox != null)
             {
                 string pasteText = System.Windows.Clipboard.GetText();

@@ -3,109 +3,128 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Medoz.KoeKan"
         xmlns:components="clr-namespace:Medoz.KoeKan.Components"
-        Title="Settings" Height="auto" Width="500">
+        Title="Settings" Height="auto" Width="620">
     <Window.DataContext>
         <local:SettingsWindowViewModel/>
     </Window.DataContext>
-    <Grid Height="Auto" Width="Auto">
-        <StackPanel Margin="8,0,8,0">
-            <TextBlock Text="設定" FontSize="24" Margin="0,16,0,0"/>
-            <StackPanel Margin="16,8,16,0">
-                <TextBlock Text="表示するユーザー名" />
-                <TextBox x:Name="UsernameTextBox"
-                    Text="{Binding MyName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    Margin="0,8,0,0"/>
-                <TextBlock Text="アイコンパス" Margin="0,8,0,0"/>
-                <TextBox x:Name="IconFilePathTextBox"
-                    Text="{Binding IconPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    Margin="0,8,0,0"/>
-                <TextBlock Text="プレビュー" Margin="0,8,0,0"/>
-                <!--プレビュー部分なので透過させる-->
-                <Grid Background="#AA000000">
-                    <components:ChatMessageControl
-                        x:Name="PreviewMessageControl"
-                        DataContext="{Binding PreviewMessage}"/>
-                </Grid>
+    <!-- スタイル定義 -->
+    <Window.Resources>
+        <!-- メニューリストアイテムのスタイル -->
+        <Style x:Key="MenuListItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Grid>
+                            <!-- 選択インジケーター（左側のバー） -->
+                            <Rectangle x:Name="SelectionIndicator"
+                                       Width="3"
+                                       HorizontalAlignment="Left"
+                                       Fill="#0078D4"
+                                       Visibility="Collapsed"/>
 
-                <Border Margin="0,16,0,16" Height="1" Background="Gray"/>
+                            <!-- メインコンテンツ -->
+                            <Border x:Name="ContentBorder"
+                                    Background="{TemplateBinding Background}"
+                                    Padding="16,12,16,12"
+                                    Margin="3,0,0,0">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </Border>
+                        </Grid>
 
-                <TextBlock Text="ウィンドウ" Margin="16,0,16,0"/>
+                        <ControlTemplate.Triggers>
+                            <!-- ホバー状態 -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ContentBorder" Property="Background" Value="#F3F2F1"/>
+                            </Trigger>
 
-                <TextBlock Text="サイズ" Margin="16,16,16,0"/>
-                <Grid Margin="0,8,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" MinWidth="64"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto" MinWidth="64"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="幅" Margin="16,0,0,0"/>
-                    <TextBox Grid.Column="1" x:Name="WidthTextBox"
-                        Text="{Binding Width, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        HorizontalAlignment="Stretch"
-                        PreviewTextInput="NumericTextBox_PreviewTextInput"
-                        CommandManager.PreviewExecuted="NumericTextBox_PreviewExecuted"
-                        Margin="16,0,16,0"/>
-                    <TextBlock Grid.Column="2" Text="高さ" Margin="16,0,0,0"/>
-                    <TextBox Grid.Column="3" x:Name="HeightTextBox"
-                        Text="{Binding Height, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        HorizontalAlignment="Stretch"
-                        PreviewTextInput="NumericTextBox_PreviewTextInput"
-                        CommandManager.PreviewExecuted="NumericTextBox_PreviewExecuted"
-                        Margin="16,0,16,0"/>
-                </Grid>
-                <TextBlock Text="場所" Margin="16,16,16,0"/>
-                <Grid Margin="0,8,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" MinWidth="64"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto" MinWidth="64"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="X" Margin="16,0,0,0"/>
-                    <TextBox Grid.Column="1" x:Name="XTextBox"
-                        Text="{Binding X, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        HorizontalAlignment="Stretch"
-                        PreviewTextInput="NumericTextBox_PreviewTextInput"
-                        CommandManager.PreviewExecuted="NumericTextBox_PreviewExecuted"
-                        Margin="16,0,16,0"/>
-                    <TextBlock Grid.Column="2" Text="Y" Margin="16,0,0,0"/>
-                    <TextBox Grid.Column="3" x:Name="YTextBox"
-                        Text="{Binding Y, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        HorizontalAlignment="Stretch"
-                        PreviewTextInput="NumericTextBox_PreviewTextInput"
-                        CommandManager.PreviewExecuted="NumericTextBox_PreviewExecuted"
-                        Margin="16,0,16,0"/>
-                </Grid>
+                            <!-- 選択状態 -->
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ContentBorder" Property="Background" Value="#E6F3FF"/>
+                                <Setter TargetName="SelectionIndicator" Property="Visibility" Value="Visible"/>
+                            </Trigger>
 
-                <Border Margin="0,16,0,16" Height="1" Background="Gray"/>
-                <Grid Margin="0,8,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" MinWidth="64"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Column="0" Grid.Row="0" Text="ModKey" Margin="16,0,0,0"/>
-                    <ComboBox Grid.Column="1" Grid.Row="0" x:Name="ModKeyComboBox"
-                        ItemsSource="{Binding ModKeys}"
-                        SelectedValue="{Binding ModKey, Mode=TwoWay}"
-                        SelectedValuePath="Value"
-                        DisplayMemberPath="DisplayName"
-                        HorizontalAlignment="Stretch"
-                        Margin="16,0,16,0"/>
-                    <TextBlock Grid.Column="0" Grid.Row="1" Text="Key" Margin="16,8,0,0"/>
-                    <ComboBox Grid.Column="1" Grid.Row="1" x:Name="KeyComboBox"
-                        ItemsSource="{Binding Keys}"
-                        SelectedValue="{Binding Key, Mode=TwoWay}"
-                        SelectedValuePath="Value"
-                        DisplayMemberPath="DisplayName"
-                        HorizontalAlignment="Stretch"
-                        Margin="16,8,16,0"/>
-                </Grid>
-                <Grid Margin="0,8,0,0">
+                            <!-- 選択かつホバー状態 -->
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="True"/>
+                                    <Condition Property="IsMouseOver" Value="True"/>
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="ContentBorder" Property="Background" Value="#D1E7F5"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!-- サイドメニュー列 -->
+            <ColumnDefinition Width="160"/>
+            <!-- メインコンテンツ列 -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- サイドメニュー -->
+        <Border Grid.Column="0" Background="#F8F9FA" BorderBrush="#E1E3E6" BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- メニューリスト -->
+                <ListBox Grid.Row="0" x:Name="MenuListBox"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         SelectionChanged="MenuListBox_SelectionChanged">
+
+                    <ListBoxItem Tag="General" Style="{StaticResource MenuListItemStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="32"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- アイコン -->
+                            <Border Grid.Column="0" Width="20" Height="20" Background="#0078D4"
+                                    CornerRadius="2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                <TextBlock Text="🏠" FontSize="12" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" Foreground="White"/>
+                            </Border>
+
+                            <!-- テキスト -->
+                            <TextBlock Grid.Column="1" Text="全般"
+                                       VerticalAlignment="Center" FontSize="14"
+                                       Foreground="#323130" Margin="8,0,0,0"/>
+                        </Grid>
+                    </ListBoxItem>
+
+                </ListBox>
+            </Grid>
+        </Border>
+        <!-- メインコンテンツエリア -->
+        <Border Grid.Column="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ContentControl
+                    x:Name="MainContent"
+                    Grid.Row="0"/>
+                <!--コンテンツの保存ボタンは全画面共通-->
+                <Grid
+                    Grid.Row="1"
+                    Margin="0,8,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto" MinWidth="64"/>
@@ -126,7 +145,8 @@
                         Margin="16"
                         Command="{Binding CloseCommand}" />
                 </Grid>
-            </StackPanel>
-        </StackPanel>
+            </Grid>
+        </Border>
+
     </Grid>
 </Window>
