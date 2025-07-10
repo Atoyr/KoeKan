@@ -110,7 +110,7 @@ public class TrayManager : IDisposable
         }
     }
 
-    // FIXME
+    // Refreshes the tray icon settings by updating the icon text and recreating the context menu.
     public void RefreshSettings()
     {
         UpdateNotifyIconText();
