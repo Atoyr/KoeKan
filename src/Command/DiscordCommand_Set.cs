@@ -75,7 +75,7 @@ public class DiscordCommand_Set : ICommand
         }
         clientConfig["default_channel_id"] = channelId;
         _configService.SaveConfig();
-        _listenerService.AddLogMessage($"Username set to {channelId}.");
+        _listenerService.AddLogMessage($"Default channel set to {channelId}.");
     }
 
     private void SetToken(string token)
