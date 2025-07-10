@@ -4,14 +4,14 @@ namespace Medoz.KoeKan.Clients;
 
 public class Heartbeat : IDisposable
 {
-    private Timer _timer;
+    private readonly System.Threading.Timer _timer;
 
     public event Action<object?>? OnHeartbeat;
 
     public Heartbeat(TimeSpan interval)
     {
         // TimerCallback デリゲートを使用してタイマーのコールバックメソッドを設定
-        _timer = new Timer(HandleHeartbeat, null, TimeSpan.Zero, interval);
+        _timer = new System.Threading.Timer(HandleHeartbeat, null, TimeSpan.Zero, interval);
     }
 
     private void HandleHeartbeat(object? state)

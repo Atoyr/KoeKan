@@ -8,24 +8,23 @@ namespace Medoz.KoeKan.Clients;
 
 public class DiscordClient: ITextClient
 {
-    private DiscordSocketClient _client;
-    private DiscordOptions _options;
+    private readonly DiscordSocketClient _client;
+    private readonly DiscordOptions _options;
     private readonly CancellationTokenSource _cancellationTokenSource = new ();
 
     private IMessageChannel? _messageChannel;
 
-    private ILogger? _logger { get; set; }
+    public string Name => GetType().Name;
+    public bool IsRunning => _client.ConnectionState == ConnectionState.Connected;
 
-    public event Func<Message, Task>? OnReceiveMessage;
+    public event Func<ClientMessage, Task>? OnReceiveMessage;
     public event Func<Task>? OnReady;
 
-    public DiscordClient(DiscordOptions options, ILogger? logger = null)
+    public DiscordClient(DiscordOptions options)
     {
         _options = options;
-        _logger = logger;
 
         _client = new DiscordSocketClient(new DiscordSocketConfig(){ GatewayIntents = GatewayIntents.All});
-        _client.Log += LogAsync;
         _client.MessageReceived += MessageReceivedAsync;
         _client.Ready += ReadyAsync;
     }
@@ -34,7 +33,6 @@ public class DiscordClient: ITextClient
     {
         if (_client.ConnectionState == ConnectionState.Connected)
         {
-            _logger?.LogWarning("Discord client is Connected.");
             return;
         }
         await _client.LoginAsync(TokenType.Bot, _options.Token);
@@ -61,11 +59,11 @@ public class DiscordClient: ITextClient
         }
     }
 
-    public async Task SendMessageAsync(string message)
+    public async Task SendMessageAsync(ClientMessage message)
     {
         if (_messageChannel is not null)
         {
-            await _messageChannel.SendMessageAsync(message);
+            await _messageChannel.SendMessageAsync(message.Content);
         }
     }
 
@@ -146,12 +144,12 @@ public class DiscordClient: ITextClient
         if (OnReceiveMessage is not null)
         {
             await OnReceiveMessage.Invoke(
-                    new Message(
-                        ClientType.Discord, 
-                        message.Channel.Name, 
-                        message.Author.GlobalName, 
-                        message.Content, 
-                        message.Timestamp.DateTime.ToLocalTime(), 
+                    new ClientMessage(
+                        Name,
+                        message.Channel.Name,
+                        message.Author.GlobalName,
+                        message.Content,
+                        message.Timestamp.DateTime.ToLocalTime(),
                         message.Author.GetDisplayAvatarUrl()));
         }
     }
@@ -164,15 +162,20 @@ public class DiscordClient: ITextClient
         }
     }
 
-    private Task LogAsync(LogMessage log)
-    {
-        _logger?.LogInformation(log.ToString());
-        return Task.CompletedTask;
-    }
-
     public void Dispose()
     {
         _cancellationTokenSource.Cancel();
         _cancellationTokenSource.Dispose();
+    }
+
+    public Task<string> AuthAsync()
+    {
+        if (_options.Token is null)
+        {
+            throw new InvalidOperationException("Failed to create an instance of the client.");
+        }
+        // Tokenの検証
+        TokenUtils.ValidateToken(TokenType.Bot, _options.Token);
+        return Task.FromResult(_options.Token);
     }
 }

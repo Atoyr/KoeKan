@@ -1,0 +1,107 @@
+<UserControl x:Class="Medoz.KoeKan.GeneralSettingsView"
+             x:Name="root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:components="clr-namespace:Medoz.KoeKan.Components" >
+    <Grid Height="Auto" Width="Auto">
+        <StackPanel Margin="8,0,8,0">
+            <TextBlock Text="設定" FontSize="24" Margin="0,16,0,0"/>
+            <StackPanel Margin="16,8,16,0">
+                <TextBlock Text="表示するユーザー名" />
+                <TextBox x:Name="UsernameTextBox"
+                    Text="{Binding MyName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Margin="0,8,0,0"/>
+                <TextBlock Text="アイコンパス" Margin="0,8,0,0"/>
+                <TextBox x:Name="IconFilePathTextBox"
+                    Text="{Binding IconPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Margin="0,8,0,0"/>
+                <TextBlock Text="プレビュー" Margin="0,8,0,0"/>
+                <!--プレビュー部分なので透過させる-->
+                <Grid Background="#AA000000">
+                    <components:ChatMessageControl
+                        x:Name="PreviewMessageControl"
+                        DataContext="{Binding PreviewMessage}"/>
+                </Grid>
+
+                <Border Margin="0,16,0,16" Height="1" Background="Gray"/>
+
+                <TextBlock Text="ウィンドウ" Margin="16,0,16,0"/>
+
+                <TextBlock Text="サイズ" Margin="16,16,16,0"/>
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MinWidth="64"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto" MinWidth="64"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="幅" Margin="16,0,0,0"/>
+                    <TextBox Grid.Column="1" x:Name="WidthTextBox"
+                        Text="{Binding Width, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        HorizontalAlignment="Stretch"
+                        PreviewTextInput="NumericTextBox_PreviewTextInput"
+                        CommandManager.PreviewExecuted="NumericTextBox_PreviewExecuted"
+                        Margin="16,0,16,0"/>
+                    <TextBlock Grid.Column="2" Text="高さ" Margin="16,0,0,0"/>
+                    <TextBox Grid.Column="3" x:Name="HeightTextBox"
+                        Text="{Binding Height, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        HorizontalAlignment="Stretch"
+                        PreviewTextInput="NumericTextBox_PreviewTextInput"
+                        CommandManager.PreviewExecuted="NumericTextBox_PreviewExecuted"
+                        Margin="16,0,16,0"/>
+                </Grid>
+                <TextBlock Text="場所" Margin="16,16,16,0"/>
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MinWidth="64"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto" MinWidth="64"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="X" Margin="16,0,0,0"/>
+                    <TextBox Grid.Column="1" x:Name="XTextBox"
+                        Text="{Binding X, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        HorizontalAlignment="Stretch"
+                        PreviewTextInput="NumericTextBox_PreviewTextInput"
+                        CommandManager.PreviewExecuted="NumericTextBox_PreviewExecuted"
+                        Margin="16,0,16,0"/>
+                    <TextBlock Grid.Column="2" Text="Y" Margin="16,0,0,0"/>
+                    <TextBox Grid.Column="3" x:Name="YTextBox"
+                        Text="{Binding Y, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        HorizontalAlignment="Stretch"
+                        PreviewTextInput="NumericTextBox_PreviewTextInput"
+                        CommandManager.PreviewExecuted="NumericTextBox_PreviewExecuted"
+                        Margin="16,0,16,0"/>
+                </Grid>
+
+                <Border Margin="0,16,0,16" Height="1" Background="Gray"/>
+                <Grid Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" MinWidth="64"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Column="0" Grid.Row="0" Text="ModKey" Margin="16,0,0,0"/>
+                    <ComboBox Grid.Column="1" Grid.Row="0" x:Name="ModKeyComboBox"
+                        ItemsSource="{Binding ModKeys}"
+                        SelectedValue="{Binding ModKey, Mode=TwoWay}"
+                        SelectedValuePath="Value"
+                        DisplayMemberPath="DisplayName"
+                        HorizontalAlignment="Stretch"
+                        Margin="16,0,16,0"/>
+                    <TextBlock Grid.Column="0" Grid.Row="1" Text="Key" Margin="16,8,0,0"/>
+                    <ComboBox Grid.Column="1" Grid.Row="1" x:Name="KeyComboBox"
+                        ItemsSource="{Binding Keys}"
+                        SelectedValue="{Binding Key, Mode=TwoWay}"
+                        SelectedValuePath="Value"
+                        DisplayMemberPath="DisplayName"
+                        HorizontalAlignment="Stretch"
+                        Margin="16,8,16,0"/>
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

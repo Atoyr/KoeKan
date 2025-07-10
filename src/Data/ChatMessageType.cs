@@ -4,13 +4,12 @@ namespace Medoz.KoeKan.Data;
 /// </summary>
 public enum ChatMessageType
 {
-    Command, 
-    LogSuccess, 
-    LogInfo, 
-    LogWarning, 
-    LogFatal, 
-    Text,
-    DiscordText, 
-    DiscordVoice, 
-    Twitch, 
+    Command,
+    LogSuccess,
+    LogInfo,
+    LogWarning,
+    LogFatal,
+    Echo,
+    Discord,
+    Twitch,
 }

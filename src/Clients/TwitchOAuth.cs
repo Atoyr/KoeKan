@@ -18,8 +18,8 @@ internal class TwitchOAuth : IDisposable
     public event Action<string>? OnTokenReceived;
 
     private HttpListener? _listener;
-    private string _clientId;
-    private int _redirectPort;
+    private readonly string _clientId;
+    private readonly int _redirectPort;
 
     public TwitchOAuth(string clientId, int redirectPort = 53919)
     {
@@ -33,8 +33,9 @@ internal class TwitchOAuth : IDisposable
         string url = $"{_oauthAuthorizeUri}?client_id={_clientId}&redirect_uri={redirectUrl}&response_type=token&scope=chat:read{_space}chat:edit";
 
         StartRedirectServer();
-        Task<TwitchOAuthResponse?> redirect = WaitForRequest();
+        var redirect = WaitForRequest();
 
+        // リダイレクトページを開く
         ProcessStartInfo pi = new ProcessStartInfo()
         {
             FileName = url,
@@ -80,8 +81,7 @@ internal class TwitchOAuth : IDisposable
     {
         if (_listener is null)
         {
-            // TODO throw Exception;
-            return null;
+            throw new Exception("Listener is not started.");
         }
 
         HttpListenerContext? context = null;
@@ -91,7 +91,7 @@ internal class TwitchOAuth : IDisposable
         }
         catch (Exception ex)
         {
-            // エラー時の処理
+            throw new Exception("Failed to get context.", ex);
         }
 
         if (context is not null)
@@ -117,7 +117,13 @@ internal class TwitchOAuth : IDisposable
     private string CreateResponseHtml()
     {
         return $@"
-        <!DOCTYPE html><html><head></head><body></body>
+        <!DOCTYPE html>
+        <html>
+          <head><title>Twitch認証</title></head>
+          <body>
+            <h1>認証が完了しました。</h1>
+            <p>このページを閉じてください。</p>
+          </body>
           <script>
             var currentUrl = window.location.href;
             var fragment = window.location.hash;

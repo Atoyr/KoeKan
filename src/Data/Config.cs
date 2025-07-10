@@ -5,46 +5,224 @@ namespace Medoz.KoeKan.Data;
 
 /// <summary>
 /// </summary>
-public class Config : ConfigBase
+public class Config
 {
-    public string Username { get; set; }
-
-    public string? Icon { get; set; }
-
-    public double Width { get; set; } = 400;
-
-    public double Height { get; set; } = 800;
-
-    public string ModKey { get; set; } = "CONTROL";
-    public string Key { get; set; } = "ENTER";
-
-    public DiscordConfig Discord { get; set; } = null!;
-
-    public TwitchConfig Twitch { get; set; }
-
-    public VoicevoxConfig Voicevox { get; set; }
-
-    public IEnumerable<string> Applications { get; set; } = new List<string>();
-
-    protected static string _filePath { get => Path.Combine(_folderPath, "config.json"); }
-
     public Config()
-    { 
-        Username = "";
-        Discord = new(null, false, null);
-        Twitch = new(Enumerable.Empty<string>(), false, null);
-        Voicevox = new(1, null);
+    {
     }
 
-    public void Save() => Save<Config>(_filePath);
+    private readonly object _lock = new();
 
-    public static Config? Load()
+    /// <summary>
+    /// クライアントの設定
+    /// </summary>
+    public IDictionary<string, DynamicConfig> Clients
     {
-        if (File.Exists(_filePath))
+        get;
+        // FIXME: Json形式で保存するために、setをpublicにしているが、
+        // できればprivateにしたい。
+
+        set;
+    } = new Dictionary<string, DynamicConfig>();
+
+    private string _username = "";
+    /// <summary>
+    /// 自身の名前
+    /// </summary>
+    public string Username
+    {
+        get
         {
-            string json = File.ReadAllText(_filePath);
-            return JsonSerializer.Deserialize<Config>(json);
+            lock(_lock)
+            {
+                return _username;
+            }
         }
-        return null;
+        set
+        {
+            lock(_lock)
+            {
+                _username = value;
+            }
+        }
+    }
+
+    private string? _icon;
+    /// <summary>
+    /// 自身のアイコンファイルのパス
+    /// </summary>
+    public string? Icon
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _icon;
+            }
+        }
+        set
+        {
+            lock(_lock)
+            {
+                _icon = value;
+            }
+        }
+    }
+
+    private double _width = 400;
+    /// <summary>
+    /// ウィンドウの幅
+    /// </summary>
+    public double Width
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _width;
+            }
+        }
+        set
+        {
+            lock(_lock)
+            {
+                _width = value;
+            }
+        }
+    }
+
+    private double _height = 800;
+    /// <summary>
+    /// ウィンドウの高さ
+    /// </summary>
+    public double Height
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _height;
+            }
+        }
+        set
+        {
+            lock(_lock)
+            {
+                _height = value;
+            }
+        }
+    }
+
+    public double _x = 100;
+    /// <summary>
+    /// ウィンドウの左位置
+    /// </summary>
+    public double X
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _x;
+            }
+        }
+        set
+        {
+            lock(_lock)
+            {
+                _x = value;
+            }
+        }
+    }
+
+    public double _y = 100;
+    /// <summary>
+    /// ウィンドウの上位置
+    /// </summary>
+    public double Y
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _y;
+            }
+        }
+        set
+        {
+            lock(_lock)
+            {
+                _y = value;
+            }
+        }
+    }
+
+
+
+    private string _modKey = "CONTROL";
+    private string _key = "ENTER";
+
+    /// <summary>
+    /// ホットキーの修飾キー
+    /// </summary>
+    public string ModKey
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _modKey;
+            }
+        }
+        set
+        {
+            lock(_lock)
+            {
+                _modKey = value;
+            }
+        }
+    }
+
+    /// <summary>
+    /// ホットキーのキー
+    /// </summary>
+    public string Key
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _key;
+            }
+        }
+        set
+        {
+            lock(_lock)
+            {
+                _key = value;
+            }
+        }
+    }
+
+    private IEnumerable<string> _applications = new List<string>();
+    /// <summary>
+    /// アクティブに変更できるアプリケーション一覧
+    /// </summary>
+    public IEnumerable<string> Applications
+    {
+        get
+        {
+            lock(_lock)
+            {
+                return _applications;
+            }
+        }
+        set
+        {
+            lock(_lock)
+            {
+                _applications = value;
+            }
+        }
     }
 }

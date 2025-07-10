@@ -2,103 +2,46 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using System.Text.Json.Serialization;
 
 namespace Medoz.KoeKan.Data;
 
 /// <summary>
+/// シークレット情報を保持するクラス
 /// </summary>
-public class Secret : ConfigBase
+public class Secret
 {
-    private static object _lock = new();
-    private static JsonSerializerOptions _jsonSerializerOption = new JsonSerializerOptions
-    {
-        Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.Cyrillic),
-        WriteIndented = true
-    };
+    [JsonInclude]
+    private readonly Dictionary<string, string> _secretDictionary = new();
 
-    public string? Twitch { get; set; }
-
-    public string? DectyptTwitch()
+    /// <summary>
+    /// シークレットの値を取得します。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public string GetValue(string key)
     {
-        if(Twitch is null)
+        if (_secretDictionary.TryGetValue(key, out var value))
         {
-            return Twitch;
+            return value;
         }
-        return Credential.DecryptString(Twitch);
+        return string.Empty;
     }
 
-    public void EncryptTwitch(string value)
+    /// <summary>
+    /// シークレットの値を設定します。
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    public void SetValue(string key, string value)
     {
-        if (value is null)
+        if (_secretDictionary.ContainsKey(key))
         {
-            Twitch = null;
-            return;
+            _secretDictionary[key] = value;
         }
-        Twitch = Credential.EncryptString(value);
-    }
-
-    public string? Discord { get; set; }
-
-    public string? DectyptDiscord()
-    {
-        if(Discord is null)
+        else
         {
-            return Discord;
-        }
-        return Credential.DecryptString(Discord);
-    }
-
-    public void EncryptDiscord(string value)
-    {
-        if (value is null)
-        {
-            Discord = null;
-            return;
-        }
-        Discord = Credential.EncryptString(value);
-    }
-
-    private static string _filePath { get => Path.Combine(_folderPath, "secret.json"); }
-
-    private static Secret? _secret;
-
-    public Secret()
-    { 
-    }
-
-    public void Save() 
-    {
-        lock(_lock)
-        {
-            Directory.CreateDirectory(_folderPath); // フォルダが存在しない場合は作成
-
-            string json = JsonSerializer.Serialize(this, _jsonSerializerOption);
-            File.WriteAllText(_filePath, json);
-        }
-    }
-
-    public static Secret Load()
-    {
-        lock(_lock)
-        {
-            if (_secret is null)
-            {
-                if (File.Exists(_filePath))
-                {
-                    string json = File.ReadAllText(_filePath);
-                    var secret = JsonSerializer.Deserialize<Secret>(json, _jsonSerializerOption);
-                    if (secret is not null)
-                    {
-                        _secret = secret;
-                        return _secret;
-                    }
-                }
-                return new();
-            }
-            else
-            {
-                return _secret;
-            }
+            _secretDictionary.Add(key, value);
         }
     }
 }
