@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text;
+using System.Web;
 
 namespace Medoz.CatChast.Auth;
 
@@ -36,7 +37,20 @@ public class RedirectServer : IDisposable
         _listener = new();
         foreach (var redirectUrl in RedirectUrls)
         {
-            _listener.Prefixes.Add(redirectUrl);
+            if (string.IsNullOrWhiteSpace(redirectUrl))
+            {
+                continue;
+            }
+
+            if (redirectUrl.EndsWith("/"))
+            {
+                _listener.Prefixes.Add(redirectUrl);
+            }
+            else
+            {
+                _listener.Prefixes.Add(redirectUrl + "/");
+            }
+
         }
         _listener.Start();
     }
@@ -48,6 +62,10 @@ public class RedirectServer : IDisposable
             throw new InvalidOperationException("Redirect server is not started.");
         }
 
+        if (!_listener.IsListening)
+        {
+            throw new InvalidOperationException("Redirect server is not listening.");
+        }
         return await _listener.GetContextAsync();
     }
 

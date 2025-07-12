@@ -10,7 +10,7 @@ namespace Medoz.CatChast.Auth;
 
 /// <summary>
 /// </summary>
-public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
+public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
 {
     /// <summary>
     /// スペースのURLエンコード
@@ -18,11 +18,6 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
     private const string _space = "%20";
 
     internal TwitchOAuthOptions Options { get; }
-
-    private readonly string _clientSecret;
-
-    public event Action<string>? OnTokenReceived;
-
 
     /// <summary>
     /// Twitch OAuthのクライアントID
@@ -44,12 +39,11 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
     /// </summary>
     internal string Scope => $"chat:read{_space}chat:edit";
 
-    public TwitchOAuthWithClientCredentials(TwitchOAuthOptions options)
+    public TwitchOAuthWithImplicit(TwitchOAuthOptions options)
     {
         Options = options ?? throw new ArgumentNullException(nameof(options));
         _clientId = options.ClientId;
         _redirectPort = options.RedirectPort;
-        _clientSecret = options["client_secret"] as string ?? throw new ArgumentNullException("Client secret is not set.");
     }
 
 
@@ -67,12 +61,7 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
 
         try
         {
-            var code = await GetAuthorizeCodeAsync();
-            if (string.IsNullOrEmpty(code))
-            {
-                throw new Exception("Authorization code is empty.");
-            }
-            return await GetTokenAsync(code, cancellationToken);
+            return await GetAccessTokenAsync();
         }
         catch (Exception ex)
         {
@@ -80,17 +69,15 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
         }
     }
 
-    private async Task<string> GetAuthorizeCodeAsync(CancellationToken cancellationToken = default)
+    private async Task<HttpListenerContext?> RequestTwichAutorize(string state, CancellationToken cancellationToken = default)
     {
-        string state = Guid.NewGuid().ToString("N");
+        // response_type=token
         string url = $"{OAuthAuthorizeUri}?client_id={_clientId}&redirect_uri={_redirectUrl}&response_type=token&scope={Scope}&state={state}";
-
+        using var server = new RedirectServer(_redirectUrl);
         // リダイレクトサーバーを起動して、認証コードを取得する
         HttpListenerContext? context = null;
         try
         {
-            using var server = new RedirectServer(_redirectUrl);
-            var redirectTask = server.GetContextAsync();
 
             // OAuth認証ページを開く
             ProcessStartInfo pi = new ProcessStartInfo()
@@ -103,13 +90,7 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
             while (context is null && !cancellationToken.IsCancellationRequested)
             {
                 // リダイレクトサーバーからのリクエストを待機
-                context = await redirectTask;
-
-                if (context is null)
-                {
-                    // リダイレクトサーバーからのリクエストがまだ来ていない場合は、再度待機
-                    redirectTask = server.GetContextAsync();
-                }
+                context = await server.GetContextAsync();
             }
         }
         catch (Exception ex)
@@ -119,9 +100,16 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
 
         if (cancellationToken.IsCancellationRequested)
         {
-            // キャンセルされた場合は空文字を返す
-            return string.Empty;
+            // キャンセルされた場合はnullを返す
+            return null;
         }
+        return context;
+    }
+
+    private async Task<TwitchOAuthToken> GetAccessTokenAsync(CancellationToken cancellationToken = default)
+    {
+        string state = Guid.NewGuid().ToString("N");
+        var context = await RequestTwichAutorize(state, cancellationToken);
 
         if (context is null)
         {
@@ -129,16 +117,18 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
             throw new Exception("No context received from the redirect server.");
         }
 
-        // リダイレクトサーバーからのリクエストから認証コードを取得
-        var code = context.Request.QueryString["code"];
+        // リダイレクトサーバーからのリクエストからアクセストークンを取得
+        var token = context.Request.QueryString["access_token"];
+        var scope = context.Request.QueryString["scope"];
         var retState = context.Request.QueryString["state"];
+        var tokenType = context.Request.QueryString["token_type"];
 
         if (retState != state)
         {
             throw new Exception($"State mismatch: expected {state}, got {retState}");
         }
 
-        if (string.IsNullOrEmpty(code))
+        if (string.IsNullOrEmpty(token))
         {
             // 認証コードが取得できなかった場合、次のURLの形式でリダイレクトされる
             // {redirect_url}?error={error}&error_description={error_description}&state={state}
@@ -148,33 +138,13 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
             throw new Exception($"Authorization failed: {error} - {errorDescription}");
         }
 
-        return code;
-    }
-
-    private async Task<TwitchOAuthToken> GetTokenAsync(string code, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrEmpty(code))
-        {
-            throw new ArgumentException("Authorization code cannot be null or empty.", nameof(code));
-        }
-
-        using var http = new HttpClient();
-        var tokenResponse = await http.PostAsync(OAuthAuthorizeUri, new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            {"client_id", _clientId},
-            {"client_secret", _clientSecret},
-            {"code", code},
-            {"grant_type", "authorization_code"},
-            {"redirect_uri", _redirectUrl}
-        }));
-
-        string json = await tokenResponse.Content.ReadAsStringAsync();
-        var tokenData = JsonSerializer.Deserialize<TwitchOAuthToken>(json, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        return tokenData ?? throw new Exception("Failed to deserialize Twitch OAuth token response.");
+        return new TwitchOAuthToken(
+            token,
+            0,
+            null,
+            scope?.Split(_space, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>(),
+            tokenType ?? "Bearer"
+        );
     }
 
     public void Dispose()
