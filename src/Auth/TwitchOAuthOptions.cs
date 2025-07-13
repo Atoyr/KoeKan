@@ -26,7 +26,7 @@ public class TwitchOAuthOptions
     /// </summary>
     public int RedirectPort
     {
-        get => _parameters.TryGetValue("redirect_port", out var value) ? Convert.ToInt32(value) : 8080;
+        get => _parameters.TryGetValue("redirect_port", out var value) && int.TryParse(value?.ToString(), out var port) ? port : 8080;
     }
 
     /// <summary>
