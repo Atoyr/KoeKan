@@ -13,7 +13,7 @@ public class TwitchCommand_Start : ICommand
 {
     public string CommandName => "start";
 
-    public string HelpText => "start tiwitch client";
+    public string HelpText => "start twitch client";
 
     private readonly IListenerService _listenerService;
     private readonly IClientService _clientService;
