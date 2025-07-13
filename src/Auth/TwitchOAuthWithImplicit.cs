@@ -251,8 +251,9 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
     ";
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
+        base.Dispose();
         RedirectServer?.Dispose();
     }
 }

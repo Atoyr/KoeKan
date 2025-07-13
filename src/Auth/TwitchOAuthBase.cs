@@ -35,4 +35,10 @@ public abstract class TwitchOAuthBase : ITwitchOAuth
         var response = await _httpClient.GetAsync(OAuthValidateUri, cancellationToken).ConfigureAwait(false);
         return response.IsSuccessStatusCode;
     }
+
+    public virtual void Dispose()
+    {
+        _httpClient?.Dispose();
+        _httpClient = null;
+    }
 }
