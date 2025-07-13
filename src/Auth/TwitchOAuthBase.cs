@@ -20,14 +20,19 @@ public abstract class TwitchOAuthBase : ITwitchOAuth
     /// </summary>
     protected const string OAuthValidateUri = "https://id.twitch.tv/oauth2/validate";
 
+    protected HttpClient? _httpClient;
+
     public abstract Task<TwitchOAuthToken> AuthorizeAsync(string? refreshToken, CancellationToken cancellationToken = default);
 
     public async Task<bool> ValidateTokenAsync(string accessToken, CancellationToken cancellationToken = default)
     {
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.Add("Authorization", $"OAuth {accessToken}");
+        if (_httpClient is null)
+        {
+            _httpClient = new HttpClient();
+        }
+        _httpClient.DefaultRequestHeaders.Add("Authorization", $"OAuth {accessToken}");
 
-        var response = await client.GetAsync(OAuthValidateUri, cancellationToken);
+        var response = await _httpClient.GetAsync(OAuthValidateUri, cancellationToken).ConfigureAwait(false);
         return response.IsSuccessStatusCode;
     }
 }
