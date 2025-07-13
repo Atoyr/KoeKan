@@ -163,8 +163,12 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
             throw new ArgumentException("Authorization code cannot be null or empty.", nameof(code));
         }
 
-        using var http = new HttpClient();
-        var tokenResponse = await http.PostAsync(OAuthAuthorizeUri, new FormUrlEncodedContent(new Dictionary<string, string>
+        if (_httpClient is null)
+        {
+            _httpClient = new HttpClient();
+        }
+
+        var tokenResponse = await _httpClient.PostAsync(OAuthTokenUri, new FormUrlEncodedContent(new Dictionary<string, string>
         {
             {"client_id", _clientId},
             {"client_secret", _clientSecret},
