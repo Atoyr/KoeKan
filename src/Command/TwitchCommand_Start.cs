@@ -13,7 +13,7 @@ public class TwitchCommand_Start : ICommand
 {
     public string CommandName => "start";
 
-    public string HelpText => "start discord client";
+    public string HelpText => "start tiwitch client";
 
     private readonly IListenerService _listenerService;
     private readonly IClientService _clientService;
@@ -36,19 +36,38 @@ public class TwitchCommand_Start : ICommand
 
     public async Task ExecuteCommandAsync(string[] args)
     {
+        // FIXME: TwitchClientの生成プロセスが複雑なので修正する
         var config = _configService.GetConfig();
         var secret = _configService.GetSecret();
         var token = secret.GetValue("twitch.token");
-        if (string.IsNullOrEmpty(token))
-        {
-            _listenerService.AddLogMessage("Twitch token is not set.");
-            return;
-        }
 
-        var twitchClientConfig = config.Clients["twitch"];
-        var channels = twitchClientConfig.GetValue<string[]>("channels");
-        var twitchClient = new TwitchClient(new TwitchOptions(){Token = token, Channels = channels ?? new string[] { } });
-        twitchClient.OnReceiveMessage += (message) => {
+        var twitchClientConfig = config.Clients.TryGetValue("twitch", out var clientConfig)
+            ? clientConfig
+            : new DynamicConfig();
+        var channels = twitchClientConfig.TryGetValue<string[]>("channels", out var channelList)
+            ? channelList
+            : Array.Empty<string>();
+
+
+        TwitchClient? twitchClient = null;
+        if (!_clientService.TryGetClient("twitch", out var existingClient))
+        {
+            twitchClient = new TwitchClient(new TwitchOptions(){Token = token, Channels = channels ?? new string[] { } });
+            _clientService.RegisterClient("twitch", twitchClient);
+        }
+        if (twitchClient is null)
+        {
+            if (existingClient is TwitchClient)
+            {
+                twitchClient = existingClient as TwitchClient;
+            }
+            else
+            {
+                _listenerService.AddLogMessage("Twitch client is not a valid TwitchClient instance.");
+                return;
+            }
+        }
+        twitchClient!.OnReceiveMessage += (message) => {
             _listenerService.AddMessage(message);
             return Task.CompletedTask;
         };
@@ -63,5 +82,3 @@ public class TwitchCommand_Start : ICommand
         await Task.CompletedTask;
     }
 }
-
-

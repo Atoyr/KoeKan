@@ -10,6 +10,11 @@ public interface IClientService
     ITextClient GetClient(string? name = null);
 
     /// <summary>
+    /// クライアントの取得
+    /// </summary>
+    bool TryGetClient(string? name, out ITextClient? client);
+
+    /// <summary>
     /// クライアントの登録
     /// </summary>
     void RegisterClient(string name, ITextClient client);
