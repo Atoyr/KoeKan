@@ -129,5 +129,6 @@ public class TwitchClient: ITextClient
     public void Dispose()
     {
         _webSocket.Dispose();
+        _oauth.Dispose();
     }
 }
