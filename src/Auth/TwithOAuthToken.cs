@@ -15,7 +15,7 @@ public record TwitchOAuthToken(
     /// トークンの有効期限（秒）
     /// </summary>
     [property: JsonPropertyName("expires_in")]
-    int ExpiresIn,
+    uint ExpiresIn,
 
     /// <summary>
     /// リフレッシュトークン

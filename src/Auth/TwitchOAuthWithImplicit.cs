@@ -49,6 +49,15 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
     }
 
 
+    /// <summary>
+    /// Twitch OAuthの認証を行います。
+    /// </summary>
+    /// <param name="refreshToken"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="Exception"></exception>
     public override async Task<TwitchOAuthToken> AuthorizeAsync(string? refreshToken = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(_clientId))
@@ -71,6 +80,13 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// リダイレクトサーバーを起動し、Twitchの認証ページにリダイレクトします。
+    /// </summary>
+    /// <param name="state"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     private async Task<HttpListenerContext?> RequestTwichAutorize(string state, CancellationToken cancellationToken = default)
     {
         // response_type=token
@@ -106,6 +122,13 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
         return context;
     }
 
+    /// <summary>
+    /// リダイレクトサーバーからのリクエストを待機し、認証コードを取得します。
+    /// </summary>
+    /// <param name="server"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     private async Task<HttpListenerContext?> WaitForRequest(RedirectServer server, CancellationToken cancellationToken = default)
     {
         server.OnRedirectReceived += context =>
@@ -145,6 +168,13 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
         return context;
     }
 
+    /// <summary>
+    /// Twitch OAuthのアクセストークンを取得します。
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="OperationCanceledException"></exception>
+    /// <exception cref="Exception"></exception>
     private async Task<TwitchOAuthToken> GetAccessTokenAsync(CancellationToken cancellationToken = default)
     {
         string state = Guid.NewGuid().ToString("N");
@@ -183,9 +213,12 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
             throw new Exception($"Authorization failed: {error} - {errorDescription}");
         }
 
+        uint expiresIn = 0; // Implicit flow does not provide an expiration time
+        uint.TryParse(context.Request.QueryString["expires_in"], out expiresIn);
+
         return new TwitchOAuthToken(
             token,
-            0,
+            expiresIn,
             null,
             scope?.Split(_space, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>(),
             tokenType ?? "Bearer"
