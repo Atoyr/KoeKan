@@ -78,6 +78,12 @@ public class ClientService : IClientService
         return _clients[name];
     }
 
+    public bool TryGetClient(string? name, out ITextClient? client)
+    {
+        var clientName = string.IsNullOrEmpty(name)? _defaultClient : name;
+        return _clients.TryGetValue(clientName, out client);
+    }
+
     /// <summary>
     /// クライアントの登録
     /// </summary>

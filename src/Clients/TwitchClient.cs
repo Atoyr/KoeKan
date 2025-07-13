@@ -2,6 +2,7 @@ using System.Net.WebSockets;
 using System.Text;
 
 using Medoz.KoeKan.Data;
+using Medoz.CatChast.Auth;
 
 using Microsoft.Extensions.Options;
 
@@ -21,15 +22,17 @@ public class TwitchClient: ITextClient
     public string Name => GetType().Name;
     public bool IsRunning => _webSocket.State == WebSocketState.Open;
 
+    private readonly ITwitchOAuth _oauth;
+
     public TwitchClient(TwitchOptions options)
     {
         _options = options;
+        _oauth = new TwitchOAuthWithImplicit(new TwitchOAuthOptions(_options.ClientId, 53919));
     }
 
     private async Task<bool> ValidateTokenAsync(string? token)
     {
-        TwitchOAuth oauth = new(_options.ClientId);
-        return token is not null && await oauth.ValidateTokenAsync(token);
+        return token is not null && await _oauth.ValidateTokenAsync(token);
     }
 
     public async Task<string> AuthAsync()
@@ -39,8 +42,7 @@ public class TwitchClient: ITextClient
             return _options.Token!;
         }
 
-        TwitchOAuth oauth = new(_options.ClientId);
-        var response = await oauth.GetTokenAsync();
+        var response = await _oauth.AuthorizeAsync();
         var token = response?.AccessToken;
         if (token is null)
         {
@@ -127,5 +129,6 @@ public class TwitchClient: ITextClient
     public void Dispose()
     {
         _webSocket.Dispose();
+        _oauth.Dispose();
     }
 }

@@ -174,8 +174,4 @@ public class TwitchOAuthWithAuthorizationCode : TwitchOAuthBase, IDisposable
 
         return tokenData ?? throw new Exception("Failed to deserialize Twitch OAuth token response.");
     }
-
-    public void Dispose()
-    {
-    }
 }
