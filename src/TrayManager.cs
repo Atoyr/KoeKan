@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Interop;
 
+using Medoz.CatChast.Auth;
+
 namespace Medoz.KoeKan;
 
 public class TrayManager : IDisposable
@@ -78,6 +80,13 @@ public class TrayManager : IDisposable
 
         contextMenu.Items.Add(new ToolStripSeparator());
 
+        // Auth
+        var twitchOAuth = new ToolStripMenuItem("Twitch OAuth");
+        twitchOAuth.Click += (s, e) => TwitchOAuth();
+        contextMenu.Items.Add(twitchOAuth);
+
+        contextMenu.Items.Add(new ToolStripSeparator());
+
         // 終了
         var exitMenuItem = new ToolStripMenuItem("終了");
         exitMenuItem.Click += (s, e) => ExitRequested?.Invoke(this, EventArgs.Empty);
@@ -108,6 +117,13 @@ public class TrayManager : IDisposable
         {
             notifyIcon.ShowBalloonTip(3000, title, text, icon);
         }
+    }
+
+    public void TwitchOAuth()
+    {
+        var options = new TwitchOAuthOptions("", 53919);
+        var twitchOAuth = new TwitchOAuthWithImplicit(options);
+        twitchOAuth.AuthorizeAsync();
     }
 
     // Refreshes the tray icon settings by updating the icon text and recreating the context menu.

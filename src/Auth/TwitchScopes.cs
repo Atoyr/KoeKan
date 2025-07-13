@@ -1,0 +1,1 @@
+// NOTE: See https://dev.twitch.tv/docs/authentication/scopes/
