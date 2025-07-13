@@ -10,7 +10,7 @@ namespace Medoz.CatChast.Auth;
 
 /// <summary>
 /// </summary>
-public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
+public class TwitchOAuthWithAuthorizationCode : TwitchOAuthBase, IDisposable
 {
     /// <summary>
     /// スペースのURLエンコード
@@ -44,7 +44,7 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
     /// </summary>
     internal string Scope => $"chat:read{_space}chat:edit";
 
-    public TwitchOAuthWithClientCredentials(TwitchOAuthOptions options)
+    public TwitchOAuthWithAuthorizationCode(TwitchOAuthOptions options)
     {
         Options = options ?? throw new ArgumentNullException(nameof(options));
         _clientId = options.ClientId;
@@ -88,7 +88,6 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
         try
         {
             using var server = new RedirectServer(_redirectUrl);
-            var redirectTask = server.GetContextAsync();
 
             // OAuth認証ページを開く
             ProcessStartInfo pi = new ProcessStartInfo()
@@ -97,18 +96,8 @@ public class TwitchOAuthWithClientCredentials : TwitchOAuthBase, IDisposable
                 UseShellExecute = true,
             };
             Process.Start(pi);
-
-            while (context is null && !cancellationToken.IsCancellationRequested)
-            {
-                // リダイレクトサーバーからのリクエストを待機
-                context = await redirectTask;
-
-                if (context is null)
-                {
-                    // リダイレクトサーバーからのリクエストがまだ来ていない場合は、再度待機
-                    redirectTask = server.GetContextAsync();
-                }
-            }
+            // リダイレクトサーバーからのリクエストを待機
+            context = await server.GetContextAsync();
         }
         catch (Exception ex)
         {
