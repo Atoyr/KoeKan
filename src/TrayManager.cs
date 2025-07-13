@@ -123,8 +123,7 @@ public class TrayManager : IDisposable
     {
         var options = new TwitchOAuthOptions("", 53919);
         var twitchOAuth = new TwitchOAuthWithImplicit(options);
-        var token = twitchOAuth.AuthorizeAsync().Result;
-        Console.WriteLine($"Access Token: {token.AccessToken}");
+        twitchOAuth.AuthorizeAsync();
     }
 
     // Refreshes the tray icon settings by updating the icon text and recreating the context menu.

@@ -39,6 +39,8 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
     /// </summary>
     internal string Scope => $"chat:read{_space}chat:edit";
 
+    internal RedirectServer? RedirectServer { get; private set; }
+
     public TwitchOAuthWithImplicit(TwitchOAuthOptions options)
     {
         Options = options ?? throw new ArgumentNullException(nameof(options));
@@ -73,7 +75,8 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
     {
         // response_type=token
         string url = $"{OAuthAuthorizeUri}?client_id={_clientId}&redirect_uri={_redirectUrl}&response_type=token&scope={Scope}&state={state}";
-        using var server = new RedirectServer(_redirectUrl);
+        RedirectServer = new RedirectServer(_redirectUrl);
+
         // リダイレクトサーバーを起動して、認証コードを取得する
         HttpListenerContext? context = null;
         try
@@ -87,10 +90,12 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
             };
             Process.Start(pi);
 
-            while (context is null && !cancellationToken.IsCancellationRequested)
+            context = await WaitForRequest(RedirectServer, cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested)
             {
-                // リダイレクトサーバーからのリクエストを待機
-                context = await server.GetContextAsync();
+                // キャンセルされた場合はnullを返す
+                return null;
             }
         }
         catch (Exception ex)
@@ -98,10 +103,44 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
             throw new Exception("Failed to get authorization code.", ex);
         }
 
-        if (cancellationToken.IsCancellationRequested)
+        return context;
+    }
+
+    private async Task<HttpListenerContext?> WaitForRequest(RedirectServer server, CancellationToken cancellationToken = default)
+    {
+        server.OnRedirectReceived += context =>
         {
-            // キャンセルされた場合はnullを返す
-            return null;
+            var response = context!.Response;
+            response.StatusCode = (int)HttpStatusCode.OK;
+            response.ContentType = "text/html";
+
+            byte[] buffer = Encoding.UTF8.GetBytes(CreateResponseHtml());
+            response.ContentEncoding = Encoding.UTF8;
+            response.ContentType = "text/html; charset=utf-8";
+            response.ContentLength64 = buffer.Length;
+            response.OutputStream.Write(buffer, 0, buffer.Length);
+            response.OutputStream.Close();
+        };
+
+        // リダイレクトサーバーを起動して、認証コードを取得する
+        HttpListenerContext? context = null;
+        string? state = null;
+        try
+        {
+            while (string.IsNullOrEmpty(state))
+            {
+                context = await server.GetContextAsync();
+                state = context.Request.QueryString["state"];
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    // キャンセルされた場合はnullを返す
+                    return null;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Failed to get authorization code.", ex);
         }
         return context;
     }
@@ -110,6 +149,12 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
     {
         string state = Guid.NewGuid().ToString("N");
         var context = await RequestTwichAutorize(state, cancellationToken);
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            // キャンセルされた場合はnullを返す
+            throw new OperationCanceledException("Authorization was canceled by the user.");
+        }
 
         if (context is null)
         {
@@ -120,8 +165,8 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
         // リダイレクトサーバーからのリクエストからアクセストークンを取得
         var token = context.Request.QueryString["access_token"];
         var scope = context.Request.QueryString["scope"];
-        var retState = context.Request.QueryString["state"];
         var tokenType = context.Request.QueryString["token_type"];
+        var retState = context.Request.QueryString["state"];
 
         if (retState != state)
         {
@@ -147,7 +192,34 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
         );
     }
 
+    private string CreateResponseHtml()
+    {
+        return $@"
+        <!DOCTYPE html>
+        <html>
+          <head><title>Twitch認証</title></head>
+          <body>
+            <h1>認証が完了しました。</h1>
+            <p>このページを閉じてください。</p>
+          </body>
+          <script>
+            var currentUrl = window.location.href;
+            var fragment = window.location.hash;
+            if (fragment) {{
+              var newUrl = currentUrl.replace(fragment, '');
+              fragment = fragment.replace('#', '?');
+              if (newUrl.includes('?')) {{
+                  fragment = fragment.replace('?', '&');
+              }}
+              window.location.replace(`http://localhost:{_redirectPort}/` + fragment);
+            }}
+          </script>
+        </html>
+    ";
+    }
+
     public void Dispose()
     {
+        RedirectServer?.Dispose();
     }
 }

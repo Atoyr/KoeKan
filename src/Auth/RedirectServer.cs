@@ -14,6 +14,8 @@ public class RedirectServer : IDisposable
 {
     public string[] RedirectUrls { get; }
 
+    public event Action<HttpListenerContext>? OnRedirectReceived;
+
     public RedirectServer(params string[] redirectUrls)
     {
         RedirectUrls = redirectUrls ?? throw new ArgumentNullException(nameof(redirectUrls));
@@ -66,7 +68,13 @@ public class RedirectServer : IDisposable
         {
             throw new InvalidOperationException("Redirect server is not listening.");
         }
-        return await _listener.GetContextAsync();
+        var context = await _listener.GetContextAsync();
+        if (context is null)
+        {
+            throw new InvalidOperationException("Failed to get context from redirect server.");
+        }
+        OnRedirectReceived?.Invoke(context);
+        return context;
     }
 
     private void CloseRedirectServer()
