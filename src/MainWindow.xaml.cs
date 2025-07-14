@@ -202,6 +202,10 @@ public partial class MainWindow : Window
 
     private void ChatListBox_ScrollToEnd()
     {
+        if (ChatListBox.Items.Count == 0)
+        {
+            return;
+        }
         var item = ChatListBox.Items[ChatListBox.Items.Count - 1];
         ChatListBox.ScrollIntoView(item);
     }
