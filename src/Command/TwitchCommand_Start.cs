@@ -75,9 +75,9 @@ public class TwitchCommand_Start : ICommand
                 nameof(TwitchTextClient),
                 (message) => new ChatMessage(
                     ChatMessageType.Twitch,
-                    "",
-                    config.Icon,
-                    config.Username,
+                    message.Channel,
+                    message.IconSource,
+                    message.Username,
                     message.Content,
                     message.Timestamp,
                     false));
