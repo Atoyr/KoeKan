@@ -6,5 +6,4 @@ namespace Medoz.CatChast.Auth;
 public interface ITwitchOAuth : IDisposable
 {
     Task<TwitchOAuthToken> AuthorizeAsync(string? refreshToken = null, CancellationToken cancellationToken = default);
-    Task<bool> ValidateTokenAsync(string accessToken, CancellationToken cancellationToken = default);
 }
