@@ -41,8 +41,15 @@ public class TwitchCommand_Start : ICommand
         var config = _configService.GetConfig();
         var secret = _configService.GetSecret();
         var listener = _listenerService.GetListener();
+        var twitchClientConfig = config.Clients.TryGetValue("twitch", out var clientConfig)
+            ? clientConfig
+            : new DynamicConfig();
 
-        var oauth = new TwitchOAuthWithImplicit(new TwitchOAuthOptions("rgl0q1gsjromlw3ro7z8n4p2g9w34u", 53919));
+        var clientId = twitchClientConfig.TryGetValue<string>("clientId", out var id)
+            ? id
+            : null;
+
+        var oauth = new TwitchOAuthWithImplicit(new TwitchOAuthOptions(clientId ?? "", 53919));
         var token = await oauth.AuthorizeAsync();
         if (string.IsNullOrEmpty(token.AccessToken))
         {
@@ -50,9 +57,6 @@ public class TwitchCommand_Start : ICommand
             return;
         }
 
-        var twitchClientConfig = config.Clients.TryGetValue("twitch", out var clientConfig)
-            ? clientConfig
-            : new DynamicConfig();
         var channels = twitchClientConfig.TryGetValue<string[]>("channels", out var channelList)
             ? channelList
             : Array.Empty<string>();
