@@ -72,11 +72,6 @@ public class TextToSpeechBridge : ITextClient
         }
     }
 
-    public Task<string> AuthAsync()
-    {
-        return _client!.AuthAsync();
-    }
-
     public Task SendMessageAsync(ClientMessage message)
     {
         return _client!.SendMessageAsync(message);

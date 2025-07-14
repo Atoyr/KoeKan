@@ -48,7 +48,6 @@ public class TwitchOAuthWithImplicit : TwitchOAuthBase, IDisposable
         _redirectPort = options.RedirectPort;
     }
 
-
     /// <summary>
     /// Twitch OAuthの認証を行います。
     /// </summary>

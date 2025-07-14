@@ -7,6 +7,7 @@ using Medoz.KoeKan.Services;
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 using Microsoft.VisualBasic;
+using Medoz.CatChast.Auth;
 namespace Medoz.KoeKan.Command;
 
 public class TwitchCommand_Start : ICommand
@@ -39,27 +40,54 @@ public class TwitchCommand_Start : ICommand
         // FIXME: TwitchClientの生成プロセスが複雑なので修正する
         var config = _configService.GetConfig();
         var secret = _configService.GetSecret();
-        var token = secret.GetValue("twitch.token");
-
+        var listener = _listenerService.GetListener();
         var twitchClientConfig = config.Clients.TryGetValue("twitch", out var clientConfig)
             ? clientConfig
             : new DynamicConfig();
+
+        var clientId = twitchClientConfig.TryGetValue<string>("clientId", out var id)
+            ? id
+            : null;
+
+        var oauth = new TwitchOAuthWithImplicit(new TwitchOAuthOptions(clientId ?? "", 53919));
+        var token = await oauth.AuthorizeAsync();
+        if (string.IsNullOrEmpty(token.AccessToken))
+        {
+            _listenerService.AddLogMessage("Failed to get Twitch OAuth token.");
+            return;
+        }
+
         var channels = twitchClientConfig.TryGetValue<string[]>("channels", out var channelList)
             ? channelList
             : Array.Empty<string>();
 
-
-        TwitchClient? twitchClient = null;
+        TwitchTextClient? twitchClient = null;
         if (!_clientService.TryGetClient("twitch", out var existingClient))
         {
-            twitchClient = new TwitchClient(new TwitchOptions(){Token = token, Channels = channels ?? new string[] { } });
+            twitchClient = new TwitchTextClient(new TwitchOptions(){Token = token.AccessToken, Channels = channels ?? new string[] { } });
+
+            twitchClient.OnReceiveMessage += message => {
+                listener?.AddMessage(message);
+                return Task.CompletedTask;
+            };
+
+            listener?.AddMessageConverter(
+                nameof(TwitchTextClient),
+                (message) => new ChatMessage(
+                    ChatMessageType.Twitch,
+                    message.Channel,
+                    message.IconSource,
+                    message.Username,
+                    message.Content,
+                    message.Timestamp,
+                    false));
             _clientService.RegisterClient("twitch", twitchClient);
         }
         if (twitchClient is null)
         {
-            if (existingClient is TwitchClient)
+            if (existingClient is TwitchTextClient)
             {
-                twitchClient = existingClient as TwitchClient;
+                twitchClient = existingClient as TwitchTextClient;
             }
             else
             {
@@ -67,16 +95,11 @@ public class TwitchCommand_Start : ICommand
                 return;
             }
         }
-        twitchClient!.OnReceiveMessage += (message) => {
-            _listenerService.AddMessage(message);
-            return Task.CompletedTask;
-        };
+
         twitchClient.OnReady += async () => {
             _listenerService.AddLogMessage("Twitch is ready.");
             await Task.CompletedTask;
         };
-        token = await twitchClient.AuthAsync();
-        secret.SetValue("twitch.token", token);
         _configService.SaveSecret();
         _ = Task.Run(() => twitchClient.RunAsync());
         await Task.CompletedTask;
