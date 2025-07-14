@@ -32,7 +32,7 @@ public class TwitchTextClient: ITextClient
 
     public async Task RunAsync()
     {
-        if (!await TwitchOAuthUtil.ValidateTokenAsync(token))
+        if (!await TwitchOAuthUtil.ValidateTokenAsync(token, _cancellationTokenSource.Token))
         {
             throw new InvalidOperationException("Failed to validate the token.");
         }
