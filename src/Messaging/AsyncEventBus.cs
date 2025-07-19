@@ -84,7 +84,8 @@ public class AsyncEventBus : IAsyncEventBus
                 if (handler is Action<T> syncHandler)
                 {
                     // 同期ハンドラーをTaskで包む
-                    tasks.Add(Task.Run(() => syncHandler(eventData)));
+                    tasks.Add(Task.Factory.StartNew(() => syncHandler(eventData)));
+
                 }
                 else if (handler is Func<T, Task> asyncHandler)
                 {
