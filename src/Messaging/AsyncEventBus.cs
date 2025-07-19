@@ -2,14 +2,32 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Windows.Navigation;
 
 namespace Medoz.CatChast.Messaging;
 
 public class AsyncEventBus : IAsyncEventBus
 {
-    private readonly ConcurrentDictionary<Type, List<Delegate>> _handlers = new();
+    private readonly ConcurrentDictionary<Type, ConcurrentDictionary<int, Delegate>> _handlers = new();
 
-    private readonly object _lock = new object();
+    private bool TryAdd(Type type, Delegate handler)
+    {
+        if (!_handlers.ContainsKey(type))
+        {
+            _handlers[type] = new ConcurrentDictionary<int, Delegate>();
+        }
+        return _handlers[type].TryAdd(handler.GetHashCode(), handler);
+    }
+
+    private bool TryRemove(Type type, Delegate handler)
+    {
+        if (_handlers.ContainsKey(type))
+        {
+            return _handlers[type].TryRemove(handler.GetHashCode(), out _);
+        }
+        return false;
+    }
 
     public void Subscribe<T>(Action<T> handler)
     {
@@ -18,15 +36,7 @@ public class AsyncEventBus : IAsyncEventBus
             throw new ArgumentNullException(nameof(handler));
         }
 
-        lock (_lock)
-        {
-            var eventType = typeof(T);
-            if (!_handlers.ContainsKey(eventType))
-            {
-                _handlers[eventType] = new List<Delegate>();
-            }
-            _handlers[eventType].Add(handler);
-        }
+        TryAdd(typeof(T), handler);
     }
 
     public void SubscribeAsync<T>(Func<T, Task> asyncHandler)
@@ -34,15 +44,7 @@ public class AsyncEventBus : IAsyncEventBus
         if (asyncHandler is null)
             throw new ArgumentNullException(nameof(asyncHandler));
 
-        lock (_lock)
-        {
-            var eventType = typeof(T);
-            if (!_handlers.ContainsKey(eventType))
-            {
-                _handlers[eventType] = new List<Delegate>();
-            }
-            _handlers[eventType].Add(asyncHandler);
-        }
+        TryAdd(typeof(T), asyncHandler);
     }
 
     public void Unsubscribe<T>(Action<T> handler)
@@ -50,18 +52,7 @@ public class AsyncEventBus : IAsyncEventBus
         if (handler is null)
             throw new ArgumentNullException(nameof(handler));
 
-        lock (_lock)
-        {
-            var eventType = typeof(T);
-            if (_handlers.ContainsKey(eventType))
-            {
-                _handlers[eventType].Remove(handler);
-                if (_handlers[eventType].Count == 0)
-                {
-                    _handlers.TryRemove(eventType, out _);
-                }
-            }
-        }
+        TryRemove(typeof(T), handler);
     }
 
     public void UnsubscribeAsync<T>(Func<T, Task> asyncHandler)
@@ -69,18 +60,7 @@ public class AsyncEventBus : IAsyncEventBus
         if (asyncHandler is null)
             throw new ArgumentNullException(nameof(asyncHandler));
 
-        lock (_lock)
-        {
-            var eventType = typeof(T);
-            if (_handlers.ContainsKey(eventType))
-            {
-                _handlers[eventType].Remove(asyncHandler);
-                if (_handlers[eventType].Count == 0)
-                {
-                    _handlers.TryRemove(eventType, out _);
-                }
-            }
-        }
+        TryRemove(typeof(T), asyncHandler);
     }
 
     public async Task PublishAsync<T>(T eventData)
@@ -89,14 +69,11 @@ public class AsyncEventBus : IAsyncEventBus
             return;
 
         List<Delegate> handlers;
-        lock (_lock)
-        {
-            var eventType = typeof(T);
-            if (!_handlers.ContainsKey(eventType))
-                return;
+        var eventType = typeof(T);
+        if (!_handlers.ContainsKey(eventType))
+            return;
 
-            handlers = new List<Delegate>(_handlers[eventType]);
-        }
+        handlers = _handlers[eventType].Select(kv => kv.Value).ToList();
 
         var tasks = new List<Task>();
 
@@ -117,8 +94,8 @@ public class AsyncEventBus : IAsyncEventBus
             }
             catch (Exception ex)
             {
-                // エラーハンドリング
-                Console.WriteLine($"Error creating task for event handler: {ex.Message}");
+                // TODO: Replace with proper logging mechanism
+                System.Diagnostics.Debug.WriteLine($"Error creating task for event handler: {ex.Message}");
             }
         }
 
@@ -138,9 +115,6 @@ public class AsyncEventBus : IAsyncEventBus
 
     public void Clear()
     {
-        lock (_lock)
-        {
-            _handlers.Clear();
-        }
+        _handlers.Clear();
     }
 }
