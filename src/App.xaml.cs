@@ -2,7 +2,13 @@
 using System.Windows;
 using System.Windows.Threading;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
+using Medoz.CatChast.Messaging;
+using Medoz.KoeKan.Services;
+using Medoz.KoeKan.Data;
 
 namespace Medoz.KoeKan;
 
@@ -11,8 +17,49 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class App : System.Windows.Application
 {
-    private System.Threading.Mutex? _mutex;
+    private readonly IHost _host;
+    private Mutex? _mutex;
+    private const string mutexName = "CatChast";
     public ApplicationCoordinator? Coordinator { get; private set; }
+
+    public App()
+    {
+        _host = CreateHostBuilder()
+            .ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddConsole();
+                logging.AddDebug();
+                // 他のロガー設定があればここに追加
+            })
+            .Build();
+
+        this.DispatcherUnhandledException += HandleException;
+    }
+
+    private static IHostBuilder CreateHostBuilder() =>
+        Host.CreateDefaultBuilder()
+            .ConfigureServices((hostContext, services) =>
+            {
+                // windowの登録
+                services.AddTransient<MainWindow>();
+                services.AddTransient<SettingsWindow>();
+
+                // メッセージングの登録
+                services.AddSingleton<IAsyncEventBus, AsyncEventBus>();
+
+                // サービスの登録
+                // NOTE: サービスはアプリケーション内で使い回すことが想定されるため、Singletonとして登録
+                services.AddSingleton<IClientService, ClientService>();
+                services.AddSingleton<IConfigService, ConfigService>();
+                services.AddSingleton<IListenerService, ListenerService>();
+                services.AddSingleton<IWindowService, WindowService>();
+                services.AddSingleton<IServerService, ServerService>();
+
+                // ViewModelの登録
+                services.AddTransient<MainWindowViewModel>();
+                services.AddTransient<SettingsWindowViewModel>();
+            });
 
     public void HandleException(
             object sender, DispatcherUnhandledExceptionEventArgs e)
@@ -23,11 +70,11 @@ public partial class App : System.Windows.Application
         e.Handled = true;
     }
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
+        await _host.StartAsync();
         // 重複起動を防ぐ
-        const string mutexName = "YourWPFApp_SingleInstance";
-        _mutex = new System.Threading.Mutex(true, mutexName, out bool createdNew);
+        _mutex = new(true, mutexName, out bool createdNew);
 
         if (!createdNew)
         {
@@ -63,6 +110,19 @@ public partial class App : System.Windows.Application
             // エラーが発生した場合は何もしない
         }
     }
+
+    protected override async void OnExit(ExitEventArgs e)
+    {
+        using (_host)
+        {
+            await _host.StopAsync();
+        }
+        _mutex?.Dispose();
+        base.OnExit(e);
+    }
+
+    public static T GetService<T>() where T : class =>
+        ((App)Current)._host.Services.GetRequiredService<T>();
 
     [System.Runtime.InteropServices.DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
