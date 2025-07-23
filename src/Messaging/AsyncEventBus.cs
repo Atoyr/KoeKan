@@ -29,7 +29,7 @@ public class AsyncEventBus : IAsyncEventBus
         return false;
     }
 
-    public void Subscribe<T>(Action<T> handler)
+    public IDisposable Subscribe<T>(Action<T> handler)
     {
         if (handler is null)
         {
@@ -37,14 +37,16 @@ public class AsyncEventBus : IAsyncEventBus
         }
 
         TryAdd(typeof(T), handler);
+        return new SubscriptionToken(() => TryRemove(typeof(T), handler));
     }
 
-    public void SubscribeAsync<T>(Func<T, Task> asyncHandler)
+    public IDisposable SubscribeAsync<T>(Func<T, Task> asyncHandler)
     {
         if (asyncHandler is null)
             throw new ArgumentNullException(nameof(asyncHandler));
 
         TryAdd(typeof(T), asyncHandler);
+        return new SubscriptionToken(() => TryRemove(typeof(T), asyncHandler));
     }
 
     public void Unsubscribe<T>(Action<T> handler)
