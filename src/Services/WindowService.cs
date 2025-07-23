@@ -13,9 +13,7 @@ public class WindowService : IWindowService
 {
     internal MainWindow? MainWindow;
     internal SettingsWindow? SettingsWindow;
-
-    public Func<IWindowService, MainWindow>? CreateMainWindow { get; set; }
-    public Func<IWindowService, SettingsWindow>? CreateSettingsWindow { get; set; }
+    internal IConfigService ConfigService;
 
     public event EventHandler? OpenMainWindowRequested;
     public event EventHandler? CloseMainWindowRequested;
@@ -27,11 +25,15 @@ public class WindowService : IWindowService
     public event EventHandler? OpenSettingWindowRequested;
     public event EventHandler? CloseSettingWindowRequested;
 
-    public WindowService() { }
+    public WindowService(IConfigService configService)
+    {
+        ConfigService = configService;
+    }
 
     private void InitializeMainWindow()
     {
-        MainWindow = CreateMainWindow?.Invoke(this);
+        //
+        MainWindow = App.GetInstance<MainWindow>();
         if (MainWindow == null)
         {
             throw new InvalidOperationException("MainWindow is not set after invoking CreateMainWindow.");
@@ -45,9 +47,7 @@ public class WindowService : IWindowService
         InitializeMainWindow();
         MainWindow!.Closed += (s, e) => CloseMainWindowRequested?.Invoke(s, e);
         OpenMainWindowRequested?.Invoke(MainWindow, EventArgs.Empty);
-        MainWindow!.Show();
-        MainWindow.ShowInTaskbar = true;
-        MainWindow.Activate();
+        MainWindow.ShowWindow();
     }
 
     public void CloseMainWindow()
@@ -67,9 +67,7 @@ public class WindowService : IWindowService
         {
             InitializeMainWindow();
         }
-        MainWindow!.Show();
-        MainWindow.ShowInTaskbar = true;
-        MainWindow.Activate();
+        MainWindow!.ShowWindow();
     }
 
     public void HideMainWindow()
@@ -78,14 +76,13 @@ public class WindowService : IWindowService
         {
             throw new InvalidOperationException("MainWindow is not set.");
         }
-        MainWindow.Hide();
-        MainWindow.ShowInTaskbar = false;
+        MainWindow.HideWindow();
     }
 
     private void SetMainWindowSizeWithConfig() =>
         SetMainWindowSize(
-            ServiceContainer.Instance.ConfigService.GetConfig().Width,
-            ServiceContainer.Instance.ConfigService.GetConfig().Height);
+            ConfigService.GetConfig().Width,
+            ConfigService.GetConfig().Height);
 
 
     public void SetMainWindowSize(double width, double height, bool save = true)
@@ -110,15 +107,15 @@ public class WindowService : IWindowService
         {
             throw new InvalidOperationException("MainWindow is not set.");
         }
-        var config = ServiceContainer.Instance.ConfigService.GetConfig();
+        var config = ConfigService.GetConfig();
         config.Width = MainWindow.Width;
         config.Height = MainWindow.Height;
-        ServiceContainer.Instance.ConfigService.SaveConfig();
+        ConfigService.SaveConfig();
     }
 
     private void SetMainWindowPositionWithConfig()
     {
-        var config = ServiceContainer.Instance.ConfigService.GetConfig();
+        var config = ConfigService.GetConfig();
         SetMainWindowPosition(config.X, config.Y);
     }
 
@@ -144,10 +141,10 @@ public class WindowService : IWindowService
         {
             throw new InvalidOperationException("MainWindow is not set.");
         }
-        var config = ServiceContainer.Instance.ConfigService.GetConfig();
+        var config = ConfigService.GetConfig();
         config.X = MainWindow.Left;
         config.Y = MainWindow.Top;
-        ServiceContainer.Instance.ConfigService.SaveConfig();
+        ConfigService.SaveConfig();
     }
 
     public bool IsMainWindowVisible()
@@ -196,10 +193,9 @@ public class WindowService : IWindowService
         MainWindow?.SetWindowPosition(x, y);
     }
 
-
     private void InitializeSettingsWindow()
     {
-        SettingsWindow = CreateSettingsWindow?.Invoke(this);
+        SettingsWindow = App.GetInstance<SettingsWindow>();
         if (SettingsWindow == null)
         {
             throw new InvalidOperationException("SettingsWindow is not set after invoking CreateSettingsWindow.");
@@ -211,9 +207,7 @@ public class WindowService : IWindowService
         InitializeSettingsWindow();
         SettingsWindow!.Closed += (s, e) => CloseSettingWindowRequested?.Invoke(s,e);
         OpenSettingWindowRequested?.Invoke(SettingsWindow, EventArgs.Empty);
-        SettingsWindow!.Show();
-        SettingsWindow.ShowInTaskbar = true;
-        SettingsWindow.Activate();
+        SettingsWindow.ShowWindow();
     }
 
     public void CloseSettingsWindow()

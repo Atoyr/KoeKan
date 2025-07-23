@@ -86,7 +86,8 @@ public partial class App : System.Windows.Application
 
         // シャットダウンモードを明示的に設定
         this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-        Coordinator = new ApplicationCoordinator();
+        Coordinator = new ApplicationCoordinator(
+            _host.Services.GetRequiredService<IWindowService>());
 
         base.OnStartup(e);
     }
@@ -121,7 +122,7 @@ public partial class App : System.Windows.Application
         base.OnExit(e);
     }
 
-    public static T GetService<T>() where T : class =>
+    public static T GetInstance<T>() where T : class =>
         ((App)Current)._host.Services.GetRequiredService<T>();
 
     [System.Runtime.InteropServices.DllImport("user32.dll")]

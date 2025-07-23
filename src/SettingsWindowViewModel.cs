@@ -20,15 +20,15 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class SettingsWindowViewModel : INotifyPropertyChanged
 {
-    private readonly Config _config = ServiceContainer.Instance.ConfigService.GetConfig();
+    private readonly IConfigService _configService;
     public string MyName
     {
-        get => _config.Username;
+        get => _configService.GetConfig().Username;
         set
         {
-            if (_config.Username != value)
+            if (_configService.GetConfig().Username != value)
             {
-                _config.Username = value;
+                _configService.GetConfig().Username = value;
                 OnPropertyChanged(nameof(MyName));
             }
             SetPreviewMyName(value);
@@ -37,12 +37,12 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
 
     public string IconPath
     {
-        get => _config.Icon ?? string.Empty;
+        get => _configService.GetConfig().Icon ?? string.Empty;
         set
         {
-            if (_config.Icon != value)
+            if (_configService.GetConfig().Icon != value)
             {
-                _config.Icon = value;
+                _configService.GetConfig().Icon = value;
                 OnPropertyChanged(nameof(IconPath));
             }
             SetPreviewIconPath(value);
@@ -86,12 +86,12 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
 
     public double Width
     {
-        get => _config.Width;
+        get => _configService.GetConfig().Width;
         set
         {
-            if (_config.Width != value)
+            if (_configService.GetConfig().Width != value)
             {
-                _config.Width = value;
+                _configService.GetConfig().Width = value;
                 OnPropertyChanged(nameof(Width));
             }
         }
@@ -99,12 +99,12 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
 
     public double Height
     {
-        get => _config.Height;
+        get => _configService.GetConfig().Height;
         set
         {
-            if (_config.Height != value)
+            if (_configService.GetConfig().Height != value)
             {
-                _config.Height = value;
+                _configService.GetConfig().Height = value;
                 OnPropertyChanged(nameof(Height));
             }
         }
@@ -112,12 +112,12 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
 
     public double X
     {
-        get => _config.X;
+        get => _configService.GetConfig().X;
         set
         {
-            if (_config.X != value)
+            if (_configService.GetConfig().X != value)
             {
-                _config.X = value;
+                _configService.GetConfig().X = value;
                 OnPropertyChanged(nameof(X));
             }
         }
@@ -125,12 +125,12 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
 
     public double Y
     {
-        get => _config.Y;
+        get => _configService.GetConfig().Y;
         set
         {
-            if (_config.Y != value)
+            if (_configService.GetConfig().Y != value)
             {
-                _config.Y = value;
+                _configService.GetConfig().Y = value;
                 OnPropertyChanged(nameof(Y));
             }
         }
@@ -138,12 +138,12 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
 
     public MOD_KEY ModKey
     {
-        get => ModKeyExtension.GetModKey(_config.ModKey);
+        get => ModKeyExtension.GetModKey(_configService.GetConfig().ModKey);
         set
         {
-            if (_config.ModKey != value.ToString())
+            if (_configService.GetConfig().ModKey != value.ToString())
             {
-                _config.ModKey = value.ToString();
+                _configService.GetConfig().ModKey = value.ToString();
                 OnPropertyChanged(nameof(ModKey));
             }
         }
@@ -151,12 +151,12 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
 
     public KEY Key
     {
-        get => KeyExtension.GetKey(_config.Key);
+        get => KeyExtension.GetKey(_configService.GetConfig().Key);
         set
         {
-            if (_config.Key != value.ToString())
+            if (_configService.GetConfig().Key != value.ToString())
             {
-                _config.Key = value.ToString();
+                _configService.GetConfig().Key = value.ToString();
                 OnPropertyChanged(nameof(Key));
             }
         }
@@ -200,10 +200,14 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
         }
     }
 
-    public event EventHandler RequestClose;
+    public event EventHandler? RequestClose;
 
-    public SettingsWindowViewModel()
+    public SettingsWindowViewModel(IConfigService configService)
     {
+        _configService = configService ?? throw new ArgumentNullException(nameof(configService));
+
+        // 初期化
+        // コマンドの初期化
         SetPreviewMyName(MyName);
         SetPreviewIconPath(IconPath);
 
@@ -215,7 +219,7 @@ public partial class SettingsWindowViewModel : INotifyPropertyChanged
     public ICommand CloseCommand { get; }
     public void Submit()
     {
-        ServiceContainer.Instance.ConfigService.SaveConfig();
+        _configService.SaveConfig();
         RequestClose?.Invoke(this, EventArgs.Empty);
     }
 

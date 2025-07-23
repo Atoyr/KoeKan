@@ -69,12 +69,15 @@ public partial class MainWindowViewModel
         }
     }
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(IConfigService configService,
+                               IClientService clientService,
+                               IListenerService listenerService,
+                               IWindowService windowService)
     {
-        ConfigService = ServiceContainer.Instance.ConfigService;
-        ClientService = ServiceContainer.Instance.ClientService;
-        ListenerService = ServiceContainer.Instance.ListenerService;
-        WindowService = ServiceContainer.Instance.WindowService;
+        ConfigService = configService;
+        ClientService = clientService;
+        ListenerService = listenerService;
+        WindowService = windowService;
 
         // CommandFactoryの初期化
         _commandFactory = new CommandFactory(

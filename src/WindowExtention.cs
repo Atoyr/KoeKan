@@ -44,6 +44,37 @@ public static class WindowExtention
         SetWindowPos(handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
     }
 
+    /// <summary>
+    /// ウィンドウを通常の位置で表示します
+    /// </summary>
+    /// <param name="window"></param>
+    public static void ShowWindow(this Window window)
+    {
+        window.Show();
+        window.ShowInTaskbar = true;
+        window.Activate();
+    }
+
+    /// <summary>
+    /// ウィンドウを非表示にします
+    /// </summary>
+    /// <param name="window"></param>
+    public static void HideWindow(this Window window)
+    {
+        window.Hide();
+        window.ShowInTaskbar = false;
+    }
+
+    /// <summary>
+    /// ウィンドウを閉じます
+    /// </summary>
+    /// <param name="window"></param>
+    public static void CloseWindow(this Window window)
+    {
+        window.Close();
+        window.ShowInTaskbar = false;
+    }
+
     public static bool IsWindowTransparent(this Window window)
     {
         var handle = new WindowInteropHelper(window).Handle;
