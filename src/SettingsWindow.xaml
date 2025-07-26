@@ -4,9 +4,6 @@
         xmlns:local="clr-namespace:Medoz.KoeKan"
         xmlns:components="clr-namespace:Medoz.KoeKan.Components"
         Title="Settings" Height="auto" Width="620">
-    <Window.DataContext>
-        <local:SettingsWindowViewModel/>
-    </Window.DataContext>
     <!-- スタイル定義 -->
     <Window.Resources>
         <!-- メニューリストアイテムのスタイル -->

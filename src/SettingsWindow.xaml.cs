@@ -11,16 +11,14 @@ namespace Medoz.KoeKan;
 public partial class SettingsWindow : Window
 {
 
-    public SettingsWindow()
+    public SettingsWindow(SettingsWindowViewModel settingsWindowViewModel)
     {
+        DataContext = settingsWindowViewModel;
         InitializeComponent();
         InitializeViewComponents();
 
-        // DataContextにバインドされたViewModelがDialogViewModelであることを前提に購読
-        if (DataContext is SettingsWindowViewModel vm)
-        {
-            vm.RequestClose += (s, e) => this.Close();
-        }
+        settingsWindowViewModel.RequestClose += (s, e) => this.Close();
+        
         ShowPanel("General"); // 初期表示パネルを設定
     }
 

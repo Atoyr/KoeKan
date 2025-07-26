@@ -8,33 +8,18 @@ namespace Medoz.KoeKan;
 public class ApplicationCoordinator : IDisposable
 {
     private readonly TrayManager _trayManager;
+    private readonly IWindowService _windowService;
 
-    public ApplicationCoordinator()
+    public ApplicationCoordinator(IWindowService windowService)
     {
         _trayManager = new TrayManager();
-
-        Initialize();
+        _windowService = windowService ?? throw new ArgumentNullException(nameof(windowService), "WindowService cannot be null.");
 
         // イベントハンドラーを設定
         _trayManager.ShowMainWindowRequested += OnShowMainWindowRequested;
         _trayManager.ShowSettingsRequested += OnShowSettingsRequested;
         _trayManager.ExitRequested += OnExitRequested;
     }
-
-    private void Initialize()
-    {
-        var ws = ServiceContainer.Instance.WindowService;
-        ws.CreateMainWindow = (_) =>
-        {
-            return new MainWindow(new MainWindowViewModel());
-        };
-        ws.CreateSettingsWindow = (_) =>
-        {
-            SettingsWindow settingsWindow = new ();
-            return settingsWindow;
-        };
-    }
-
 
     private void OnShowMainWindowRequested(object? sender, EventArgs e)
     {
@@ -53,7 +38,7 @@ public class ApplicationCoordinator : IDisposable
 
     private void ToggleMainWindow()
     {
-        ServiceContainer.Instance.WindowService.ShowMainWindow();
+        _windowService.ShowMainWindow();
     }
 
     private void MainWindow_Closed(object? sender, EventArgs e)
@@ -63,12 +48,12 @@ public class ApplicationCoordinator : IDisposable
 
     private void ShowSettingsWindow()
     {
-        ServiceContainer.Instance.WindowService.OpenSettingsWindow();
+        _windowService.OpenSettingsWindow();
     }
 
     private void SettingsWindow_Closed(object? sender, EventArgs e)
     {
-        ServiceContainer.Instance.WindowService.CloseSettingsWindow();
+        _windowService.CloseSettingsWindow();
     }
 
     public void HandleMainWindowStateChanged(WindowState newState)

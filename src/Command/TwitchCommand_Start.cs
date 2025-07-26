@@ -8,6 +8,10 @@ using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 using Microsoft.VisualBasic;
 using Medoz.CatChast.Auth;
+using Medoz.CatChast.Messaging;
+using Microsoft.Extensions.Logging;
+
+using Message = Medoz.CatChast.Messaging.Message;
 namespace Medoz.KoeKan.Command;
 
 public class TwitchCommand_Start : ICommand
@@ -16,18 +20,21 @@ public class TwitchCommand_Start : ICommand
 
     public string HelpText => "start twitch client";
 
-    private readonly IListenerService _listenerService;
     private readonly IClientService _clientService;
     private readonly IConfigService _configService;
+    private readonly IAsyncEventBus _asyncEventBus;
+    private readonly ILogger _logger;
 
     public TwitchCommand_Start(
-        IListenerService listenerService,
         IClientService clientService,
-        IConfigService configService)
+        IConfigService configService,
+        IAsyncEventBus asyncEventBus,
+        ILogger logger)
     {
-        _listenerService = listenerService;
         _configService = configService;
         _clientService = clientService;
+        _asyncEventBus = asyncEventBus;
+        _logger = logger;
     }
 
     public bool CanExecute(string[] args)
@@ -40,7 +47,6 @@ public class TwitchCommand_Start : ICommand
         // FIXME: TwitchClientの生成プロセスが複雑なので修正する
         var config = _configService.GetConfig();
         var secret = _configService.GetSecret();
-        var listener = _listenerService.GetListener();
         var twitchClientConfig = config.Clients.TryGetValue("twitch", out var clientConfig)
             ? clientConfig
             : new DynamicConfig();
@@ -53,7 +59,7 @@ public class TwitchCommand_Start : ICommand
         var token = await oauth.AuthorizeAsync();
         if (string.IsNullOrEmpty(token.AccessToken))
         {
-            _listenerService.AddLogMessage("Failed to get Twitch OAuth token.");
+            _logger.LogError("Failed to get Twitch OAuth token.");
             return;
         }
 
@@ -64,23 +70,21 @@ public class TwitchCommand_Start : ICommand
         TwitchTextClient? twitchClient = null;
         if (!_clientService.TryGetClient("twitch", out var existingClient))
         {
-            twitchClient = new TwitchTextClient(new TwitchOptions(){Token = token.AccessToken, Channels = channels ?? new string[] { } });
+            twitchClient = new TwitchTextClient(new TwitchOptions() { Token = token.AccessToken, Channels = channels ?? new string[] { } });
 
-            twitchClient.OnReceiveMessage += message => {
-                listener?.AddMessage(message);
-                return Task.CompletedTask;
-            };
-
-            listener?.AddMessageConverter(
-                nameof(TwitchTextClient),
-                (message) => new ChatMessage(
-                    ChatMessageType.Twitch,
+            twitchClient.OnReceiveMessage += message =>
+            {
+                _asyncEventBus.PublishAsync(new Message(
+                    "twitch",
                     message.Channel,
-                    message.IconSource,
                     message.Username,
                     message.Content,
                     message.Timestamp,
-                    false));
+                    message.IconSource
+                ));
+                return Task.CompletedTask;
+            };
+
             _clientService.RegisterClient("twitch", twitchClient);
         }
         if (twitchClient is null)
@@ -91,14 +95,15 @@ public class TwitchCommand_Start : ICommand
             }
             else
             {
-                _listenerService.AddLogMessage("Twitch client is not a valid TwitchClient instance.");
+                _logger.LogError("Twitch client is not a valid TwitchClient instance.");
                 return;
             }
         }
 
-        twitchClient.OnReady += async () => {
-            _listenerService.AddLogMessage("Twitch is ready.");
-            await Task.CompletedTask;
+        twitchClient!.OnReady += () =>
+        {
+            _logger.LogInformation("Twitch client started successfully.");
+            return Task.CompletedTask;
         };
         _configService.SaveSecret();
         _ = Task.Run(() => twitchClient.RunAsync());

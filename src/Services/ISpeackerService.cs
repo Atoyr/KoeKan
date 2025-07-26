@@ -2,25 +2,25 @@ using Medoz.KoeKan.Clients;
 
 namespace Medoz.KoeKan.Services;
 
-public interface IClientService
+public interface ISpeakerService
 {
     /// <summary>
     /// クライアントの取得
     /// </summary>
-    ITextClient GetClient(string? name = null);
+    ISpeakerClient GetSpeaker(string? name = null);
 
     /// <summary>
     /// クライアントの取得
     /// </summary>
-    bool TryGetClient(string? name, out ITextClient? client);
+    bool TryGetSpeaker(string? name, out ISpeakerClient? client);
 
     /// <summary>
     /// クライアントの登録
     /// </summary>
-    void RegisterClient(string name, ITextClient client);
+    void RegisterSpeaker(string name, ISpeakerClient client);
 
     /// <summary>
     /// クライアントの削除
     /// </summary>
-    void RemoveClient(string name);
+    void RemoveSpeaker(string name);
 }

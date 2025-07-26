@@ -1,5 +1,7 @@
 using Medoz.KoeKan.Services;
 
+using Microsoft.Extensions.Logging;
+
 namespace Medoz.KoeKan.Command;
 
 public class WindowCommand_Size : ICommand
@@ -8,14 +10,14 @@ public class WindowCommand_Size : ICommand
     public string HelpText => "ウィンドウのサイズを変更します。使用法: window size [width] [height]";
 
     private readonly IWindowService _windowService;
-    private readonly IListenerService _listenerService;
+    private readonly ILogger _logger;
 
     public WindowCommand_Size(
         IWindowService windowService,
-        IListenerService listenerService)
+        ILogger logger)
     {
         _windowService = windowService;
-        _listenerService = listenerService;
+        _logger = logger;
     }
 
     public bool CanExecute(string[] args)
@@ -32,11 +34,11 @@ public class WindowCommand_Size : ICommand
             double.TryParse(args[1], out double height))
         {
             _windowService.SetMainWindowSize(width, height);
-            _listenerService.AddLogMessage($"ウィンドウサイズを変更しました: 幅={width}, 高さ={height}");
+            _logger.LogInformation($"Window size changed: Width={width}, Height={height}");
         }
         else
         {
-            _listenerService.AddLogMessage("無効なサイズが指定されました。数値を入力してください。");
+            _logger.LogError("Invalid size specified. Please enter numeric values for width and height.");
         }
 
         await Task.CompletedTask;

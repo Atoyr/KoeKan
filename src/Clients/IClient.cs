@@ -6,6 +6,8 @@ public interface IClient: IDisposable
     bool IsRunning { get; }
     event Func<Task>? OnReady;
 
+    event Action? OnDisposing;
+
     Task RunAsync();
     Task StopAsync();
 }

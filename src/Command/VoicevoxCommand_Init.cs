@@ -6,6 +6,7 @@ using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Services;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 namespace Medoz.KoeKan.Command;
 
@@ -14,16 +15,15 @@ public class VoicevoxCommand_Init : ICommand
     public string CommandName => "init";
     public string HelpText => "[textClientName?] init voicevox client setting.";
 
-    private readonly IListenerService _listenerService;
     private readonly IConfigService _configService;
+    private readonly ILogger _logger;
 
     public VoicevoxCommand_Init(
-        IListenerService listenerService,
-        IClientService clientService,
-        IConfigService configService)
+        IConfigService configService,
+        ILogger logger)
     {
-        _listenerService = listenerService;
         _configService = configService;
+        _logger = logger;
     }
 
     public bool CanExecute(string[] args)
@@ -56,7 +56,7 @@ public class VoicevoxCommand_Init : ICommand
             clientConfig["url"] = "http://localhost:50021";
         }
         _configService.SaveConfig();
-        _listenerService.AddLogMessage($"Initialze Voicevox {clientName}");
+        _logger.LogInformation($"Initialized Voicevox client with name: {clientName ?? "default"}");
         await Task.CompletedTask;
     }
 

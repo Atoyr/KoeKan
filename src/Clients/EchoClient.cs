@@ -24,6 +24,8 @@ public class EchoClient: ITextClient
 
     public event Func<ClientMessage, Task>? OnReceiveMessage;
 
+    public event Action? OnDisposing;
+
     public Task<string> AuthAsync()
     {
         return Task.FromResult("EchoClient");
@@ -46,6 +48,7 @@ public class EchoClient: ITextClient
 
     public void Dispose()
     {
+        OnDisposing?.Invoke();
     }
 
     public async Task SendMessageAsync(ClientMessage message)

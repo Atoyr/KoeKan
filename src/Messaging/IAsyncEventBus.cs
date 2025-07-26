@@ -10,12 +10,12 @@ public interface IAsyncEventBus
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="handler"></param>
-    void Subscribe<T>(Action<T> handler);
+    IDisposable Subscribe<T>(Action<T> handler);
 
     /// <summary>
     /// Subscribes an asynchronous handler to events of type T.
     /// </summary>
-    void SubscribeAsync<T>(Func<T, Task> handler);
+    IDisposable SubscribeAsync<T>(Func<T, Task> handler);
 
     /// <summary>
     /// Unsubscribes a synchronous handler from events of type T.

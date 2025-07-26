@@ -6,6 +6,8 @@ using System.Windows.Navigation;
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Services;
+
+using Microsoft.Extensions.Logging;
 namespace Medoz.KoeKan.Command;
 
 public class VoicevoxCommand_Start : ICommand
@@ -13,18 +15,23 @@ public class VoicevoxCommand_Start : ICommand
     public string CommandName => "start";
     public string HelpText => "[textClientName?] start voicevox client for textClient.";
 
-    private readonly IListenerService _listenerService;
     private readonly IClientService _clientService;
     private readonly IConfigService _configService;
+    private readonly ISpeakerService _speakerService;
+    private readonly ILogger _logger;
+
 
     public VoicevoxCommand_Start(
-        IListenerService listenerService,
         IClientService clientService,
-        IConfigService configService)
+        IConfigService configService,
+        ISpeakerService speakerService,
+        ILogger logger
+        )
     {
-        _listenerService = listenerService;
         _configService = configService;
         _clientService = clientService;
+        _speakerService = speakerService;
+        _logger = logger;
     }
 
     public bool CanExecute(string[] args)
@@ -45,13 +52,13 @@ public class VoicevoxCommand_Start : ICommand
         config.Clients.TryGetValue("voicevox", out clientConfig);
         if (clientConfig == null)
         {
-            _listenerService.AddLogMessage($"Voicevox client {clientName ?? ""} config not found.");
+            _logger.LogError($"Voicevox client {clientName ?? ""} config not found.");
             return;
         }
 
         if (clientConfig.TryGetValue("speaker_id", out uint speakerId) == false)
         {
-            _listenerService.AddLogMessage($"Voicevox client {clientName ?? ""} speaker_id not found.");
+            _logger.LogError($"Voicevox client {clientName ?? ""} speaker_id not found.");
             return;
         }
         clientConfig.TryGetValue("url", out string? url);
@@ -60,14 +67,14 @@ public class VoicevoxCommand_Start : ICommand
             SpeakerId = speakerId,
             Url = url,});
         speaker.OnReady += (() => {
-            _listenerService.AddLogMessage("Voicevox is ready.");
+            _logger.LogInformation("Voicevox client started successfully.");
             return Task.CompletedTask;
         });
-        _clientService.AppendSpeaker(speaker, clientName);
+        _speakerService.RegisterSpeaker(clientName ?? "_", speaker);
 
         var bridge = _clientService.GetClient(clientName);
         var _ = bridge.RunAsync();
-        _listenerService.AddLogMessage("Start Voicevox connections.");
+        _logger.LogInformation("Voicevox client started successfully.");
         await Task.CompletedTask;
     }
 }

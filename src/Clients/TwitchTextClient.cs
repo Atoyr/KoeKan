@@ -19,6 +19,7 @@ public class TwitchTextClient: ITextClient
 
     public event Func<ClientMessage, Task>? OnReceiveMessage;
     public event Func<Task>? OnReady;
+    public event Action? OnDisposing;
     public string Name => GetType().Name;
     public bool IsRunning => _webSocket.State == WebSocketState.Open;
 
@@ -106,6 +107,7 @@ public class TwitchTextClient: ITextClient
 
     public void Dispose()
     {
+        OnDisposing?.Invoke();
         _webSocket.Dispose();
     }
 }
