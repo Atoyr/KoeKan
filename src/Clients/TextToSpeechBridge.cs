@@ -12,6 +12,7 @@ public class TextToSpeechBridge : ITextClient
     public bool IsRunning => _client!.IsRunning && _speaker!.IsRunning;
 
     public event Func<Task>? OnReady;
+    public event Action? OnDisposing;
 
     public string Name => GetType().Name;
 

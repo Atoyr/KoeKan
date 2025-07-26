@@ -9,6 +9,6 @@ public record ChatMessage(
         string Username,
         string Message,
         DateTime Timestamp,
-        bool IsConsecutiveMessage)
+        bool IsConsecutiveMessage = false)
 {
 }

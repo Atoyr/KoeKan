@@ -7,6 +7,11 @@ using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Services;
 
 using Microsoft.Extensions.Options;
+
+using Medoz.CatChast.Messaging;
+using Message = Medoz.CatChast.Messaging.Message;
+using Microsoft.Extensions.Logging;
+
 namespace Medoz.KoeKan.Command;
 
 public class DiscordCommand_Init : ICommand
@@ -14,16 +19,16 @@ public class DiscordCommand_Init : ICommand
     public string CommandName => "init";
     public string HelpText => "init discord client setting.";
 
-    private readonly IListenerService _listenerService;
     private readonly IConfigService _configService;
+    private readonly ILogger _logger;
     private readonly string _clientConfigName = "discord";
 
     public DiscordCommand_Init(
-        IListenerService listenerService,
-        IConfigService configService)
+        IConfigService clientService,
+        ILogger logger)
     {
-        _listenerService = listenerService;
-        _configService = configService;
+        _configService = clientService;
+        _logger = logger;
     }
 
     public bool CanExecute(string[] args)
@@ -31,7 +36,7 @@ public class DiscordCommand_Init : ICommand
         return args.Length == 0;
     }
 
-    public async Task ExecuteCommandAsync(string[] args)
+    public Task ExecuteCommandAsync(string[] args)
     {
         var config = _configService.GetConfig();
         DynamicConfig? clientConfig;
@@ -47,8 +52,8 @@ public class DiscordCommand_Init : ICommand
             clientConfig["default_channel_id"] = 0;
         }
         _configService.SaveConfig();
-        _listenerService.AddLogMessage($"Initialze discord");
-        await Task.CompletedTask;
+        _logger.LogInformation("Initialize discord");
+        return Task.CompletedTask;
     }
 }
 

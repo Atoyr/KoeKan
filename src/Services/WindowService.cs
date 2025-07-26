@@ -156,6 +156,11 @@ public class WindowService : IWindowService
         return MainWindow.IsVisible;
     }
 
+    public void MainWindowMessageClear()
+    {
+        MainWindow?.Clear();
+    }
+
     public void ToggleMoveableWindow()
     {
         if (MainWindow == null)

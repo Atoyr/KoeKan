@@ -1,5 +1,7 @@
 using Medoz.KoeKan.Services;
 
+using Microsoft.Extensions.Logging;
+
 namespace Medoz.KoeKan.Command;
 
 public class WindowCommand_Move : ICommand
@@ -8,14 +10,14 @@ public class WindowCommand_Move : ICommand
     public string HelpText => "ウィンドウを動かせる状態にします。使用法: window move [on|off]";
 
     private readonly IWindowService _windowService;
-    private readonly IListenerService _listenerService;
+    private readonly ILogger _logger;
 
     public WindowCommand_Move(
         IWindowService windowService,
-        IListenerService listenerService)
+        ILogger logger)
     {
         _windowService = windowService;
-        _listenerService = listenerService;
+        _logger = logger;
     }
 
     public bool CanExecute(string[] args)
@@ -31,14 +33,14 @@ public class WindowCommand_Move : ICommand
         {
             // 引数なしの場合は現在の状態を切り替える
             _windowService.ToggleMoveableWindow();
-            _listenerService.AddLogMessage("ウィンドウの移動可能状態を切り替えました");
+            _logger.LogInformation("Window moveable state toggled.");
         }
         else if (args.Length == 1)
         {
             // on/offが指定された場合
             bool isMoveable = args[0].ToLower() == "on";
             _windowService.ChangeMoveableWindowState(isMoveable);
-            _listenerService.AddLogMessage($"ウィンドウの移動可能状態を{(isMoveable ? "有効" : "無効")}にしました");
+            _logger.LogInformation($"Window moveable state set to {isMoveable}.");
         }
 
         await Task.CompletedTask;

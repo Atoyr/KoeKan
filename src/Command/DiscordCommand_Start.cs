@@ -7,6 +7,10 @@ using Medoz.KoeKan.Services;
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 using Microsoft.VisualBasic;
+using Medoz.CatChast.Messaging;
+using Message = Medoz.CatChast.Messaging.Message;
+using Microsoft.Extensions.Logging;
+
 namespace Medoz.KoeKan.Command;
 
 public class DiscordCommand_Start : ICommand
@@ -15,18 +19,19 @@ public class DiscordCommand_Start : ICommand
 
     public string HelpText => "start discord client";
 
-    private readonly IListenerService _listenerService;
-    private readonly IClientService _clientService;
     private readonly IConfigService _configService;
+    private readonly IAsyncEventBus _asyncEventBus;
+    private readonly ILogger _logger;
+
 
     public DiscordCommand_Start(
-        IListenerService listenerService,
-        IClientService clientService,
-        IConfigService configService)
+        IConfigService configService,
+        IAsyncEventBus asyncEventBus,
+        ILogger logger)
     {
-        _listenerService = listenerService;
         _configService = configService;
-        _clientService = clientService;
+        _asyncEventBus = asyncEventBus;
+        _logger = logger;
     }
 
     public bool CanExecute(string[] args)
@@ -41,27 +46,33 @@ public class DiscordCommand_Start : ICommand
         var token = secret.GetValue("discord.token");
         if (string.IsNullOrEmpty(token))
         {
-            _listenerService.AddLogMessage("Discord token is not set.");
+            _logger.LogError("Discord token is not set.");
             return;
         }
 
         var discordClientConfig = config.Clients["discord"];
         var discordClient = new DiscordClient(new DiscordOptions(){Token = token });
-        discordClient.OnReceiveMessage += (message) => {
-            _listenerService.AddMessage(message);
-            return Task.CompletedTask;
+        discordClient.OnReceiveMessage += async (message) => {
+            await _asyncEventBus.PublishAsync(new Message(
+                "discord",
+                message.Channel,
+                message.Username,
+                message.Content,
+                // FIXME: IconSource and SpeakerName are not used in this context, consider removing them
+                message.Timestamp,
+                message.IconSource
+            ));
         };
-        discordClient.OnReady += async () => {
+        discordClient.OnReady += () => {
             if(discordClientConfig.TryGetValue("defalut_channel_id", out ulong channelId))
             {
                 discordClient.SetChannel(channelId);
             }
-            _listenerService.AddLogMessage("Discord is ready.");
-            await Task.CompletedTask;
+            _logger.LogInformation("Discord client started successfully.");
+            return Task.CompletedTask;
         };
         await discordClient.AuthAsync();
         _ = Task.Run(() => discordClient.RunAsync());
-        await Task.CompletedTask;
     }
 }
 

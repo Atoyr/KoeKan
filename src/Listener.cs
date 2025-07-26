@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
+using System.Windows.Data;
 
 namespace Medoz.KoeKan;
 
@@ -29,6 +30,8 @@ public class Listener : IDisposable
     {
         Dispatcher = dispatcher;
         _logger = logger;
+
+        BindingOperations.EnableCollectionSynchronization(Messages, new object());
     }
 
     public void AddMessageConverter(string clientType, Func<ClientMessage, ChatMessage> sender)
@@ -47,17 +50,9 @@ public class Listener : IDisposable
     public void AddCommandMessage(string message)
         => AddMessage(new ChatMessage(ChatMessageType.Command, "", null, "COMMAND", message, DateTime.Now, IsConsecutiveMessage(ChatMessageType.Command, "", "COMMAND", DateTime.Now)));
 
-    public void AddMessage(ClientMessage message)
+    public void AddMessage(ChatMessage cm)
     {
-        if (_messageConverter.ContainsKey(message.ClientType))
-        {
-            AddMessage(_messageConverter[message.ClientType].Invoke(message));
-        }
-    }
-
-    private void AddMessage(ChatMessage cm)
-    {
-        cm = cm with {IsConsecutiveMessage = IsConsecutiveMessage(cm.MessageType, cm.Channel, cm.Username, cm.Timestamp)};
+        cm = cm with { IsConsecutiveMessage = IsConsecutiveMessage(cm.MessageType, cm.Channel, cm.Username, cm.Timestamp) };
         Dispatch(() => Messages.Add(cm));
 
         if (_logger is not null)
@@ -123,5 +118,10 @@ public class Listener : IDisposable
             && last.Channel == channel
             && last.Username == username
             && (timestamp - last.Timestamp).TotalSeconds <= _MessageCooldown;
+    }
+
+    public void Clear()
+    {
+        Dispatch(() => Messages.Clear());
     }
 }

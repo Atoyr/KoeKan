@@ -20,6 +20,7 @@ public interface IWindowService
     void SaveMainWindowPosition();
 
     bool IsMainWindowVisible();
+    void MainWindowMessageClear();
 
     void ToggleMoveableWindow();
     void ChangeMoveableWindowState(bool isMoveable);

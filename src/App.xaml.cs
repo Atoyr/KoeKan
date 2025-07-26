@@ -28,8 +28,12 @@ public partial class App : System.Windows.Application
             .ConfigureLogging(logging =>
             {
                 logging.ClearProviders();
-                logging.AddConsole();
-                logging.AddDebug();
+                logging.AddEventBusLogger(config =>
+                {
+                    config.MinLogLevel = LogLevel.Information;
+                    config.EnableConsoleOutput = true;
+                    // config.OutputPath = "logs"; // ログファイルの出力先を指定する場合はここで設定
+                });
                 // 他のロガー設定があればここに追加
             })
             .Build();
@@ -51,8 +55,8 @@ public partial class App : System.Windows.Application
                 // サービスの登録
                 // NOTE: サービスはアプリケーション内で使い回すことが想定されるため、Singletonとして登録
                 services.AddSingleton<IClientService, ClientService>();
+                services.AddSingleton<ISpeakerService, SpeakerService>();
                 services.AddSingleton<IConfigService, ConfigService>();
-                services.AddSingleton<IListenerService, ListenerService>();
                 services.AddSingleton<IWindowService, WindowService>();
                 services.AddSingleton<IServerService, ServerService>();
 
