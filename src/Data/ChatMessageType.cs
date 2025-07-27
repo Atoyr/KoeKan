@@ -16,7 +16,7 @@ public enum ChatMessageType
 
 public static class ChatMessageTypeExtension
 {
-    public static string ToString(this ChatMessageType type)
+    public static string ToDisplayString(this ChatMessageType type)
     {
         return type switch
         {
