@@ -76,8 +76,19 @@ public class DiscordCommand_Start : ICommand
             return Task.CompletedTask;
         };
 
+
         await discordClient.AuthAsync();
-        _ = Task.Run(() => discordClient.RunAsync());
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await discordClient.RunAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Discord client crashed unexpectedly.");
+            }
+        });
     }
 }
 

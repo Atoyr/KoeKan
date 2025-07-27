@@ -88,7 +88,17 @@ public class TwitchCommand_Start : ICommand
                 }
             });
 
-        _ = Task.Run(() => twitchClient.RunAsync());
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await twitchClient.RunAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Twitch client crashed unexpectedly.");
+            }
+        });
         await Task.CompletedTask;
     }
 }
