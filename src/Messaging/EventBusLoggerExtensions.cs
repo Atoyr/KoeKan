@@ -8,8 +8,11 @@ public static class EventBusLoggerExtensions
 {
     public static ILoggingBuilder AddEventBusLogger(this ILoggingBuilder builder, EventBusLoggerConfiguration config)
     {
-        var asyncEventBus = builder.Services.BuildServiceProvider().GetRequiredService<IAsyncEventBus>();
-        builder.Services.AddSingleton<ILoggerProvider>(new EventBusLoggerProvider( asyncEventBus, config));
+        builder.Services.AddSingleton<ILoggerProvider>(serviceProvider =>
+        {
+            var asyncEventBus = serviceProvider.GetRequiredService<IAsyncEventBus>();
+            return new EventBusLoggerProvider(asyncEventBus, config);
+        });
         return builder;
     }
     public static ILoggingBuilder AddEventBusLogger(this ILoggingBuilder builder, EventBusLoggerConfiguration config, IAsyncEventBus asyncEventBus)
