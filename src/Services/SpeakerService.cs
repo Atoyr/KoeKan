@@ -71,9 +71,13 @@ public class SpeakerService : ISpeakerService
         string name
         ) where T : ISpeakerClient
     {
-        if (_clients.ContainsKey(name) && _clients[name] is T registeredClient)
+        if (_clients.ContainsKey(name))
         {
-            return registeredClient;
+            if (_clients[name] is T registeredClient)
+            {
+                return registeredClient;
+            }
+            throw new InvalidOperationException($"Client {name} is already registered with a different type.");
         }
 
         return CreateSpeaker<T>(options, name);
