@@ -81,6 +81,7 @@ public class TextToSpeechBridge : ITextClient
 
     public void Dispose()
     {
+        OnDisposing?.Invoke();
         // クライアントは再利用する可能性があるのでDisposeしない
         _speaker?.Dispose();
     }
