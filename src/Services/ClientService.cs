@@ -36,7 +36,14 @@ public class ClientService : IClientService
         var client = new EchoClient(new EchoOptions());
         client.OnReceiveMessage += async message =>
         {
-            await _asyncEventBus.PublishAsync(message);
+            try
+            {
+                await _asyncEventBus.PublishAsync(message);
+            }
+            catch
+            {
+                // エラーハンドリングはここでは行わない
+            }
         };
         client.RunAsync().Wait();
         _clients.Add(_defaultClient, client);
