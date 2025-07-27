@@ -7,7 +7,7 @@ using Message = Medoz.CatChast.Messaging.Message;
 namespace Medoz.KoeKan.Services;
 
 /// <summary>
-/// クライアントの管理を行うクラス
+/// スピーカーの管理を行うクラス
 /// </summary>
 public class SpeakerService : ISpeakerService
 {
