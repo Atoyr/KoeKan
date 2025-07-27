@@ -65,12 +65,11 @@ public class ClientService : IClientService
     /// </summary>
     public ITextClient GetClient(string? name)
     {
-        var client = GetClientOrDefault(name);
-        if (client is null)
+        if (_clients.TryGetValue(name ?? _defaultClient, out var client))
         {
-            throw new ArgumentException($"Client {name} is not registered.");
+            return client;
         }
-        return client;
+        throw new ArgumentException($"Client {name} is not registered.");
     }
 
     private ITextClient GetClientOrDefault(string? name)
