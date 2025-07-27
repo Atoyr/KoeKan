@@ -31,6 +31,8 @@ public class VoicevoxClient: ISpeakerClient
 
     public bool IsRunning => _version is not null;
 
+    public event Action? OnDisposing;
+
     public VoicevoxClient(VoicevoxOptions options)
     {
         if (options.Url is not null)
@@ -42,6 +44,7 @@ public class VoicevoxClient: ISpeakerClient
 
     public void Dispose()
     {
+        OnDisposing?.Invoke();
         _heartbeat?.Dispose();
         _httpClient.Dispose();
     }

@@ -12,8 +12,27 @@ public class TextToSpeechBridge : ITextClient
     public bool IsRunning => _client!.IsRunning && _speaker!.IsRunning;
 
     public event Func<Task>? OnReady;
+    public event Action? OnDisposing;
 
     public string Name => GetType().Name;
+
+    public TextToSpeechBridge(ITextClient textClient, ISpeakerClient speakerClient)
+    {
+        _client = textClient;
+        _speaker = speakerClient;
+
+        _client!.OnReady += async () => {
+            if (OnReady is not null)
+            {
+                await OnReady.Invoke();
+            }
+        };
+        _client!.OnReceiveMessage += async (message) =>
+        {
+            await _speaker!.SpeakMessageAsync(message.Content);
+        };
+    }
+
 
     public async Task RunAsync()
     {
@@ -43,23 +62,6 @@ public class TextToSpeechBridge : ITextClient
         await _speaker!.StopAsync();
     }
 
-    public TextToSpeechBridge(ITextClient textClient, ISpeakerClient speakerClient)
-    {
-        _client = textClient;
-        _speaker = speakerClient;
-
-        _client!.OnReady += (async () => {
-            if (OnReady is not null)
-            {
-                await OnReady.Invoke();
-            }
-        });
-        _client!.OnReceiveMessage += async (message) =>
-        {
-            await _speaker!.SpeakMessageAsync(message.Content);
-        };
-    }
-
     public event Func<ClientMessage, Task>? OnReceiveMessage
     {
         add
@@ -79,6 +81,7 @@ public class TextToSpeechBridge : ITextClient
 
     public void Dispose()
     {
+        OnDisposing?.Invoke();
         // クライアントは再利用する可能性があるのでDisposeしない
         _speaker?.Dispose();
     }

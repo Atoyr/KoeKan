@@ -20,6 +20,8 @@ public class DiscordClient: ITextClient
     public event Func<ClientMessage, Task>? OnReceiveMessage;
     public event Func<Task>? OnReady;
 
+    public event Action? OnDisposing;
+
     public DiscordClient(DiscordOptions options)
     {
         _options = options;
@@ -164,6 +166,7 @@ public class DiscordClient: ITextClient
 
     public void Dispose()
     {
+        OnDisposing?.Invoke();
         _cancellationTokenSource.Cancel();
         _cancellationTokenSource.Dispose();
     }

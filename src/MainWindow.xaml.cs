@@ -15,6 +15,7 @@ using Medoz.KoeKan.Services;
 using Medoz.KoeKan.Clients;
 using System.Net.WebSockets;
 using System.Drawing.Imaging;
+using Microsoft.Extensions.Logging;
 
 namespace Medoz.KoeKan;
 
@@ -23,9 +24,6 @@ namespace Medoz.KoeKan;
 /// </summary>
 public partial class MainWindow : Window
 {
-
-    // 設定画面が開いているかどうか
-    private bool isOpenModalWindow = false;
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -37,6 +35,8 @@ public partial class MainWindow : Window
     private readonly SemaphoreSlim _messageSemaphore = new(1, 1);
 
     private string? _activeProcessName;
+
+    private readonly Listener _listener = new();
 
     private MainWindow() { }
 
@@ -66,12 +66,34 @@ public partial class MainWindow : Window
             }
         };
 
+        _listener.Dispatcher = Dispatcher;
         // メッセージの変更を通知する
-        mwvm.ListenerService.GetListener().Messages.CollectionChanged += (_, e) =>
+        _listener.Messages.CollectionChanged += (_, e) =>
         {
             Dispatcher.BeginInvoke(new Action(() => { ChatListBox_ScrollToEnd(); }), System.Windows.Threading.DispatcherPriority.ContextIdle);
         };
 
+        // メッセージの受信を購読
+        mwvm.AsyncEventBus.Subscribe<Medoz.CatChast.Messaging.Message>((message) =>
+        {
+            try
+            {
+                var chatMessageType = ChatMessageTypeExtension.FromString(message.ClientType);
+                _listener.AddMessage(new ChatMessage(
+                    chatMessageType,
+                    message.Channel,
+                    message.ClientType,
+                    message.Username,
+                    message.Content,
+                    message.Timestamp.DateTime
+                ));
+            }
+            catch (Exception ex)
+            {
+                // メッセージの変換に失敗した場合はログに出力
+                mwvm.Logger.LogError(ex, "Failed to convert message type.");
+            }
+        });
         // serverService.WebApiMessageReceived += async (s, e) =>
         // {
         //     // WebAPIからのメッセージを受信したときの処理
@@ -89,7 +111,7 @@ public partial class MainWindow : Window
         MainWindowViewModel mwvm = (MainWindowViewModel)DataContext;
         _hk = new HotKey(mwvm.ModKey, mwvm.Key, this);
         _hk.OnHotKeyPush += MessageBox_Focus;
-        ChatListBox.ItemsSource = mwvm.ListenerService.GetListener().Messages;
+        ChatListBox.ItemsSource = _listener.Messages;
         MoveWindowBar.Visibility = Visibility.Collapsed;
     }
 
@@ -108,7 +130,7 @@ public partial class MainWindow : Window
         _activeProcessName = null;
 
         // 対象プロセスを順番に探索し、最初に見つかったプロセスをアクティブにする
-        foreach(var pn in mwvm.Applications)
+        foreach (var pn in mwvm.Applications)
         {
             if (ActivateOtherWindow(pn))
             {
@@ -137,11 +159,8 @@ public partial class MainWindow : Window
 
     public void MessageBox_Focus(object? sender, EventArgs e)
     {
-        if (!isOpenModalWindow)
-        {
-            MessageBox.Focus();
-            this.Activate();
-        }
+        MessageBox.Focus();
+        this.Activate();
     }
 
     /// <summary>
@@ -208,5 +227,16 @@ public partial class MainWindow : Window
         }
         var item = ChatListBox.Items[ChatListBox.Items.Count - 1];
         ChatListBox.ScrollIntoView(item);
+    }
+
+    public void Clear()
+    {
+        if (DataContext is MainWindowViewModel mwvm)
+        {
+            _listener.Clear();
+        }
+        ChatListBox.ItemsSource = null;
+        ChatListBox.Items.Clear();
+        ChatListBox.ItemsSource = _listener.Messages;
     }
 }

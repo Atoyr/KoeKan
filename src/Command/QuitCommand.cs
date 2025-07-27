@@ -1,6 +1,8 @@
 using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Services;
 
+using Microsoft.Extensions.Logging;
+
 namespace Medoz.KoeKan.Command;
 
 public class QuitCommand : ICommand
@@ -10,14 +12,13 @@ public class QuitCommand : ICommand
     public string HelpText => "quit command - extit application.";
 
     private readonly IWindowService _windowService;
-    private readonly IListenerService _listenerService;
-
+    private readonly ILogger _logger;
     public QuitCommand(
-        IListenerService listenerService,
-        IWindowService windowService)
+        IWindowService windowService,
+        ILogger logger)
     {
-        _listenerService = listenerService;
         _windowService = windowService;
+        _logger = logger;
     }
 
     public bool CanExecute(string[] args)
@@ -25,16 +26,16 @@ public class QuitCommand : ICommand
         return args.Length == 0 || args[0] == string.Empty;
     }
 
-    public async Task ExecuteCommandAsync(string[] args)
+    public Task ExecuteCommandAsync(string[] args)
     {
         if (!CanExecute(args))
         {
-            _listenerService.AddLogMessage("Invalid arguments for write command.");
-            return;
+            _logger.LogError("Invalid arguments for quit command.");
+            return Task.CompletedTask;
         }
 
         _windowService.CloseMainWindow();
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 }
 

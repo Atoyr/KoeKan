@@ -1,8 +1,11 @@
 using System.Windows.Data;
 
+using Medoz.CatChast.Messaging;
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Command;
 using Medoz.KoeKan.Services;
+
+using Microsoft.Extensions.Logging;
 
 namespace Medoz.KoeKan;
 
@@ -13,8 +16,10 @@ public partial class MainWindowViewModel
 {
     internal readonly IConfigService ConfigService;
     internal readonly IClientService ClientService;
-    internal readonly IListenerService ListenerService;
+    internal readonly ISpeakerService SpeakerService;
     internal readonly IWindowService WindowService;
+    internal readonly IAsyncEventBus AsyncEventBus;
+    internal readonly ILogger Logger;
 
     private readonly CommandManager _commandManager = new();
     private readonly CommandFactory _commandFactory;
@@ -69,25 +74,32 @@ public partial class MainWindowViewModel
         }
     }
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(IConfigService configService,
+                               IClientService clientService,
+                               ISpeakerService speakerService,
+                               IWindowService windowService,
+                               IAsyncEventBus asyncEventBus,
+                               ILogger<MainWindowViewModel> logger
+                               )
     {
-        ConfigService = ServiceContainer.Instance.ConfigService;
-        ClientService = ServiceContainer.Instance.ClientService;
-        ListenerService = ServiceContainer.Instance.ListenerService;
-        WindowService = ServiceContainer.Instance.WindowService;
+        ConfigService = configService;
+        ClientService = clientService;
+        SpeakerService = speakerService;
+        WindowService = windowService;
+        AsyncEventBus = asyncEventBus;
+        Logger = logger;
 
         // CommandFactoryの初期化
         _commandFactory = new CommandFactory(
             ConfigService,
             ClientService,
-            ListenerService,
-            WindowService);
+            SpeakerService,
+            WindowService,
+            AsyncEventBus,
+            Logger);
 
         // CommandManagerの初期化
         _commandFactory.InitializeCommandManager(_commandManager);
-
-        var listener = ListenerService.GetListener();
-        BindingOperations.EnableCollectionSynchronization(listener.Messages, new object());
     }
 
     /// <summary>
@@ -121,7 +133,8 @@ public partial class MainWindowViewModel
             // コマンドが存在しない場合はヘルプを表示
             var command = str.Split(' ')[0];
             var helpText = _commandManager.GetHelpText(command);
-            ListenerService.AddLogMessage(helpText);
+            // FIXME: ここでヘルプを表示する方法を実装する
+            // Listener.AddLogMessage(helpText);
             return;
         }
     }

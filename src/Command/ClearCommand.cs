@@ -10,11 +10,11 @@ public class ClearCommand : ICommand
     public string CommandName => "clear";
     public string HelpText => "clear command is clearing the listner text.";
 
-    private readonly IListenerService _listenerService;
+    private readonly IWindowService _windowService;
 
-    public ClearCommand(IListenerService listenerService)
+    public ClearCommand(IWindowService windowService)
     {
-        _listenerService = listenerService;
+        _windowService = windowService;
     }
 
     public bool CanExecute(string[] args)
@@ -24,8 +24,7 @@ public class ClearCommand : ICommand
 
     public async Task ExecuteCommandAsync(string[] args)
     {
-        _listenerService.Clear();
+        _windowService.MainWindowMessageClear();
         await Task.CompletedTask;
     }
 }
-

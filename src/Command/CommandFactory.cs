@@ -1,6 +1,11 @@
 using System;
 using System.Reflection;
+using System.Windows.Automation.Text;
+
+using Medoz.CatChast.Messaging;
 using Medoz.KoeKan.Services;
+
+using Microsoft.Extensions.Logging;
 
 namespace Medoz.KoeKan.Command;
 
@@ -11,26 +16,32 @@ public class CommandFactory
 {
     private readonly IConfigService _configService;
     private readonly IClientService _clientService;
-    private readonly IListenerService _listenerService;
+    private readonly ISpeakerService _speakerService;
     private readonly IWindowService _windowService;
+    private readonly IAsyncEventBus _asyncEventBus;
+    private readonly ILogger? _logger;
 
     /// <summary>
     /// コンストラクタ
     /// </summary>
     /// <param name="configService">設定サービス</param>
     /// <param name="clientService">クライアントサービス</param>
-    /// <param name="listenerService">リスナーサービス</param>
     /// <param name="windowService">ウィンドウサービス</param>
+    /// <param name="ILogger">ロガー</param>
     public CommandFactory(
         IConfigService configService,
         IClientService clientService,
-        IListenerService listenerService,
-        IWindowService windowService)
+        ISpeakerService speakerService,
+        IWindowService windowService,
+        IAsyncEventBus asyncEventBus,
+        ILogger? logger)
     {
         _configService = configService;
         _clientService = clientService;
-        _listenerService = listenerService;
+        _speakerService = speakerService;
         _windowService = windowService;
+        _asyncEventBus = asyncEventBus;
+        _logger = logger;
     }
 
     /// <summary>
@@ -65,7 +76,7 @@ public class CommandFactory
         // 最も多くのパラメータを持つコンストラクタを選択
         var constructor = constructors.OrderByDescending(c => c.GetParameters().Length).First();
         var parameters = constructor.GetParameters();
-        var arguments = new object[parameters.Length];
+        var arguments = new object?[parameters.Length];
 
         // コンストラクタの各パラメータに対応するサービスを注入
         for (int i = 0; i < parameters.Length; i++)
@@ -80,13 +91,30 @@ public class CommandFactory
             {
                 arguments[i] = _clientService;
             }
-            else if (parameterType == typeof(IListenerService))
+            else if (parameterType == typeof(ISpeakerService))
             {
-                arguments[i] = _listenerService;
+                arguments[i] = _speakerService;
             }
             else if (parameterType == typeof(IWindowService))
             {
                 arguments[i] = _windowService;
+            }
+            else if (parameterType == typeof(IAsyncEventBus))
+            {
+                arguments[i] = _asyncEventBus;
+            }
+            else if (parameterType == typeof(ILogger))
+            {
+                arguments[i] = _logger;
+            }
+            // Null許容の場合
+            else if (Nullable.GetUnderlyingType(parameterType) != null)
+            {
+                var underlyingType = Nullable.GetUnderlyingType(parameterType);
+                if (underlyingType == typeof(ILogger))
+                {
+                    arguments[i] = _logger;
+                }
             }
             else
             {

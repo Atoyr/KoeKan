@@ -4,6 +4,11 @@ using Medoz.KoeKan.Services;
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 using Microsoft.VisualBasic;
+
+using Medoz.CatChast.Messaging;
+using Message = Medoz.CatChast.Messaging.Message;
+using Microsoft.Extensions.Logging;
+
 namespace Medoz.KoeKan.Command;
 
 public class DiscordCommand_Guilds : ICommand
@@ -12,18 +17,16 @@ public class DiscordCommand_Guilds : ICommand
 
     public string HelpText => "get usable discord guilds";
 
-    private readonly IListenerService _listenerService;
     private readonly IClientService _clientService;
-    private readonly IConfigService _configService;
+
+    private readonly ILogger _logger;
 
     public DiscordCommand_Guilds(
-        IListenerService listenerService,
         IClientService clientService,
-        IConfigService configService)
+        ILogger logger)
     {
-        _listenerService = listenerService;
-        _configService = configService;
         _clientService = clientService;
+        _logger = logger;
     }
 
     public bool CanExecute(string[] args)
@@ -36,7 +39,7 @@ public class DiscordCommand_Guilds : ICommand
         var client = _clientService.GetClient("discord");
         if (client is not DiscordClient discordClient)
         {
-            _listenerService.AddLogMessage("Discord client is not started.");
+            _logger.LogError("Discord client is not started.");
             return;
         }
         StringBuilder sb = new();
@@ -44,8 +47,7 @@ public class DiscordCommand_Guilds : ICommand
         {
             sb.AppendLine($"{g.Id} : {g.Name}");
         }
-        _listenerService.AddCommandMessage(sb.ToString());
-        await Task.CompletedTask;
+        _logger.LogInformation(sb.ToString());
     }
 }
 

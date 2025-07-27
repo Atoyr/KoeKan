@@ -1,6 +1,8 @@
 using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Services;
 
+using Microsoft.Extensions.Logging;
+
 namespace Medoz.KoeKan.Command;
 
 public class WriteCommand : ICommand
@@ -10,14 +12,14 @@ public class WriteCommand : ICommand
     public string HelpText => "write command - save config file.";
 
     private readonly IConfigService _configService;
-    private readonly IListenerService _listenerService;
+    private readonly ILogger _logger;
 
     public WriteCommand(
-        IListenerService listenerService,
-        IConfigService configService)
+        IConfigService configService,
+        ILogger logger)
     {
-        _listenerService = listenerService;
         _configService = configService;
+        _logger = logger;
     }
 
     public bool CanExecute(string[] args)
@@ -29,18 +31,18 @@ public class WriteCommand : ICommand
     {
         if (!CanExecute(args))
         {
-            _listenerService.AddLogMessage("Invalid arguments for write command.");
+            _logger.LogError("Invalid arguments for write command.");
             return;
         }
 
         try
         {
             _configService.Save();
-            _listenerService.AddLogMessage("Config saved.");
+            _logger.LogInformation("Config saved successfully.");
         }
         catch (Exception)
         {
-            _listenerService.AddLogMessage("Save config is faild.");
+            _logger.LogError("Failed to save config.");
         }
         await Task.CompletedTask;
     }
