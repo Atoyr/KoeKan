@@ -15,6 +15,7 @@ using Medoz.KoeKan.Services;
 using Medoz.KoeKan.Clients;
 using System.Net.WebSockets;
 using System.Drawing.Imaging;
+using Microsoft.Extensions.Logging;
 
 namespace Medoz.KoeKan;
 
@@ -75,15 +76,23 @@ public partial class MainWindow : Window
         // メッセージの受信を購読
         mwvm.AsyncEventBus.Subscribe<Medoz.CatChast.Messaging.Message>((message) =>
         {
-            var chatMessageType = ChatMessageTypeExtension.FromString(message.ClientType);
-            _listener.AddMessage(new ChatMessage(
-                chatMessageType,
-                message.Channel,
-                message.ClientType,
-                message.Username,
-                message.Content,
-                message.Timestamp.DateTime
-            ));
+            try
+            {
+                var chatMessageType = ChatMessageTypeExtension.FromString(message.ClientType);
+                _listener.AddMessage(new ChatMessage(
+                    chatMessageType,
+                    message.Channel,
+                    message.ClientType,
+                    message.Username,
+                    message.Content,
+                    message.Timestamp.DateTime
+                ));
+            }
+            catch (Exception ex)
+            {
+                // メッセージの変換に失敗した場合はログに出力
+                mwvm.Logger.LogError(ex, "Failed to convert message type.");
+            }
         });
         // serverService.WebApiMessageReceived += async (s, e) =>
         // {
