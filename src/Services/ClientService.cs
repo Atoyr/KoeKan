@@ -93,14 +93,16 @@ public class ClientService : IClientService
         Func<ClientMessage, Task>? onReceiveMessage = null
         ) where T : ITextClient
     {
-        var registeredClient = GetClientOrDefault(name);
-        if (registeredClient is T typedClient)
+        if (_clients.TryGetValue(name, out var registeredClient))
         {
-            return typedClient;
-        }
-        if (registeredClient is not null)
-        {
-            throw new ArgumentException($"Client {name} is already registered with a different type.");
+            if (registeredClient is T typedClient)
+            {
+                return typedClient;
+            }
+            else
+            {
+                throw new ArgumentException($"Client {name} is already registered with a different type.");
+            }
         }
 
         return CreateClient<T>(options, name, onReceiveMessage);
