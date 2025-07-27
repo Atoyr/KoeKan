@@ -12,6 +12,7 @@ namespace Medoz.KoeKan.Services;
 public class SpeakerService : ISpeakerService
 {
     private readonly Dictionary<string, ISpeakerClient> _clients = new();
+    private readonly Dictionary<string, IDisposable> _subscriptions = new();
 
     private readonly string _defaultClient = "_";
 
@@ -34,9 +35,18 @@ public class SpeakerService : ISpeakerService
     {
         if (string.IsNullOrEmpty(name))
         {
-            return _clients[_defaultClient];
+            if (_clients.TryGetValue(_defaultClient, out var defaultClient))
+            {
+                return defaultClient;
+            }
+            throw new KeyNotFoundException($"Default speaker client '{_defaultClient}' not found.");
         }
-        return _clients[name];
+
+        if (_clients.TryGetValue(name, out var client))
+        {
+            return client;
+        }
+        throw new KeyNotFoundException($"Speaker client '{name}' not found.");
     }
 
     public bool TryGetSpeaker(string? name, out ISpeakerClient? client)
@@ -56,13 +66,14 @@ public class SpeakerService : ISpeakerService
         }
         _clients.Add(name, client);
 
-        _asyncEventBus.SubscribeAsync<Message>(async e =>
+        var subscription = _asyncEventBus.SubscribeAsync<Message>(async e =>
         {
             if (e.SpeakerName == name)
             {
                 await client!.SpeakMessageAsync(e.Content);
             }
         });
+        _subscriptions.Add(name, subscription);
     }
 
     /// <summary>
@@ -73,6 +84,11 @@ public class SpeakerService : ISpeakerService
         if (_clients.ContainsKey(name))
         {
             _clients.Remove(name);
+            if (_subscriptions.TryGetValue(name, out var subscription))
+            {
+                subscription.Dispose();
+                _subscriptions.Remove(name);
+            }
         }
         else
         {
