@@ -25,9 +25,16 @@ public class TwitchTextClient: ITextClient
 
     private readonly string? token;
 
-    public TwitchTextClient(TwitchOptions options)
+    public TwitchTextClient(IClientOptions options)
     {
-        _options = options;
+        if (options is TwitchOptions twitchOptions)
+        {
+            _options = twitchOptions;
+        }
+        else
+        {
+            throw new ArgumentException("Invalid options type. Expected TwitchOptions.", nameof(options));
+        }
         token = _options.Token;
     }
 

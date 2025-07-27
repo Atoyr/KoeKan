@@ -15,6 +15,30 @@ public interface ISpeakerService
     bool TryGetSpeaker(string? name, out ISpeakerClient? client);
 
     /// <summary>
+    /// スピーカー取得または作成
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="options"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    T GetOrCreateSpeaker<T>(
+        IClientOptions options,
+        string name
+        ) where T : ISpeakerClient;
+
+    /// <summary>
+    /// スピーカー作成
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="options"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    T CreateSpeaker<T>(
+        IClientOptions options,
+        string name
+        ) where T : ISpeakerClient;
+
+    /// <summary>
     /// クライアントの登録
     /// </summary>
     void RegisterSpeaker(string name, ISpeakerClient client);

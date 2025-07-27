@@ -19,16 +19,19 @@ public class DiscordCommand_Start : ICommand
 
     public string HelpText => "start discord client";
 
+    private readonly IClientService _clientService;
     private readonly IConfigService _configService;
     private readonly IAsyncEventBus _asyncEventBus;
     private readonly ILogger _logger;
 
 
     public DiscordCommand_Start(
+        IClientService clientService,
         IConfigService configService,
         IAsyncEventBus asyncEventBus,
         ILogger logger)
     {
+        _clientService = clientService;
         _configService = configService;
         _asyncEventBus = asyncEventBus;
         _logger = logger;
@@ -51,28 +54,41 @@ public class DiscordCommand_Start : ICommand
         }
 
         var discordClientConfig = config.Clients["discord"];
-        var discordClient = new DiscordClient(new DiscordOptions(){Token = token });
-        discordClient.OnReceiveMessage += async (message) => {
-            await _asyncEventBus.PublishAsync(new Message(
-                "discord",
-                message.Channel,
-                message.Username,
-                message.Content,
-                // FIXME: IconSource and SpeakerName are not used in this context, consider removing them
-                message.Timestamp,
-                message.IconSource
-            ));
-        };
+        var option = new DiscordOptions(){Token = token };
+        var discordClient = _clientService.CreateClient<DiscordClient>(option, "discord", async message =>
+        {
+            try
+            {
+                await _asyncEventBus.PublishAsync(message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while publishing message from Discord client.");
+            }
+        });
+
         discordClient.OnReady += () => {
+            // FIXME: OnReadyではない場所でチャンネルを設定する必要がある
             if(discordClientConfig.TryGetValue("default_channel_id", out ulong channelId))
             {
                 discordClient.SetChannel(channelId);
             }
-            _logger.LogInformation("Discord client started successfully.");
             return Task.CompletedTask;
         };
+
+
         await discordClient.AuthAsync();
-        _ = Task.Run(() => discordClient.RunAsync());
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await discordClient.RunAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Discord client crashed unexpectedly.");
+            }
+        });
     }
 }
 
