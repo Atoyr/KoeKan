@@ -96,7 +96,7 @@ public class DiscordCommand_Set : ICommand
     {
         if (ulong.TryParse(id, out ulong channelId) == false)
         {
-            _logger.LogInformation($"Invalid channel id {id}.");
+            _logger.LogError($"Invalid channel id {id}.");
             return;
         }
         var client = _clientService.GetClient(_clientConfigName);
