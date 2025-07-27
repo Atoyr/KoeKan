@@ -68,6 +68,7 @@ public class DiscordCommand_Start : ICommand
         });
 
         discordClient.OnReady += () => {
+            // FIXME: OnReadyではない場所でチャンネルを設定する必要がある
             if(discordClientConfig.TryGetValue("default_channel_id", out ulong channelId))
             {
                 discordClient.SetChannel(channelId);
