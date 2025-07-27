@@ -1,8 +1,8 @@
 using Medoz.KoeKan.Clients;
-using Medoz.KoeKan.Data;
 using Medoz.CatChast.Messaging;
 
 using Message = Medoz.CatChast.Messaging.Message;
+using Microsoft.Extensions.Logging;
 
 namespace Medoz.KoeKan.Services;
 
@@ -17,15 +17,19 @@ public class SpeakerService : ISpeakerService
     private readonly string _defaultClient = "_";
 
     private readonly IAsyncEventBus _asyncEventBus;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// スピーカーの管理を行うクラス
     /// </summary>
     /// <param name="listenerService"></param>
     /// <param name="configService"></param>
-    public SpeakerService(IAsyncEventBus asyncEventBus)
+    public SpeakerService(
+        IAsyncEventBus asyncEventBus,
+        ILogger<SpeakerService> logger)
     {
         _asyncEventBus = asyncEventBus;
+        _logger = logger;
     }
 
     /// <summary>
@@ -53,6 +57,62 @@ public class SpeakerService : ISpeakerService
     {
         var clientName = string.IsNullOrEmpty(name) ? _defaultClient : name;
         return _clients.TryGetValue(clientName, out client);
+    }
+
+    /// <summary>
+    /// スピーカー取得または作成
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="options"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public T GetOrCreateSpeaker<T>(
+        IClientOptions options,
+        string name
+        ) where T : ISpeakerClient
+    {
+        if (_clients.ContainsKey(name) && _clients[name] is T registeredClient)
+        {
+            return registeredClient;
+        }
+
+        return CreateSpeaker<T>(options, name);
+    }
+
+    /// <summary>
+    /// スピーカー作成
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="options"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public T CreateSpeaker<T>(
+        IClientOptions options,
+        string name
+        ) where T : ISpeakerClient
+    {
+        if (_clients.ContainsKey(name))
+        {
+            throw new ArgumentException($"Client {name} is already registered.");
+        }
+
+        var speaker = ClientFactory.Create<T>(options);
+        _clients.Add(name, speaker);
+
+        _asyncEventBus.SubscribeAsync<Message>(async e =>
+        {
+            if (e.SpeakerName == name)
+            {
+                await speaker.SpeakMessageAsync(e.Content);
+            }
+        });
+
+        speaker.OnReady += async () =>
+        {
+            _logger.LogInformation($"{name} client started successfully.");
+            await Task.CompletedTask;
+        };
+        return speaker;
     }
 
     /// <summary>

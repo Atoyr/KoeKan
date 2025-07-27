@@ -63,18 +63,14 @@ public class VoicevoxCommand_Start : ICommand
         }
         clientConfig.TryGetValue("url", out string? url);
 
-        var speaker = new VoicevoxClient(new VoicevoxOptions() {
-            SpeakerId = speakerId,
-            Url = url,});
-        speaker.OnReady += (() => {
-            _logger.LogInformation("Voicevox client started successfully.");
-            return Task.CompletedTask;
-        });
-        _speakerService.RegisterSpeaker(clientName ?? "_", speaker);
+        _speakerService.GetOrCreateSpeaker<VoicevoxClient>(
+            new VoicevoxOptions()
+            {
+                SpeakerId = speakerId,
+                Url = url,
+            },
+            clientName ?? "_");
 
-        var bridge = _clientService.GetClient(clientName);
-        var _ = bridge.RunAsync();
-        _logger.LogInformation("Voicevox client started successfully.");
         await Task.CompletedTask;
     }
 }
