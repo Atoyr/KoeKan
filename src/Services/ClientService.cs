@@ -49,16 +49,6 @@ public class ClientService : IClientService
         _clients.Add(_defaultClient, client);
 
         var config = _configService.GetConfig();
-        // listener?.AddMessageConverter(
-        //     _defaultClient,
-        //     (message) => new ChatMessage(
-        //         ChatMessageType.Echo,
-        //         "",
-        //         config.Icon,
-        //         config.Username,
-        //         message.Content,
-        //         message.Timestamp,
-        //         false));
     }
 
     /// <summary>
