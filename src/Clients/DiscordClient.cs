@@ -22,9 +22,13 @@ public class DiscordClient: ITextClient
 
     public event Action? OnDisposing;
 
-    public DiscordClient(DiscordOptions options)
+    public DiscordClient(IClientOptions options)
     {
-        _options = options;
+        if (options is not DiscordOptions discordOptions)
+        {
+            throw new ArgumentException("Invalid options type. Expected DiscordOptions.", nameof(options));
+        }
+        _options = discordOptions;
 
         _client = new DiscordSocketClient(new DiscordSocketConfig(){ GatewayIntents = GatewayIntents.All});
         _client.MessageReceived += MessageReceivedAsync;

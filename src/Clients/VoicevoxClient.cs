@@ -33,13 +33,17 @@ public class VoicevoxClient: ISpeakerClient
 
     public event Action? OnDisposing;
 
-    public VoicevoxClient(VoicevoxOptions options)
+    public VoicevoxClient(IClientOptions options)
     {
-        if (options.Url is not null)
+        if (options is not VoicevoxOptions voicevoxOptions)
         {
-            _url = options.Url;
+            throw new ArgumentException("Invalid options type. Expected VoicevoxOptions.", nameof(options));
         }
-        _speakerId = options.SpeakerId;
+        if (voicevoxOptions.Url is not null)
+        {
+            _url = voicevoxOptions.Url;
+        }
+        _speakerId = voicevoxOptions.SpeakerId;
     }
 
     public void Dispose()

@@ -26,11 +26,6 @@ public class EchoClient: ITextClient
 
     public event Action? OnDisposing;
 
-    public Task<string> AuthAsync()
-    {
-        return Task.FromResult("EchoClient");
-    }
-
     public async Task RunAsync()
     {
         IsRunning = true;
