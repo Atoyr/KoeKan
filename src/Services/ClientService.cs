@@ -2,6 +2,10 @@ using Medoz.CatChast.Messaging;
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 
+using Microsoft.Extensions.Logging;
+
+using Message = Medoz.CatChast.Messaging.Message;
+
 namespace Medoz.KoeKan.Services;
 
 /// <summary>
@@ -15,16 +19,21 @@ public class ClientService : IClientService
 
     private readonly IConfigService _configService;
     private readonly IAsyncEventBus _asyncEventBus;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// クライアントの管理を行うクラス
     /// </summary>
     /// <param name="asyncEventBus"></param>
     /// <param name="configService"></param>
-    public ClientService(IAsyncEventBus asyncEventBus, IConfigService configService)
+    public ClientService(
+        IAsyncEventBus asyncEventBus,
+        IConfigService configService,
+        ILogger<ClientService> logger)
     {
         _configService = configService;
         _asyncEventBus = asyncEventBus;
+        _logger = logger;
         AddDefaultClient();
     }
 
@@ -56,17 +65,89 @@ public class ClientService : IClientService
     /// </summary>
     public ITextClient GetClient(string? name)
     {
+        var client = GetClientOrDefault(name);
+        if (client is null)
+        {
+            throw new ArgumentException($"Client {name} is not registered.");
+        }
+        return client;
+    }
+
+    private ITextClient GetClientOrDefault(string? name)
+    {
         if (string.IsNullOrEmpty(name))
         {
             return _clients[_defaultClient];
         }
-        return _clients[name];
+        return _clients.TryGetValue(name, out var client) ? client : _clients[_defaultClient];
     }
 
     public bool TryGetClient(string? name, out ITextClient? client)
     {
         var clientName = string.IsNullOrEmpty(name) ? _defaultClient : name;
         return _clients.TryGetValue(clientName, out client);
+    }
+
+    public T GetOrCreateClient<T>(
+        IClientOptions options,
+        string name,
+        Func<ClientMessage, Task>? onReceiveMessage = null
+        ) where T : ITextClient
+    {
+        var registeredClient = GetClientOrDefault(name);
+        if (registeredClient is T typedClient)
+        {
+            return typedClient;
+        }
+        if (registeredClient is not null)
+        {
+            throw new ArgumentException($"Client {name} is already registered with a different type.");
+        }
+
+        return CreateClient<T>(options, name, onReceiveMessage);
+    }
+
+    public T CreateClient<T>(
+        IClientOptions options,
+        string name,
+        Func<ClientMessage, Task>? onReceiveMessage = null
+        ) where T : ITextClient
+    {
+        if (_clients.ContainsKey(name))
+        {
+            throw new ArgumentException($"Client {name} is already registered.");
+        }
+
+        var client = ClientFactory.Create<T>(options);
+        _clients.Add(name, client);
+
+        if (onReceiveMessage is null)
+        {
+            client.OnReceiveMessage += async (message) =>
+            {
+                await _asyncEventBus.PublishAsync(new Message(
+                    // FIXME: Type is not used in this context, consider removing it
+                    nameof(T),
+                    message.Channel,
+                    message.Username,
+                    message.Content,
+                    message.Timestamp,
+                    message.IconSource
+                ));
+            };
+        }
+        else
+        {
+            client.OnReceiveMessage += onReceiveMessage;
+        }
+
+        client.OnReady += async () =>
+        {
+            _logger.LogInformation($"{name} client started successfully.");
+            await Task.CompletedTask;
+        };
+
+        return client;
     }
 
     /// <summary>

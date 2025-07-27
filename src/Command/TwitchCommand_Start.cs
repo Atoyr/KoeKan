@@ -46,7 +46,6 @@ public class TwitchCommand_Start : ICommand
     {
         // FIXME: TwitchClientの生成プロセスが複雑なので修正する
         var config = _configService.GetConfig();
-        var secret = _configService.GetSecret();
         var twitchClientConfig = config.Clients.TryGetValue("twitch", out var clientConfig)
             ? clientConfig
             : new DynamicConfig();
@@ -67,45 +66,28 @@ public class TwitchCommand_Start : ICommand
             ? channelList
             : Array.Empty<string>();
 
-        TwitchTextClient? twitchClient = null;
-        if (!_clientService.TryGetClient("twitch", out var existingClient))
-        {
-            twitchClient = new TwitchTextClient(new TwitchOptions() { Token = token.AccessToken, Channels = channels ?? new string[] { } });
-
-            twitchClient.OnReceiveMessage += message =>
+        var twitchClient = _clientService.GetOrCreateClient<TwitchTextClient>(
+            new TwitchOptions() { Token = token.AccessToken, Channels = channels ?? Array.Empty<string>() },
+            "twitch",
+            async message =>
             {
-                _asyncEventBus.PublishAsync(new Message(
-                    "twitch",
-                    message.Channel,
-                    message.Username,
-                    message.Content,
-                    message.Timestamp,
-                    message.IconSource
-                ));
-                return Task.CompletedTask;
-            };
+                try
+                {
+                    await _asyncEventBus.PublishAsync(new Message(
+                        "twitch",
+                        message.Channel,
+                        message.Username,
+                        message.Content,
+                        message.Timestamp,
+                        message.IconSource
+                    ));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while publishing message from Twitch client.");
+                }
+            });
 
-            _clientService.RegisterClient("twitch", twitchClient);
-        }
-        if (twitchClient is null)
-        {
-            if (existingClient is TwitchTextClient)
-            {
-                twitchClient = existingClient as TwitchTextClient;
-            }
-            else
-            {
-                _logger.LogError("Twitch client is not a valid TwitchClient instance.");
-                return;
-            }
-        }
-
-        twitchClient!.OnReady += () =>
-        {
-            _logger.LogInformation("Twitch client started successfully.");
-            return Task.CompletedTask;
-        };
-        _configService.SaveSecret();
         _ = Task.Run(() => twitchClient.RunAsync());
         await Task.CompletedTask;
     }

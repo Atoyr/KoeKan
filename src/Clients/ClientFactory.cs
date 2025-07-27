@@ -4,14 +4,14 @@ using Discord.WebSocket;
 
 namespace Medoz.KoeKan.Clients;
 
-public class ClientFactory
+public static class ClientFactory
 {
-    public T Create<T>(IClientOptions options) where T : IClient
+    public static T Create<T>(IClientOptions options) where T : IClient
     {
         return (T)Create(typeof(T), options);
     }
 
-    public IClient Create(Type clientType, IClientOptions options)
+    public static IClient Create(Type clientType, IClientOptions options)
     {
         if (!typeof(IClient).IsAssignableFrom(clientType))
         {
