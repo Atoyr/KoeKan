@@ -27,7 +27,7 @@ public class CommandFactory
     /// <param name="configService">設定サービス</param>
     /// <param name="clientService">クライアントサービス</param>
     /// <param name="windowService">ウィンドウサービス</param>
-    /// <param name="ILogger">リスナーサービス</param>
+    /// <param name="ILogger">ロガー</param>
     public CommandFactory(
         IConfigService configService,
         IClientService clientService,
