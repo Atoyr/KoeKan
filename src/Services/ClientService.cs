@@ -2,8 +2,6 @@ using Medoz.CatChast.Messaging;
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 
-using Medoz.CatChast.Messaging;
-
 namespace Medoz.KoeKan.Services;
 
 /// <summary>
