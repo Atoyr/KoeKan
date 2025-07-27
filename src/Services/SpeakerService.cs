@@ -18,7 +18,7 @@ public class SpeakerService : ISpeakerService
     private readonly IAsyncEventBus _asyncEventBus;
 
     /// <summary>
-    /// クライアントの管理を行うクラス
+    /// スピーカーの管理を行うクラス
     /// </summary>
     /// <param name="listenerService"></param>
     /// <param name="configService"></param>
