@@ -126,8 +126,19 @@ public partial class App : System.Windows.Application
         base.OnExit(e);
     }
 
-    public static T GetInstance<T>() where T : class =>
-        ((App)Current)._host.Services.GetRequiredService<T>();
+    public static T GetInstance<T>() where T : class
+    {
+        if (Current is not App app)
+        {
+            throw new InvalidOperationException("App.Current is not initialized or not of type App");
+        }
+        if (app._host == null)
+        {
+            throw new InvalidOperationException("Host is not initialized");
+        }
+        return app._host.Services.GetRequiredService<T>();
+    }
+
 
     [System.Runtime.InteropServices.DllImport("user32.dll")]
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
