@@ -14,7 +14,7 @@ public class EventBusLoggerProvider : ILoggerProvider
 
     public EventBusLoggerProvider(IAsyncEventBus asyncEventBus, EventBusLoggerConfiguration config)
     {
-        _config = config;
+        _config = config ?? throw new ArgumentNullException(nameof(config));
         _asyncEventBus = asyncEventBus ?? throw new ArgumentNullException(nameof(asyncEventBus));
     }
 
