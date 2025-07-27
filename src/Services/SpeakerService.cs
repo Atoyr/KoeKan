@@ -103,13 +103,14 @@ public class SpeakerService : ISpeakerService
         var speaker = ClientFactory.Create<T>(options);
         _clients.Add(name, speaker);
 
-        _asyncEventBus.SubscribeAsync<Message>(async e =>
+        var subscription = _asyncEventBus.SubscribeAsync<Message>(async e =>
         {
             if (e.SpeakerName == name)
             {
                 await speaker.SpeakMessageAsync(e.Content);
             }
         });
+        _subscriptions.Add(name, subscription);
 
         speaker.OnReady += async () =>
         {
