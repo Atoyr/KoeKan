@@ -10,7 +10,7 @@ public record Message(
     string? SpeakerName = null)
 {
     public Message(string clientType, string channel, string username, string content, string? iconSource = null)
-        : this(clientType, channel, username, content, DateTimeOffset.UtcNow.DateTime, iconSource)
+        : this(clientType, channel, username, content, DateTimeOffset.UtcNow, iconSource)
     {
 
     }
@@ -20,7 +20,7 @@ public record Message(
     /// </summary>
     /// <param name="content"></param>
     public Message(string content, string clientType = "")
-        : this(clientType, "", "", content, DateTimeOffset.UtcNow.DateTime)
+        : this(clientType, "", "", content, DateTimeOffset.UtcNow)
     {
     }
 }
