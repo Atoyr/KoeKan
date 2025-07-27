@@ -64,7 +64,7 @@ public class DiscordCommand_Start : ICommand
             ));
         };
         discordClient.OnReady += () => {
-            if(discordClientConfig.TryGetValue("defalut_channel_id", out ulong channelId))
+            if(discordClientConfig.TryGetValue("default_channel_id", out ulong channelId))
             {
                 discordClient.SetChannel(channelId);
             }
