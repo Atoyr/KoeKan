@@ -42,22 +42,29 @@ public class ClientService : IClientService
     /// </summary>
     private void AddDefaultClient()
     {
-        var client = new EchoClient(new EchoOptions());
-        client.OnReceiveMessage += async message =>
+        var client = ClientFactory.Create<EchoClient>(new EchoOptions());
+        _clients.Add(_defaultClient, client);
+
+        client.OnReceiveMessage += async (message) =>
         {
             try
             {
-                await _asyncEventBus.PublishAsync(message);
+                await _asyncEventBus.PublishAsync(new Message(
+                    // FIXME: Type is not used in this context, consider removing it
+                    "echo",
+                    message.Channel,
+                    message.Username,
+                    message.Content,
+                    message.Timestamp,
+                    message.IconSource
+                ));
             }
             catch
             {
-                // エラーハンドリングはここでは行わない
+                // FIXME
             }
         };
         client.RunAsync().Wait();
-        _clients.Add(_defaultClient, client);
-
-        var config = _configService.GetConfig();
     }
 
     /// <summary>
