@@ -52,6 +52,7 @@ public class ClientService : IClientService
                 await _asyncEventBus.PublishAsync(new Message(
                     // FIXME: Type is not used in this context, consider removing it
                     "echo",
+                    "_",
                     message.Channel,
                     message.Username,
                     message.Content,
@@ -135,7 +136,8 @@ public class ClientService : IClientService
             {
                 await _asyncEventBus.PublishAsync(new Message(
                     // FIXME: Type is not used in this context, consider removing it
-                    nameof(T),
+                    message.ClientType,
+                    "name",
                     message.Channel,
                     message.Username,
                     message.Content,

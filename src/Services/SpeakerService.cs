@@ -105,7 +105,7 @@ public class SpeakerService : ISpeakerService
 
         var subscription = _asyncEventBus.SubscribeAsync<Message>(async e =>
         {
-            if (e.SpeakerName == name)
+            if (e.Key == name)
             {
                 await speaker.SpeakMessageAsync(e.Content);
             }
@@ -133,7 +133,7 @@ public class SpeakerService : ISpeakerService
 
         var subscription = _asyncEventBus.SubscribeAsync<Message>(async e =>
         {
-            if (e.SpeakerName == name)
+            if (e.Key == name)
             {
                 await client!.SpeakMessageAsync(e.Content);
             }

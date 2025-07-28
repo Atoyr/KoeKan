@@ -75,6 +75,7 @@ public class TwitchCommand_Start : ICommand
                 {
                     await _asyncEventBus.PublishAsync(new Message(
                         "twitch",
+                        "twitch",
                         message.Channel,
                         message.Username,
                         message.Content,
