@@ -117,6 +117,7 @@ public class SpeakerService : ISpeakerService
             _logger.LogInformation($"{name} client started successfully.");
             await Task.CompletedTask;
         };
+        speaker.RunAsync();
         return speaker;
     }
 

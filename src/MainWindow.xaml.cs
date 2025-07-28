@@ -74,11 +74,19 @@ public partial class MainWindow : Window
         };
 
         // メッセージの受信を購読
-        mwvm.AsyncEventBus.Subscribe<ChatMessage>((message) =>
+        mwvm.AsyncEventBus.Subscribe<ClientMessage>((message) =>
         {
             try
             {
-                _listener.AddMessage(message);
+                var chatMessageType = ChatMessageTypeExtension.FromString(message.ClientType);
+                var chatMessage = new ChatMessage(
+                    chatMessageType,
+                    message.Channel,
+                    message.IconSource,
+                    message.Username,
+                    message.Content,
+                    message.Timestamp.Date);
+                _listener.AddMessage(chatMessage);
             }
             catch (Exception ex)
             {

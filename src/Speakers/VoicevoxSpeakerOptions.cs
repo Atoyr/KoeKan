@@ -45,9 +45,9 @@ public class VoicevoxSpeakerOptions : ISpeakerOptions
         }
     }
 
-    private const string BINDING_KEY = "bind";
+    private const string BINDING_KEY = "binds";
 
-    public string[] BindingKeys
+    public IEnumerable<string> BindingKeys
     {
         get
         {
@@ -56,6 +56,10 @@ public class VoicevoxSpeakerOptions : ISpeakerOptions
                 return _options[BINDING_KEY].Split(',');
             }
             return Array.Empty<string>();
+        }
+        set
+        {
+            _options["Channels"] = string.Join(',', value);
         }
     }
 

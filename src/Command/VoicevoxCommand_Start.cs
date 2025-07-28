@@ -63,6 +63,7 @@ public class VoicevoxCommand_Start : ICommand
             {
                 SpeakerId = speakerId,
                 Url = url,
+                BindingKeys = ["_", "default"],
             },
             clientName ?? "_");
 
