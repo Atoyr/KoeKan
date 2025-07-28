@@ -1,12 +1,6 @@
-using System.CodeDom;
-using System.Runtime.InteropServices;
-using System.Windows.Annotations;
-using System.Windows.Input;
-
 using Medoz.KoeKan.Services;
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
-using Microsoft.VisualBasic;
 using Medoz.CatChast.Auth;
 using Medoz.CatChast.Messaging;
 using Microsoft.Extensions.Logging;

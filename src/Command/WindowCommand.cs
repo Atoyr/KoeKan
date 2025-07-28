@@ -1,6 +1,3 @@
-using System.Windows.Input;
-using Medoz.KoeKan.Services;
-
 namespace Medoz.KoeKan.Command;
 
 public class WindowCommand : ICommand

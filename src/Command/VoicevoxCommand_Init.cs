@@ -1,13 +1,7 @@
-using System.CodeDom;
-using System.Runtime.InteropServices;
-using System.Windows.Input;
-
-using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Services;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 namespace Medoz.KoeKan.Command;
 
 public class VoicevoxCommand_Init : ICommand

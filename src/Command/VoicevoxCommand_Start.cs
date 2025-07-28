@@ -1,8 +1,3 @@
-using System.CodeDom;
-using System.Runtime.InteropServices;
-using System.Windows.Input;
-using System.Windows.Navigation;
-
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Services;
