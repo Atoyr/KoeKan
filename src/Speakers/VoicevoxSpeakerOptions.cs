@@ -59,7 +59,7 @@ public class VoicevoxSpeakerOptions : ISpeakerOptions
         }
         set
         {
-            _options["Channels"] = string.Join(',', value);
+            _options[BINDING_KEY] = string.Join(',', value);
         }
     }
 
