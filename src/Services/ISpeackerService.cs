@@ -1,4 +1,3 @@
-using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Speakers;
 
 namespace Medoz.KoeKan.Services;
