@@ -11,7 +11,7 @@ public static class SpeakerFactory
 	{
 		if (!typeof(ISpeaker).IsAssignableFrom(speakerType))
 		{
-			throw new ArgumentException($"Type {speakerType.FullName} does not implement IClient interface.", nameof(speakerType));
+			throw new ArgumentException($"Type {speakerType.FullName} does not implement ISpeaker interface.", nameof(speakerType));
 		}
 
 		var speaker = Activator.CreateInstance(speakerType, options);
