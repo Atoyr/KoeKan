@@ -7,26 +7,26 @@ public static class SpeakerFactory
 		return (T)Create(typeof(T), options);
 	}
 
-	public static ISpeaker Create(Type clientType, ISpeakerOptions options)
+	public static ISpeaker Create(Type speakerType, ISpeakerOptions options)
 	{
-		if (!typeof(ISpeaker).IsAssignableFrom(clientType))
+		if (!typeof(ISpeaker).IsAssignableFrom(speakerType))
 		{
-			throw new ArgumentException($"Type {clientType.FullName} does not implement IClient interface.", nameof(clientType));
+			throw new ArgumentException($"Type {speakerType.FullName} does not implement IClient interface.", nameof(speakerType));
 		}
 
-		var client = Activator.CreateInstance(clientType, options);
+		var speaker = Activator.CreateInstance(speakerType, options);
 
-		if (client is null)
+		if (speaker is null)
 		{
-			throw new InvalidOperationException($"Could not create instance of {clientType.FullName}.");
+			throw new InvalidOperationException($"Could not create instance of {speakerType.FullName}.");
 		}
 
-		if (client is not ISpeaker)
+		if (speaker is not ISpeaker)
 		{
-			throw new InvalidCastException($"Created instance of {clientType.FullName} does not implement IClient interface.");
+			throw new InvalidCastException($"Created instance of {speakerType.FullName} does not implement ISpeaker interface.");
 		}
 
-		return (ISpeaker)client;
+		return (ISpeaker)speaker;
 	}
 }
 
