@@ -1,4 +1,4 @@
-using Medoz.KoeKan.Clients;
+using Medoz.KoeKan.Speakers;
 
 namespace Medoz.KoeKan.Services;
 
@@ -7,12 +7,12 @@ public interface ISpeakerService
     /// <summary>
     /// クライアントの取得
     /// </summary>
-    ISpeakerClient GetSpeaker(string? name = null);
+    ISpeaker GetSpeaker(string? name = null);
 
     /// <summary>
     /// クライアントの取得
     /// </summary>
-    bool TryGetSpeaker(string? name, out ISpeakerClient? client);
+    bool TryGetSpeaker(string? name, out ISpeaker? client);
 
     /// <summary>
     /// スピーカー取得または作成
@@ -22,9 +22,9 @@ public interface ISpeakerService
     /// <param name="name"></param>
     /// <returns></returns>
     T GetOrCreateSpeaker<T>(
-        IClientOptions options,
+        ISpeakerOptions options,
         string name
-        ) where T : ISpeakerClient;
+        ) where T : ISpeaker;
 
     /// <summary>
     /// スピーカー作成
@@ -34,14 +34,14 @@ public interface ISpeakerService
     /// <param name="name"></param>
     /// <returns></returns>
     T CreateSpeaker<T>(
-        IClientOptions options,
+        ISpeakerOptions options,
         string name
-        ) where T : ISpeakerClient;
+        ) where T : ISpeaker;
 
     /// <summary>
     /// クライアントの登録
     /// </summary>
-    void RegisterSpeaker(string name, ISpeakerClient client);
+    void RegisterSpeaker(string name, ISpeaker client);
 
     /// <summary>
     /// クライアントの削除

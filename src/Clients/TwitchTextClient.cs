@@ -101,7 +101,8 @@ public class TwitchTextClient: ITextClient
 
                 if (OnReceiveMessage is not null)
                 {
-                    await OnReceiveMessage.Invoke(new(Name, channel, username, message, DateTime.Now, null));
+                    // FIXME: Key
+                    await OnReceiveMessage.Invoke(new(Name, Name, channel, username, message, DateTime.Now, null));
                 }
             }
             else if (receivedMessage.Contains("PING"))

@@ -74,19 +74,19 @@ public partial class MainWindow : Window
         };
 
         // メッセージの受信を購読
-        mwvm.AsyncEventBus.Subscribe<Medoz.CatChast.Messaging.Message>((message) =>
+        mwvm.AsyncEventBus.Subscribe<ClientMessage>((message) =>
         {
             try
             {
                 var chatMessageType = ChatMessageTypeExtension.FromString(message.ClientType);
-                _listener.AddMessage(new ChatMessage(
+                var chatMessage = new ChatMessage(
                     chatMessageType,
                     message.Channel,
-                    message.ClientType,
+                    message.IconSource,
                     message.Username,
                     message.Content,
-                    message.Timestamp.DateTime
-                ));
+                    message.Timestamp.Date);
+                _listener.AddMessage(chatMessage);
             }
             catch (Exception ex)
             {

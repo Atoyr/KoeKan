@@ -115,6 +115,7 @@ public partial class MainWindowViewModel
         await client.SendMessageAsync(
             new ClientMessage(
                 "_",
+                "echo",
                 "default",
                 config.Username,
                 message,

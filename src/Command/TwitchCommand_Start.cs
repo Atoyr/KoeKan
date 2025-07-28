@@ -1,17 +1,10 @@
-using System.CodeDom;
-using System.Runtime.InteropServices;
-using System.Windows.Annotations;
-using System.Windows.Input;
-
 using Medoz.KoeKan.Services;
 using Medoz.KoeKan.Clients;
 using Medoz.KoeKan.Data;
-using Microsoft.VisualBasic;
 using Medoz.CatChast.Auth;
 using Medoz.CatChast.Messaging;
 using Microsoft.Extensions.Logging;
 
-using Message = Medoz.CatChast.Messaging.Message;
 namespace Medoz.KoeKan.Command;
 
 public class TwitchCommand_Start : ICommand
@@ -73,14 +66,7 @@ public class TwitchCommand_Start : ICommand
             {
                 try
                 {
-                    await _asyncEventBus.PublishAsync(new Message(
-                        "twitch",
-                        message.Channel,
-                        message.Username,
-                        message.Content,
-                        message.Timestamp,
-                        message.IconSource
-                    ));
+                    await _asyncEventBus.PublishAsync(message);
                 }
                 catch (Exception ex)
                 {

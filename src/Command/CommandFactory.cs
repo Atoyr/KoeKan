@@ -1,7 +1,3 @@
-using System;
-using System.Reflection;
-using System.Windows.Automation.Text;
-
 using Medoz.CatChast.Messaging;
 using Medoz.KoeKan.Services;
 

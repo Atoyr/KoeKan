@@ -1,4 +1,3 @@
-using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Services;
 
 using Microsoft.Extensions.Logging;

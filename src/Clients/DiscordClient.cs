@@ -150,7 +150,9 @@ public class DiscordClient: ITextClient
         if (OnReceiveMessage is not null)
         {
             await OnReceiveMessage.Invoke(
-                    new ClientMessage(
+                    // FIXME Key
+                    new (
+                        Name,
                         Name,
                         message.Channel.Name,
                         message.Author.GlobalName,

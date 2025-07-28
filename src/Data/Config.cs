@@ -25,6 +25,18 @@ public class Config
         set;
     } = new Dictionary<string, DynamicConfig>();
 
+    /// <summary>
+    /// クライアントの設定
+    /// </summary>
+    public IDictionary<string, DynamicConfig> Speakers
+    {
+        get;
+
+        // FIXME: Json形式で保存するために、setをpublicにしているが、
+        // できればprivateにしたい。
+        set;
+    } = new Dictionary<string, DynamicConfig>();
+
     private string _username = "";
     /// <summary>
     /// 自身の名前
