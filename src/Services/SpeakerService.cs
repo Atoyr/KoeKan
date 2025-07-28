@@ -1,4 +1,5 @@
 using Medoz.KoeKan.Clients;
+using Medoz.KoeKan.Speakers;
 using Medoz.CatChast.Messaging;
 
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,7 @@ namespace Medoz.KoeKan.Services;
 /// </summary>
 public class SpeakerService : ISpeakerService
 {
-    private readonly Dictionary<string, ISpeakerClient> _clients = new();
+    private readonly Dictionary<string, ISpeaker> _clients = new();
     private readonly Dictionary<string, IDisposable> _subscriptions = new();
 
     private readonly string _defaultClient = "_";
@@ -34,7 +35,7 @@ public class SpeakerService : ISpeakerService
     /// <summary>
     /// クライアントの取得
     /// </summary>
-    public ISpeakerClient GetSpeaker(string? name)
+    public ISpeaker GetSpeaker(string? name)
     {
         if (string.IsNullOrEmpty(name))
         {
@@ -52,7 +53,7 @@ public class SpeakerService : ISpeakerService
         throw new KeyNotFoundException($"Speaker client '{name}' not found.");
     }
 
-    public bool TryGetSpeaker(string? name, out ISpeakerClient? client)
+    public bool TryGetSpeaker(string? name, out ISpeaker? client)
     {
         var clientName = string.IsNullOrEmpty(name) ? _defaultClient : name;
         return _clients.TryGetValue(clientName, out client);
@@ -66,9 +67,9 @@ public class SpeakerService : ISpeakerService
     /// <param name="name"></param>
     /// <returns></returns>
     public T GetOrCreateSpeaker<T>(
-        IClientOptions options,
+        ISpeakerOptions options,
         string name
-        ) where T : ISpeakerClient
+        ) where T : ISpeaker
     {
         if (_clients.ContainsKey(name))
         {
@@ -90,16 +91,16 @@ public class SpeakerService : ISpeakerService
     /// <param name="name"></param>
     /// <returns></returns>
     public T CreateSpeaker<T>(
-        IClientOptions options,
+        ISpeakerOptions options,
         string name
-        ) where T : ISpeakerClient
+        ) where T : ISpeaker
     {
         if (_clients.ContainsKey(name))
         {
             throw new ArgumentException($"Client {name} is already registered.");
         }
 
-        var speaker = ClientFactory.Create<T>(options);
+        var speaker = SpeakerFactory.Create<T>(options);
         _clients.Add(name, speaker);
 
         var subscription = _asyncEventBus.SubscribeAsync<ClientMessage>(async e =>
@@ -122,7 +123,7 @@ public class SpeakerService : ISpeakerService
     /// <summary>
     /// クライアントの登録
     /// </summary>
-    public void RegisterSpeaker(string name, ISpeakerClient client)
+    public void RegisterSpeaker(string name, ISpeaker client)
     {
         if (_clients.ContainsKey(name))
         {

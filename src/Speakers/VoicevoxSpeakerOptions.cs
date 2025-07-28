@@ -1,7 +1,7 @@
-namespace Medoz.KoeKan.Clients;
+namespace Medoz.KoeKan.Speakers;
 
 
-public class VoicevoxOptions : IClientOptions
+public class VoicevoxSpeakerOptions : ISpeakerOptions
 {
     private readonly Dictionary<string, string> _options = new();
 
@@ -42,6 +42,20 @@ public class VoicevoxOptions : IClientOptions
             {
                 _options["url"] = value;
             }
+        }
+    }
+
+    private const string BINDING_KEY = "bind";
+
+    public string[] BindingKeys
+    {
+        get
+        {
+            if (_options.ContainsKey(BINDING_KEY))
+            {
+                return _options[BINDING_KEY].Split(',');
+            }
+            return Array.Empty<string>();
         }
     }
 

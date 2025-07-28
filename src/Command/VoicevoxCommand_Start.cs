@@ -1,4 +1,4 @@
-using Medoz.KoeKan.Clients;
+using Medoz.KoeKan.Speakers;
 using Medoz.KoeKan.Data;
 using Medoz.KoeKan.Services;
 
@@ -58,8 +58,8 @@ public class VoicevoxCommand_Start : ICommand
         }
         clientConfig.TryGetValue("url", out string? url);
 
-        _speakerService.GetOrCreateSpeaker<VoicevoxClient>(
-            new VoicevoxOptions()
+        _speakerService.GetOrCreateSpeaker<VoicevoxSpeaker>(
+            new VoicevoxSpeakerOptions()
             {
                 SpeakerId = speakerId,
                 Url = url,

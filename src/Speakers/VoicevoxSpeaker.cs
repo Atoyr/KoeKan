@@ -2,10 +2,11 @@ using System.IO;
 using System.Net.Http;
 using System.Media;
 using System.Threading.Channels;
+using Medoz.KoeKan.Clients;
 
-namespace Medoz.KoeKan.Clients;
+namespace Medoz.KoeKan.Speakers;
 
-public class VoicevoxClient: ISpeakerClient
+public class VoicevoxSpeaker: ISpeaker
 {
     private readonly string _url = "http://127.0.0.1:50021";
 
@@ -33,9 +34,9 @@ public class VoicevoxClient: ISpeakerClient
 
     public event Action? OnDisposing;
 
-    public VoicevoxClient(IClientOptions options)
+    public VoicevoxSpeaker(ISpeakerOptions options)
     {
-        if (options is not VoicevoxOptions voicevoxOptions)
+        if (options is not VoicevoxSpeakerOptions voicevoxOptions)
         {
             throw new ArgumentException("Invalid options type. Expected VoicevoxOptions.", nameof(options));
         }
