@@ -1,10 +1,7 @@
 using Medoz.CatChast.Messaging;
 using Medoz.KoeKan.Clients;
-using Medoz.KoeKan.Data;
 
 using Microsoft.Extensions.Logging;
-
-using Message = Medoz.CatChast.Messaging.Message;
 
 namespace Medoz.KoeKan.Services;
 
@@ -49,16 +46,7 @@ public class ClientService : IClientService
         {
             try
             {
-                await _asyncEventBus.PublishAsync(new Message(
-                    // FIXME: Type is not used in this context, consider removing it
-                    "echo",
-                    "_",
-                    message.Channel,
-                    message.Username,
-                    message.Content,
-                    message.Timestamp,
-                    message.IconSource
-                ));
+                await _asyncEventBus.PublishAsync(message);
             }
             catch
             {
@@ -134,16 +122,7 @@ public class ClientService : IClientService
         {
             client.OnReceiveMessage += async (message) =>
             {
-                await _asyncEventBus.PublishAsync(new Message(
-                    // FIXME: Type is not used in this context, consider removing it
-                    message.ClientType,
-                    "name",
-                    message.Channel,
-                    message.Username,
-                    message.Content,
-                    message.Timestamp,
-                    message.IconSource
-                ));
+                await _asyncEventBus.PublishAsync(message);
             };
         }
         else

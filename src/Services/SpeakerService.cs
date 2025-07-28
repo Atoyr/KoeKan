@@ -1,7 +1,6 @@
 using Medoz.KoeKan.Clients;
 using Medoz.CatChast.Messaging;
 
-using Message = Medoz.CatChast.Messaging.Message;
 using Microsoft.Extensions.Logging;
 
 namespace Medoz.KoeKan.Services;
@@ -103,7 +102,7 @@ public class SpeakerService : ISpeakerService
         var speaker = ClientFactory.Create<T>(options);
         _clients.Add(name, speaker);
 
-        var subscription = _asyncEventBus.SubscribeAsync<Message>(async e =>
+        var subscription = _asyncEventBus.SubscribeAsync<ClientMessage>(async e =>
         {
             if (e.Key == name)
             {
@@ -131,7 +130,7 @@ public class SpeakerService : ISpeakerService
         }
         _clients.Add(name, client);
 
-        var subscription = _asyncEventBus.SubscribeAsync<Message>(async e =>
+        var subscription = _asyncEventBus.SubscribeAsync<ClientMessage>(async e =>
         {
             if (e.Key == name)
             {
