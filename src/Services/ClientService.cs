@@ -47,15 +47,22 @@ public class ClientService : IClientService
 
         client.OnReceiveMessage += async (message) =>
         {
-            await _asyncEventBus.PublishAsync(new Message(
-                // FIXME: Type is not used in this context, consider removing it
-                "echo",
-                message.Channel,
-                message.Username,
-                message.Content,
-                message.Timestamp,
-                message.IconSource
-            ));
+            try
+            {
+                await _asyncEventBus.PublishAsync(new Message(
+                    // FIXME: Type is not used in this context, consider removing it
+                    "echo",
+                    message.Channel,
+                    message.Username,
+                    message.Content,
+                    message.Timestamp,
+                    message.IconSource
+                ));
+            }
+            catch
+            {
+                // FIXME
+            }
         };
         client.RunAsync().Wait();
     }
